@@ -1,4 +1,4 @@
-import zipfile, os
+import zipfile
 from pathlib import Path
 
 VERSION = (0, 1)

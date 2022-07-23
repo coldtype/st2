@@ -1,6 +1,5 @@
 import bpy
 
-
 def build_properties(update_type, update_type_and_copy):
 
     def feaprop(prop, default=False):

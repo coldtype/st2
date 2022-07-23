@@ -16,22 +16,27 @@ bl_info = {
 
 import sys, importlib
 from pathlib import Path
-from contextlib import contextmanager
 
-import bpy
-from bpy_extras.io_utils import ImportHelper
-
-being_reloaded = globals().get("BLENDER_RELOADER", False)
-
-if being_reloaded:
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from Coldtype import importer
-from Coldtype import properties
-
-if being_reloaded:
+if "bpy" in locals():
+    print("bpy.ops.scripts.reload() for coldtype...")
     importlib.reload(importer)
     importlib.reload(properties)
+    importlib.reload(typesetter)
+else:
+    import bpy
+    from bpy_extras.io_utils import ImportHelper
+
+    being_reloaded = globals().get("BLENDER_RELOADER", False)
+
+    if being_reloaded:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+    from Coldtype import importer
+    from Coldtype import properties
+
+    if being_reloaded:
+        importlib.reload(importer)
+        importlib.reload(properties)
 
 importer.require_coldtype(globals())
 
@@ -131,6 +136,7 @@ def font_basics(layout, data, font):
             row.operator("ctxyz.clear_font", text="", icon="X")
         else:
             row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+            #layout.row().prop(data, "ufo_path", text="", icon="UNDERLINE")
 
     row = layout.row()
     row.label(text="Position")
@@ -345,6 +351,8 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     """Open file dialog to pick a font"""
     bl_idname = "wm.ctxyz_choose_font"
     bl_label = "Choose font file"
+
+    #filepath = bpy.props.StringProperty(subtype='DIR_PATH')
     
     filter_glob: bpy.props.StringProperty(
         default='*.ttf;*.otf;*.ufo',
