@@ -698,6 +698,8 @@ def clear_frame_changers():
 
 
 def register():
+    print("---COLDTYPE---")
+
     for cl in classes:
         bpy.utils.register_class(cl)
 
