@@ -1,10 +1,13 @@
+import sys
+sys.path.insert(0, ".")
+
 import zipfile
 from pathlib import Path
+from scripts.blender import *
 
-VERSION = (0, 1)
+VERSION = (0, 2)
 mj, mn = VERSION
 
-root = Path(__file__).parent.parent
 releases = root / "releases"
 releases.mkdir(exist_ok=True, parents=True)
 
