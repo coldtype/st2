@@ -1,3 +1,15 @@
+bl_info = {
+    "name": "Coldtype",
+    "author": "Rob Stenson",
+    "version": (0, 2),
+    "blender": (3, 0, 0),
+    "location": "View3D > Toolshelf",
+    "description": "Well-shaped 3D typography",
+    "warning": "",
+    "wiki_url": "",
+    "category": "Coldtype",
+}
+
 # TODO
 # - multiline w/ configurable line-spacing?
 # - justification of words? (ala the line-crunching example)
@@ -10,7 +22,6 @@ if "bpy" in locals():
     importlib.reload(importer)
     importlib.reload(properties)
     importlib.reload(typesetter)
-    importlib.reload(metadata)
 else:
     import bpy
     from bpy_extras.io_utils import ImportHelper
@@ -20,16 +31,12 @@ else:
     if being_reloaded:
         sys.path.insert(0, str(Path(__file__).parent.parent))
 
-    from Coldtype import metadata
     from Coldtype import importer
     from Coldtype import properties
 
     if being_reloaded:
         importlib.reload(importer)
         importlib.reload(properties)
-        importlib.reload(metadata)
-
-bl_info = metadata.bl_info
 
 importer.require_coldtype(globals())
 
