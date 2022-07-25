@@ -72,7 +72,9 @@ def build_properties(update_type, update_type_and_copy):
 
         outline: bpy.props.BoolProperty(name="Outline", default=0, update=update_type)
         
-        outline_weight: bpy.props.FloatProperty(name="Outline Weight", default=1, min=0, max=100, update=update_type)
+        outline_weight: bpy.props.FloatProperty(name="Outline Weight", default=1, min=-20, max=100, update=update_type)
+
+        outline_outer: bpy.props.BoolProperty(name="Outline Outer", default=0, update=update_type)
 
         remove_overlap: bpy.props.BoolProperty(name="Remove Overlap", default=1, update=update_type)
 

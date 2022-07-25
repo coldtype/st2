@@ -88,7 +88,16 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         p.remove_overlap()
     
     if ts.outline:
+        ow = ts.outline_weight/100
+        if ts.outline_outer or ow < 0:
+            p_inner = p.copy()
         p.outline(ts.outline_weight/100)
+        
+        if ow < 0:
+            p_inner.difference(p)
+            p = p_inner
+        elif ts.outline_outer:
+            p.difference(p_inner)
     
     output = []
     

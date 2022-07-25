@@ -159,6 +159,7 @@ def font_basics(layout, data, font):
     #row = layout.row()
     row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
     row.prop(data, "outline_weight", text="Weight")
+    row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
 
     row = layout.row()
     row.prop(data, "tracking")
