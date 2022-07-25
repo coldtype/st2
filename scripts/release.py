@@ -3,12 +3,13 @@ sys.path.insert(0, ".")
 
 import zipfile
 from pathlib import Path
+from runpy import run_path
 from scripts.blender import *
 
-VERSION = (0, 2)
-mj, mn = VERSION
+metadata = run_path(root / "Coldtype/metadata.py")
+mj, mn = metadata["bl_info"]["version"]
 
-releases = root / "releases"
+releases = root / "_releases"
 releases.mkdir(exist_ok=True, parents=True)
 
 release:Path = releases / f"Coldtype-for-Blender-v{mj}-{mn}.zip"

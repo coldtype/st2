@@ -1,15 +1,3 @@
-bl_info = {
-    "name": "Coldtype",
-    "author": "Rob Stenson",
-    "version": (0, 1),
-    "blender": (3, 0, 0),
-    "location": "View3D > Toolshelf",
-    "description": "Setting well-shaped 3D typography",
-    "warning": "",
-    "wiki_url": "",
-    "category": "Coldtype",
-}
-
 # TODO
 # - multiline w/ configurable line-spacing?
 # - justification of words? (ala the line-crunching example)
@@ -22,6 +10,7 @@ if "bpy" in locals():
     importlib.reload(importer)
     importlib.reload(properties)
     importlib.reload(typesetter)
+    importlib.reload(metadata)
 else:
     import bpy
     from bpy_extras.io_utils import ImportHelper
@@ -31,12 +20,16 @@ else:
     if being_reloaded:
         sys.path.insert(0, str(Path(__file__).parent.parent))
 
+    from Coldtype import metadata
     from Coldtype import importer
     from Coldtype import properties
 
     if being_reloaded:
         importlib.reload(importer)
         importlib.reload(properties)
+        importlib.reload(metadata)
+
+bl_info = metadata.bl_info
 
 importer.require_coldtype(globals())
 
@@ -706,7 +699,7 @@ def clear_frame_changers():
 
 
 def register():
-    print("---COLDTYPE---")
+    print("---COLDTYPE---", bl_info["version"])
 
     for cl in classes:
         bpy.utils.register_class(cl)

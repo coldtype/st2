@@ -1,6 +1,6 @@
 .DS_Store
 __pycache__
-releases
+_releases
 export
 config.py
 aliases.txt
