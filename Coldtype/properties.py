@@ -19,7 +19,7 @@ def build_properties(update_type, update_type_and_copy):
         text: bpy.props.StringProperty(name="Text", default="Text",
             update=lambda p, c: update_type_and_copy("text", p, c))
         
-        font_path: bpy.props.StringProperty(name="Font", default="", update=update_type)
+        font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
         
         # internal
         
@@ -78,8 +78,15 @@ def build_properties(update_type, update_type_and_copy):
 
         combine_glyphs: bpy.props.BoolProperty(name="Combine Glyphs", default=1, update=update_type)
 
-        tracking: bpy.props.IntProperty(name="Tracking", default=0, min=-1000, max=1000,
-            update=lambda p, c: update_type_and_copy("tracking", p, c))
+        tracking: bpy.props.IntProperty(name="Tracking", default=0, min=-1000, max=1000, update=lambda p, c: update_type_and_copy("tracking", p, c))
+        
+        leading: bpy.props.FloatProperty(name="Leading", default=0.5, min=-10, max=10, update=lambda p, c: update_type_and_copy("leading", p, c))
+
+        align_lines_x: bpy.props.EnumProperty(name="Align Lines X", items=[
+            ("W", "", "", "ALIGN_LEFT", 0),
+            ("CX", "", "", "ALIGN_CENTER", 1),
+            ("E", "", "", "ALIGN_RIGHT", 2),
+        ], default="CX", update=lambda p, c: update_type_and_copy("align_lines_x", p, c))
 
         align_x: bpy.props.EnumProperty(name="Align X", items=[
             ("W", "", "", "ANCHOR_LEFT", 0),

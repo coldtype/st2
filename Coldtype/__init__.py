@@ -160,7 +160,11 @@ def font_basics(layout, data, font):
     row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
     row.prop(data, "outline_weight", text="Weight")
 
+    row = layout.row()
     row.prop(data, "tracking")
+    row.prop(data, "leading")
+
+    row.prop(data, "align_lines_x", text="LX", expand=True)
 
 def font_advanced(layout, data, font, obj):
     fvars = font.variations()

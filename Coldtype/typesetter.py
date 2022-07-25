@@ -11,6 +11,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
     # if ufo, don't cache?
     font = ct.Font.Cacheable(ts.font_path)
     collection = collection or "Global"
+
+    text = "\n".join(ts.text.split("¶"))
     
     features = {}
     for k, v in ts.__annotations__.items():
@@ -22,9 +24,11 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         variations[k] = getattr(ts, f"fvar_axis{idx+1}")
 
     if not object or not object.ctxyz.has_keyframes(object):
-        p = (ct.StSt(str(ts.text), font
+        p = (ct.StSt(text, font
             , fontSize=3
+            , leading=ts.leading
             , tu=ts.tracking
+            , multiline=True
             , **features
             , **variations))
     else:
@@ -48,8 +52,14 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 **features,
                 **_vars)
 
-        p = ct.Glyphwise(str(ts.text), styler)
+        p = ct.Glyphwise(text, styler, multiline=True)
     
+    amb = p.ambit(
+        th=not ts.use_horizontal_font_metrics,
+        tv=not ts.use_vertical_font_metrics)
+
+    p.xalign(rect=amb, x=ts.align_lines_x, th=not ts.use_horizontal_font_metrics)
+
     ax, ay, aw, ah = p.ambit(
         th=not ts.use_horizontal_font_metrics,
         tv=not ts.use_vertical_font_metrics)
@@ -150,8 +160,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
         txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
         txtObj.draw(p, set_origin=False, fill=True)
-        txtObj.extrude(0.2)
-        txtObj.rotate(x=90)
+        txtObj.extrude(0)
+        #txtObj.rotate(x=90)
         output.append(txtObj)
     
     return output
