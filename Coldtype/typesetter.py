@@ -53,6 +53,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 **_vars)
 
         p = ct.Glyphwise(text, styler, multiline=True)
+        if ts.leading:
+            p.lead(ts.leading)
     
     amb = p.ambit(
         th=not ts.use_horizontal_font_metrics,
@@ -75,6 +77,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         p.t(0, -ah/2)
     elif ts.align_y == "N":
         p.t(0, -ah)
+    
+    p.collapse()
     
     # need to check baking glyphwise?
     if ts.combine_glyphs and not glyphwise:
