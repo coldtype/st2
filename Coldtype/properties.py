@@ -76,6 +76,8 @@ def build_properties(update_type, update_type_and_copy):
 
         outline_outer: bpy.props.BoolProperty(name="Outline Outer", default=0, update=update_type)
 
+        outline_miter_limit: bpy.props.FloatProperty(name="Outline Miter Limit", default=0.5, update=update_type)
+
         remove_overlap: bpy.props.BoolProperty(name="Remove Overlap", default=1, update=update_type)
 
         combine_glyphs: bpy.props.BoolProperty(name="Combine Glyphs", default=1, update=update_type)

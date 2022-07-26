@@ -91,7 +91,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         ow = ts.outline_weight/100
         if ts.outline_outer or ow < 0:
             p_inner = p.copy()
-        p.outline(ts.outline_weight/100)
+        
+        p.outline(ts.outline_weight/100, miterLimit=ts.outline_miter_limit)
         
         if ow < 0:
             p_inner.difference(p)
