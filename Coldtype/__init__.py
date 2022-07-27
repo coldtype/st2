@@ -324,7 +324,7 @@ def active_obj_has_ctxyz():
 
 class ColdtypeMainPanel(bpy.types.Panel):
     bl_label = "Coldtype"
-    bl_idname = "TYPESETTER_PT_MAINPANEL"
+    bl_idname = "COLDTYPE_PT_MAINPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
