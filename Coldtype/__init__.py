@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Coldtype",
     "author": "Rob Stenson",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (3, 0, 0),
     "location": "View3D > Toolshelf",
     "description": "Well-shaped 3D typography",
@@ -11,39 +11,26 @@ bl_info = {
 }
 
 # TODO
-# - multiline w/ configurable line-spacing?
 # - justification of words? (ala the line-crunching example)
 
 import sys, importlib
 from pathlib import Path
 
 if "bpy" in locals():
-    print("bpy.ops.scripts.reload() for coldtype...")
+    # bpy.ops.scripts.reload() was called
     importlib.reload(importer)
     importlib.reload(properties)
     importlib.reload(typesetter)
 else:
     import bpy
     from bpy_extras.io_utils import ImportHelper
-
-    being_reloaded = globals().get("BLENDER_RELOADER", False)
-
-    if being_reloaded:
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-
     from Coldtype import importer
     from Coldtype import properties
-
-    if being_reloaded:
-        importlib.reload(importer)
-        importlib.reload(properties)
 
 importer.require_coldtype(globals())
 
 if globals().get("coldtype_found") == True:
     from Coldtype import typesetter
-    if being_reloaded:        
-        importlib.reload(typesetter)
 
 
 def _update_type(props, context):
@@ -730,7 +717,7 @@ def unregister():
 
     clear_frame_changers()
 
-if __name__ == "__main__" or being_reloaded:
+if __name__ == "__main__":
     register()
 
 #register()
