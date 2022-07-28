@@ -4,9 +4,9 @@
 
 ### Why?
 
-Blender is a very cool program that does a ton of things very well. One of the things it does __not__ do very well is typography (e.g. even basic typographical features like kerning are not supported).
+Blender is a very cool program that does a ton of things very well. One of the things it does _not_ do very well is typography (for example, even basic typographical features like kerning are not supported).
 
-Coldtype-for-Blender is a tool to set 3D type with the full range of modern typographical features — among them OpenType stylistics sets, ligatures, and, yes, kerning.
+That’s why Coldtype-for-Blender exists: an add-on to help you set 3D type with the full range of modern typographical features — among them OpenType stylistics sets, ligatures, and, yes, kerning. Coldtype also provides support for typesetting all kinds of languages (not just Latin-based ones).
 
 Also Blender does not have support for variable fonts; this add-on adds support for those, along with support for keyframing variable font axes. (This is a little experimental though, as Blender will sometimes crash if you change meshes too often, particularly on macOS. To get around this, the Coldtype add-on provides an "export" mechanism that will create a new object for every frame of your animation, and then show that instance on the appropriate frame only.)
 
