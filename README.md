@@ -1,6 +1,6 @@
 # Coldtype (for Blender)
 
-[The Coldtype-for-Blender UI](assets/uipreview.png)
+![The Coldtype-for-Blender UI](assets/uipreview.png)
 
 ### Installing
 
