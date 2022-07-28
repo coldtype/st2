@@ -123,6 +123,8 @@ def font_basics(layout, data, font):
             row.operator("ctxyz.clear_font", text="", icon="X")
         else:
             row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+            row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
+            row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
             #layout.row().prop(data, "ufo_path", text="", icon="UNDERLINE")
 
     row = layout.row()
@@ -487,6 +489,48 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def cycle_font(context, inc):
+    data, obj = find_ctxyz(context)
+    font_path = Path(data.font_path)
+    fonts = []
+    for file in sorted(font_path.parent.iterdir(), key=lambda x: x.name):
+        if file.suffix in [".otf", ".ttf", ".ufo"]:
+            fonts.append(file)
+    
+    fidx = fonts.index(font_path)
+    try:
+        adj_font = fonts[fidx+inc]
+    except IndexError:
+        if inc > 0:
+            adj_font = fonts[0]
+        else:
+            adj_font = fonts[len(fonts)-1]
+    
+    data.font_path = str(adj_font)
+
+
+class Coldtype_OT_LoadNextFont(bpy.types.Operator):
+    """Load next font in directory"""
+
+    bl_label = "Coldtype Load Next Font"
+    bl_idname = "ctxyz.load_next_font"
+    
+    def execute(self, context):
+        cycle_font(context, +1)
+        return {"FINISHED"}
+
+
+class Coldtype_OT_LoadPrevFont(bpy.types.Operator):
+    """Load previous font in directory"""
+
+    bl_label = "Coldtype Load Previous Font"
+    bl_idname = "ctxyz.load_prev_font"
+    
+    def execute(self, context):
+        cycle_font(context, -1)
+        return {"FINISHED"}
+
+
 class Coldtype_OT_ExportSlug(bpy.types.Operator):
     """Export slug as single shape"""
 
@@ -677,6 +721,8 @@ classes = [
     Coldtype_OT_InterpolateStrings,
     Coldtype_OT_DeleteBake,
     Coldtype_OT_InstallColdtype,
+    Coldtype_OT_LoadNextFont,
+    Coldtype_OT_LoadPrevFont,
     ColdtypeMainPanel,
     WM_OT_ColdtypeChooseFont,
 ]
