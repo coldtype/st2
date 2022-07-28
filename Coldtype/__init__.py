@@ -555,6 +555,8 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
                 c.rotation_euler[ax] = norm(e, a.rotation_euler[ax], b.rotation_euler[ax])
 
                 c.scale[ax] = norm(e, a.scale[ax], b.scale[ax])
+            
+            c.data.extrude = norm(e, a.data.extrude, b.data.extrude)
 
             for k in a.ctxyz.__annotations__.keys():
                 v = getattr(a.ctxyz, k)
