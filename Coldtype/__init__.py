@@ -16,6 +16,13 @@ bl_info = {
 import sys, importlib
 from pathlib import Path
 
+# apparently if you require this twice, it'll work the second time (??)
+try:
+    from ufo2ft.featureCompiler import FeatureCompiler
+except ImportError:
+    print("-- failed FeatureCompiler --")
+    pass
+
 if "bpy" in locals():
     # bpy.ops.scripts.reload() was called
     importlib.reload(importer)

@@ -5,3 +5,4 @@ export
 config.py
 aliases.txt
 scratch
+venv
