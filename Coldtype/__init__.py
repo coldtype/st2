@@ -123,9 +123,19 @@ def editor_for_exported_text(layout, data):
     layout.row().label(text=f"Baked frame: “{data.text}”")
     layout.row().operator("ctxyz.delete_bake", text="Delete Baked Frames")
 
-def font_basics(layout, data, font):
+def individual_font(layout, data, font_index):
     row = layout.row()
-    row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+    op = row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+    op.font_index = font_index
+
+    if font_index > 0:
+        font_path = getattr(data, f"font_path_alt{font_index}")
+    else:
+        font_path = data.font_path
+
+    font = ct.Font.Cacheable(font_path)
+
+    #layout.row().prop(data, "font_path", text="")
     
     if font:
         row.label(text=f"“{font.path.stem}”")
@@ -140,6 +150,20 @@ def font_basics(layout, data, font):
             row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
             row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
             #layout.row().prop(data, "ufo_path", text="", icon="UNDERLINE")
+
+def font_basics(layout, data, font, obj):
+    individual_font(layout, data, 0)
+
+    if font:
+        for x in range(1, 4):
+            fp = getattr(data, f"font_path_alt{x}")
+            if fp:
+                individual_font(layout, data, x)
+        
+        if obj and False:
+            row = layout.row()
+            row.operator("ctxyz.add_font", text="Add Font")
+            row.prop(data, "font_path_index", text="")
 
     row = layout.row()
     row.label(text="Position")
@@ -318,7 +342,7 @@ def layout_editor(layout, data, obj, context):
         except ct.FontNotFoundException:
             font = None
 
-    font_basics(layout, data, font)
+    font_basics(layout, data, font, obj)
 
     if font:
         if data.updatable and obj:
@@ -368,6 +392,8 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     bl_idname = "wm.ctxyz_choose_font"
     bl_label = "Choose font file"
 
+    font_index: bpy.props.IntProperty(default=0)
+
     #filepath = bpy.props.StringProperty(subtype='DIR_PATH')
     
     filter_glob: bpy.props.StringProperty(
@@ -384,13 +410,10 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
         data, _ = find_ctxyz(context)
         
         font = ct.Font.Cacheable(path)
-        data.font_path = str(font.path)
-        
-        # fvars = font.variations()
-        # for idx, (k, v) in enumerate(fvars.items()):
-        #     axis_key = f"fvar_axis{idx+1}"
-        #     setattr(ts, axis_key, int(v.get("defaultValue")))
-        
+        if self.font_index == 0:
+            data.font_path = str(font.path)
+        else:
+            setattr(data, f"font_path_alt{self.font_index}", str(font.path))
         return {'FINISHED'}
 
 
@@ -567,6 +590,24 @@ class Coldtype_OT_LoadPrevFont(bpy.types.Operator):
     
     def execute(self, context):
         cycle_font(context, -1)
+        return {"FINISHED"}
+
+
+class Coldtype_OT_AddFont(bpy.types.Operator):
+    """Add font for keyframing fonts"""
+
+    bl_label = "Coldtype Add Font"
+    bl_idname = "ctxyz.add_font"
+    
+    def execute(self, context):
+        for o in find_ctxyz_all_selected(context):
+            font_idx = 0
+            for x in range(1, 4):
+                if getattr(o.ctxyz, f"font_path_alt{x}"):
+                    font_idx = x
+            
+            if font_idx < 3:
+                setattr(o.ctxyz, f"font_path_alt{font_idx+1}", o.ctxyz.font_path)
         return {"FINISHED"}
 
 
@@ -753,6 +794,7 @@ classes = [
     Coldtype_OT_SetTypeWithObject,
     Coldtype_OT_RefreshSettings,
     Coldtype_OT_LoadVarAxesDefaults,
+    Coldtype_OT_AddFont,
     Coldtype_OT_ClearFont,
     Coldtype_OT_ExportSlug,
     Coldtype_OT_ExportGlyphs,

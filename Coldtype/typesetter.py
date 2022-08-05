@@ -9,7 +9,13 @@ except ImportError:
 
 def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, object_name=None, collection=None):
     # if ufo, don't cache?
-    font = ct.Font.Cacheable(ts.font_path)
+
+    font_idx = ts.font_path_index
+    if font_idx == 0:
+        font = ct.Font.Cacheable(ts.font_path)
+    else:
+        font = ct.Font.Cacheable(getattr(ts, f"font_path_alt{font_idx}"))
+
     collection = collection or "Global"
 
     text = "\n".join(ts.text.split("¶"))
