@@ -107,6 +107,12 @@ def build_properties(update_type, update_type_and_copy):
         use_horizontal_font_metrics: bpy.props.BoolProperty(name="Use Horizontal Font Metrics", default=True, update=update_type)
 
         use_vertical_font_metrics: bpy.props.BoolProperty(name="Use Vertical Font Metrics", default=True, update=update_type)
+
+        case: bpy.props.EnumProperty(name="Case", items=[
+            ("TYPED", "", "", "RADIOBUT_OFF", 0),
+            ("UPPER", "", "", "TRIA_UP", 1),
+            ("LOWER", "", "", "TRIA_DOWN", 2),
+        ], default="TYPED", update=update_type)
         
         fvar_axis1: axisprop(1, 0)
         fvar_axis2: axisprop(2, 0)

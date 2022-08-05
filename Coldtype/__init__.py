@@ -13,7 +13,7 @@ bl_info = {
 # TODO
 # - justification of words? (ala the line-crunching example)
 
-import sys, importlib
+import importlib
 from pathlib import Path
 
 # apparently if you require this twice, it'll work the second time (??)
@@ -100,6 +100,13 @@ def find_ctxyz_editables(context):
             editables.append(o)
     return editables
 
+def find_ctxyz_all_selected(context):
+    selected = []
+    for o in context.scene.objects:
+        if o.ctxyz.editable(o) and o.select_get():
+            selected.append(o)
+    return selected
+
 def find_ctxyz(context):
     ob = context.active_object
     if ob is not None and ob.select_get():
@@ -161,7 +168,11 @@ def font_basics(layout, data, font):
     row = layout.row()
     row.prop(data, "tracking")
     row.prop(data, "leading")
-
+    
+    row = layout.row()
+    row.label(text="Case")
+    row.prop(data, "case", text="LX", expand=True)
+    row.label(text="Line Align")
     row.prop(data, "align_lines_x", text="LX", expand=True)
 
 def font_advanced(layout, data, font, obj):
@@ -173,6 +184,7 @@ def font_advanced(layout, data, font, obj):
         row.label(text='Font Variations')
 
         if data.font_variations_open:
+            row.operator("ctxyz.load_var_axes_defaults", icon="EMPTY_AXIS", text="")
             #box = layout.box()
         
             for idx, (k, v) in enumerate(fvars.items()):
@@ -207,14 +219,16 @@ def font_advanced(layout, data, font, obj):
         
         for fea in font.font.featuresGPOS:
             if not hasattr(data, f"fea_{fea}"):
-                print("!", fea)
+                #print("!", fea)
+                pass
             else:
                 show_fea(fea)
 
         for fea in font.font.featuresGSUB:
             if not fea.startswith("cv") and not fea.startswith("ss"):
                 if not hasattr(data, f"fea_{fea}"):
-                    print(fea)
+                    #print(fea)
+                    pass
                 else:
                     show_fea(fea)
         
@@ -357,7 +371,7 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     #filepath = bpy.props.StringProperty(subtype='DIR_PATH')
     
     filter_glob: bpy.props.StringProperty(
-        default='*.ttf;*.otf;*.ufo',
+        default='*.ttf;*.otf;*.ufo;*.designspace',
         options={'HIDDEN'})
 
     def invoke(self, context, event):
@@ -493,6 +507,24 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
         editables = find_ctxyz_editables(context)
         for e in editables:
             typesetter.set_type(e.ctxyz, e, context=context)
+        return {"FINISHED"}
+
+
+class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
+    """Set variable font axes to their font-specified default values"""
+
+    bl_label = "Coldtype Load Var Axes Defaults"
+    bl_idname = "ctxyz.load_var_axes_defaults"
+    
+    def execute(self, context):
+        for o in find_ctxyz_all_selected(context):
+            font = ct.Font.Cacheable(o.ctxyz.font_path)
+            for idx, (axis, v) in enumerate(font.variations().items()):
+                diff = abs(v["maxValue"]-v["minValue"])
+                v = (v["defaultValue"]-v["minValue"])/diff
+                setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
+                print(">", axis, v)
+
         return {"FINISHED"}
 
 
@@ -720,6 +752,7 @@ classes = [
     Coldtype_OT_SetTypeWithSceneDefaults,
     Coldtype_OT_SetTypeWithObject,
     Coldtype_OT_RefreshSettings,
+    Coldtype_OT_LoadVarAxesDefaults,
     Coldtype_OT_ClearFont,
     Coldtype_OT_ExportSlug,
     Coldtype_OT_ExportGlyphs,

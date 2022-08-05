@@ -13,6 +13,12 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
     collection = collection or "Global"
 
     text = "\n".join(ts.text.split("¶"))
+    if ts.case == "TYPED":
+        pass
+    elif ts.case == "UPPER":
+        text = text.upper()
+    elif ts.case == "LOWER":
+        text = text.lower()
     
     features = {}
     for k, v in ts.__annotations__.items():
