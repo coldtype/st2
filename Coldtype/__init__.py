@@ -527,8 +527,14 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
     bl_idname = "ctxyz.refresh_settings"
     
     def execute(self, context):
+        from coldtype.text.reader import FontCache
+
         editables = find_ctxyz_editables(context)
         for e in editables:
+            for k in [kp:=e.ctxyz.font_path, str(kp)]:
+                if k in FontCache:
+                    del FontCache[k]
+            
             typesetter.set_type(e.ctxyz, e, context=context)
         return {"FINISHED"}
 
