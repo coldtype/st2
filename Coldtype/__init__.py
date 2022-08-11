@@ -149,6 +149,7 @@ def individual_font(layout, data, font_index):
             row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
             row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
             row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
+            row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
             #layout.row().prop(data, "ufo_path", text="", icon="UNDERLINE")
 
 def font_basics(layout, data, font, obj):
@@ -539,6 +540,19 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class Coldtype_OT_ShowFont(bpy.types.Operator):
+    """Show the selected font in your OS file system browser"""
+
+    bl_label = "Coldtype Show Font"
+    bl_idname = "ctxyz.show_font"
+    
+    def execute(self, context):
+        ctxyz, _ = find_ctxyz(context)
+        import os
+        os.system(f"open {str(Path(ctxyz.font_path).parent)}")
+        return {"FINISHED"}
+
+
 class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
     """Set variable font axes to their font-specified default values"""
 
@@ -811,6 +825,7 @@ classes = [
     Coldtype_OT_InstallColdtype,
     Coldtype_OT_LoadNextFont,
     Coldtype_OT_LoadPrevFont,
+    Coldtype_OT_ShowFont,
     ColdtypeMainPanel,
     WM_OT_ColdtypeChooseFont,
 ]
