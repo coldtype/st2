@@ -1,20 +1,23 @@
-import bpy
+import bpy, tempfile
 from mathutils import Vector
 
 try:
     import coldtype.text as ct
     import coldtype.blender as cb
+    import coldtype as C
 except ImportError:
     pass
+
+MESH_CACHE_COLLECTION = "Coldtype.MeshCache"
 
 def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, object_name=None, collection=None):
     # if ufo, don't cache?
 
-    font_idx = ts.font_path_index
-    if font_idx == 0:
-        font = ct.Font.Cacheable(ts.font_path)
-    else:
-        font = ct.Font.Cacheable(getattr(ts, f"font_path_alt{font_idx}"))
+    font = ct.Font.Cacheable(ts.font_path)
+    try:
+        mesh = font.font.ttFont["MESH"]
+    except KeyError:
+        mesh = None
 
     collection = collection or "Global"
 
@@ -89,28 +92,59 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         p.t(0, -ah/2)
     elif ts.align_y == "N":
         p.t(0, -ah)
+
+    if mesh:
+        p.mapv(lambda g: g.record(C.P(g.ambit(th=1, tv=1))))
     
     p.collapse()
+
+    if mesh:
+        if MESH_CACHE_COLLECTION not in bpy.data.collections:
+            coll = bpy.data.collections.new(MESH_CACHE_COLLECTION)
+            bpy.context.scene.collection.children.link(coll)
+        
+        mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
+        for x in p:
+            #if x.glyphName not in 
+            mg = mesh.strikes[1000].glyphs[x.glyphName]
+            print(len(mg.meshData))
+            # load glb's into cache here
+            with tempfile.NamedTemporaryFile("wb", suffix=".glb") as glbf:
+                glbf.write(mg.meshData)
+                bpy.ops.import_scene.gltf(
+                    filepath=glbf.name,
+                    #filter_glob="*.glb;*.gltf",
+                    #files=[],
+                    #loglevel=0,
+                    #import_pack_images=True,
+                    #merge_vertices=False,
+                    #import_shading='NORMALS',
+                    #bone_heuristic='TEMPERANCE',
+                    #guess_original_bind_pose=True
+                    )
+                print(">>>", bpy.context.object.name)
     
     # need to check baking glyphwise?
-    if ts.combine_glyphs and not glyphwise:
-        p = p.pen()
 
-    if ts.remove_overlap:
-        p.remove_overlap()
-    
-    if ts.outline:
-        ow = ts.outline_weight/100
-        if ts.outline_outer or ow < 0:
-            p_inner = p.copy()
+    if not mesh:
+        if ts.combine_glyphs and not glyphwise:
+            p = p.pen()
+
+        if ts.remove_overlap:
+            p.remove_overlap()
         
-        p.outline(ts.outline_weight/100, miterLimit=ts.outline_miter_limit)
-        
-        if ow < 0:
-            p_inner.difference(p)
-            p = p_inner
-        elif ts.outline_outer:
-            p.difference(p_inner)
+        if ts.outline:
+            ow = ts.outline_weight/100
+            if ts.outline_outer or ow < 0:
+                p_inner = p.copy()
+            
+            p.outline(ts.outline_weight/100, miterLimit=ts.outline_miter_limit)
+            
+            if ow < 0:
+                p_inner.difference(p)
+                p = p_inner
+            elif ts.outline_outer:
+                p.difference(p_inner)
     
     output = []
     

@@ -38,6 +38,12 @@ importer.require_coldtype(globals())
 
 if globals().get("coldtype_found") == True:
     from Coldtype import typesetter
+    from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
+
+    registerCustomTableClass(
+        "MESH",
+        "Coldtype.meshtable",
+        "table__M_E_S_H")
 
 
 def _update_type(props, context):
@@ -123,19 +129,18 @@ def editor_for_exported_text(layout, data):
     layout.row().label(text=f"Baked frame: “{data.text}”")
     layout.row().operator("ctxyz.delete_bake", text="Delete Baked Frames")
 
-def individual_font(layout, data, font_index):
+
+def individual_font(layout, data):
     row = layout.row()
     op = row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
-    op.font_index = font_index
-
-    if font_index > 0:
-        font_path = getattr(data, f"font_path_alt{font_index}")
-    else:
-        font_path = data.font_path
+    font_path = data.font_path
 
     font = ct.Font.Cacheable(font_path)
-
-    #layout.row().prop(data, "font_path", text="")
+    mesh = None
+    try:
+        mesh = font.font.ttFont["MESH"]
+    except KeyError:
+        pass
     
     if font:
         row.label(text=f"“{font.path.stem}”")
@@ -151,44 +156,44 @@ def individual_font(layout, data, font_index):
             row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
             row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
             #layout.row().prop(data, "ufo_path", text="", icon="UNDERLINE")
+        
+    return mesh
+
 
 def font_basics(layout, data, font, obj):
-    individual_font(layout, data, 0)
+    mesh = individual_font(layout, data)
 
-    if font:
-        for x in range(1, 4):
-            fp = getattr(data, f"font_path_alt{x}")
-            if fp:
-                individual_font(layout, data, x)
-        
-        if obj and False:
-            row = layout.row()
-            row.operator("ctxyz.add_font", text="Add Font")
-            row.prop(data, "font_path_index", text="")
+    if mesh:
+        row = layout.row()
+        row.label(text=">>> MESH font")
+    else:
+        row = layout.row()
+        row.label(text="Position")
 
-    row = layout.row()
-    row.label(text="Position")
+        row.prop(data, "align_x", text="X", expand=True)
+        row.prop(data, "align_y", text="Y", expand=True)
 
-    row.prop(data, "align_x", text="X", expand=True)
-    row.prop(data, "align_y", text="Y", expand=True)
+        #row = layout.row()
 
-    #row = layout.row()
+    #if mesh:
+    #    row = layout.row()
 
     row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
     row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
 
-    row = layout.row()
-    row.prop(data, "combine_glyphs", text="", icon="META_DATA")
-    row.prop(data, "remove_overlap", text="", icon="OVERLAY")
-    
-    #row.separator()
-    #row.label(text="Outline")
+    if not mesh:
+        row = layout.row()
+        row.prop(data, "combine_glyphs", text="", icon="META_DATA")
+        row.prop(data, "remove_overlap", text="", icon="OVERLAY")
+        
+        #row.separator()
+        #row.label(text="Outline")
 
-    #row = layout.row()
-    row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
-    row.prop(data, "outline_weight", text="Weight")
-    row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
-    row.prop(data, "outline_miter_limit")
+        #row = layout.row()
+        row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
+        row.prop(data, "outline_weight", text="Weight")
+        row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
+        row.prop(data, "outline_miter_limit")
 
     row = layout.row()
     row.prop(data, "tracking")
@@ -199,6 +204,9 @@ def font_basics(layout, data, font, obj):
     row.prop(data, "case", text="LX", expand=True)
     row.label(text="Line Align")
     row.prop(data, "align_lines_x", text="LX", expand=True)
+
+    return mesh
+
 
 def font_advanced(layout, data, font, obj):
     fvars = font.variations()
@@ -265,6 +273,7 @@ def font_advanced(layout, data, font, obj):
                     row = box.row()
                     row.prop(data, "fea_ss{:02d}".format(x), text=f"{tag}: {ss_name}")
 
+
 def dimensional_advanced(layout, data, obj):
     row = layout.row()
     icon = 'TRIA_DOWN' if data.dimensional_open else 'TRIA_RIGHT'
@@ -281,6 +290,7 @@ def dimensional_advanced(layout, data, obj):
             row.prop(obj.data, "bevel_depth", text="Bevel")
             row = box.row()
             row.prop(obj.data, "fill_mode", text="Fill Mode")
+
 
 def export_options(layout, data, obj):
     row = layout.row()
@@ -343,12 +353,13 @@ def layout_editor(layout, data, obj, context):
         except ct.FontNotFoundException:
             font = None
 
-    font_basics(layout, data, font, obj)
+    mesh = font_basics(layout, data, font, obj)
 
     if font:
         if data.updatable and obj:
             font_advanced(layout, data, font, obj)
-            dimensional_advanced(layout, data, obj)
+            if not mesh:
+                dimensional_advanced(layout, data, obj)
             export_options(layout, data, obj)
         else:
             # TODO dimensional defaults, but need new props
@@ -390,11 +401,9 @@ class ColdtypeMainPanel(bpy.types.Panel):
 
 class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     """Open file dialog to pick a font"""
+    
     bl_idname = "wm.ctxyz_choose_font"
     bl_label = "Choose font file"
-
-    font_index: bpy.props.IntProperty(default=0)
-
     #filepath = bpy.props.StringProperty(subtype='DIR_PATH')
     
     filter_glob: bpy.props.StringProperty(
@@ -411,10 +420,7 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
         data, _ = find_ctxyz(context)
         
         font = ct.Font.Cacheable(path)
-        if self.font_index == 0:
-            data.font_path = str(font.path)
-        else:
-            setattr(data, f"font_path_alt{self.font_index}", str(font.path))
+        data.font_path = str(font.path)
         return {'FINISHED'}
 
 
@@ -613,24 +619,6 @@ class Coldtype_OT_LoadPrevFont(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_AddFont(bpy.types.Operator):
-    """Add font for keyframing fonts"""
-
-    bl_label = "Coldtype Add Font"
-    bl_idname = "ctxyz.add_font"
-    
-    def execute(self, context):
-        for o in find_ctxyz_all_selected(context):
-            font_idx = 0
-            for x in range(1, 4):
-                if getattr(o.ctxyz, f"font_path_alt{x}"):
-                    font_idx = x
-            
-            if font_idx < 3:
-                setattr(o.ctxyz, f"font_path_alt{font_idx+1}", o.ctxyz.font_path)
-        return {"FINISHED"}
-
-
 class Coldtype_OT_ExportSlug(bpy.types.Operator):
     """Export slug as single shape"""
 
@@ -814,7 +802,6 @@ classes = [
     Coldtype_OT_SetTypeWithObject,
     Coldtype_OT_RefreshSettings,
     Coldtype_OT_LoadVarAxesDefaults,
-    Coldtype_OT_AddFont,
     Coldtype_OT_ClearFont,
     Coldtype_OT_ExportSlug,
     Coldtype_OT_ExportGlyphs,

@@ -18,8 +18,6 @@ def build_properties(update_type, update_type_and_copy):
     class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
         text: bpy.props.StringProperty(name="Text", default="Text",
             update=lambda p, c: update_type_and_copy("text", p, c))
-
-        font_path_index: bpy.props.IntProperty(name="Font Index", default=0, update=lambda p, c: update_type_and_copy("font_path_index", p, c))
         
         font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
 
