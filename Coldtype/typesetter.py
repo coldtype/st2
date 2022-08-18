@@ -139,23 +139,30 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                         
                     print(">>> imported mesh:", x.glyphName)
         
-        def build_mesh(object):
-            verts = []
-            faces = []
-            for x in p:
+        def build_mesh(empty):
+            print(">", empty, p)
+            for idx, x in enumerate(p):
                 key = f"{font_name}.{x.glyphName}"
-                mg = bpy.data.objects[key]
+                found = None
                 
-                vs = [(vert.co.x, vert.co.y, vert.co.z) for vert in mg.data.vertices]
-                verts.extend(vs)
+                for o in bpy.data.objects:
+                    if o.parent == empty and o.name.endswith(f"glyph.{idx}"):
+                        found = o
+                
+                prototype = bpy.data.objects[key]
+                
+                if found:
+                    mesh_glyph = found
+                else:
+                    mesh_glyph = prototype.copy()
+                
+                mesh_glyph.data = prototype.data.copy()
+                mesh_glyph.name = f"{empty.name}.glyph.{idx}"
+                mesh_glyph.parent = empty
+                mesh_glyph.location = (1, 0, 0)
 
-                fs = [[vert for vert in ply.vertices] for ply in mg.data.polygons]
-                faces.extend(fs)
-
-            mesh_data = bpy.data.meshes.new("new_mesh")
-            mesh_data.from_pydata(verts, [], faces)
-            mesh_data.update()
-            object.data = mesh_data
+                if found is None:
+                    empty.users_collection[0].objects.link(mesh_glyph)
     
     # need to check baking glyphwise?
 
@@ -257,7 +264,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         # initial creation of live text
 
         if mesh:
-            txtObj = (cb.BpyObj.Cube(object_name or "Coldtype", collection))
+            txtObj = (cb.BpyObj.Empty(object_name or "Coldtype", collection))
+            #txtObj = (cb.BpyObj.Cube(object_name or "Coldtype", collection))
             build_mesh(txtObj.obj)
         else:
             txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
@@ -266,5 +274,4 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             #txtObj.rotate(x=90)
         output.append(txtObj)
     
-    print(output[0].obj)
     return output
