@@ -104,25 +104,58 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             bpy.context.scene.collection.children.link(coll)
         
         mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
+        #mcc.hide_select = True
+        #mcc.hide_viewport = True
+        #mcc.hide_render = True
+        font_name = font.path.stem
+
         for x in p:
-            #if x.glyphName not in 
-            mg = mesh.strikes[1000].glyphs[x.glyphName]
-            print(len(mg.meshData))
-            # load glb's into cache here
-            with tempfile.NamedTemporaryFile("wb", suffix=".glb") as glbf:
-                glbf.write(mg.meshData)
-                bpy.ops.import_scene.gltf(
-                    filepath=glbf.name,
-                    #filter_glob="*.glb;*.gltf",
-                    #files=[],
-                    #loglevel=0,
-                    #import_pack_images=True,
-                    #merge_vertices=False,
-                    #import_shading='NORMALS',
-                    #bone_heuristic='TEMPERANCE',
-                    #guess_original_bind_pose=True
-                    )
-                print(">>>", bpy.context.object.name)
+            key = f"{font_name}.{x.glyphName}"
+            
+            if key not in bpy.data.objects:
+                mg = mesh.strikes[1000].glyphs[x.glyphName]
+
+                with tempfile.NamedTemporaryFile("wb", suffix=".glb") as glbf:
+                    glbf.write(mg.meshData)
+                    bpy.ops.import_scene.gltf(
+                        filepath=glbf.name,
+                        #filter_glob="*.glb;*.gltf",
+                        #files=[],
+                        #loglevel=0,
+                        #import_pack_images=True,
+                        #merge_vertices=False,
+                        #import_shading='NORMALS',
+                        #bone_heuristic='TEMPERANCE',
+                        #guess_original_bind_pose=True
+                        )
+                    
+                    obj = bpy.context.object
+                    obj.name = key
+
+                    mcc.objects.link(obj)
+                    for c in obj.users_collection:
+                        if c != mcc:
+                            c.objects.unlink(obj)
+                        
+                    print(">>> imported mesh:", x.glyphName)
+        
+        def build_mesh(object):
+            verts = []
+            faces = []
+            for x in p:
+                key = f"{font_name}.{x.glyphName}"
+                mg = bpy.data.objects[key]
+                
+                vs = [(vert.co.x, vert.co.y, vert.co.z) for vert in mg.data.vertices]
+                verts.extend(vs)
+
+                fs = [[vert for vert in ply.vertices] for ply in mg.data.polygons]
+                faces.extend(fs)
+
+            mesh_data = bpy.data.meshes.new("new_mesh")
+            mesh_data.from_pydata(verts, [], faces)
+            mesh_data.update()
+            object.data = mesh_data
     
     # need to check baking glyphwise?
 
@@ -213,15 +246,25 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
             txtObj = cb.BpyObj()
             txtObj.obj = object
-            txtObj.draw(p, set_origin=False, fill=False)
+            if mesh:
+                build_mesh(object)
+            else:
+                txtObj.obj = object
+                txtObj.draw(p, set_origin=False, fill=False)
+            
             output.append(txtObj)
     else:
         # initial creation of live text
 
-        txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
-        txtObj.draw(p, set_origin=False, fill=True)
-        txtObj.extrude(0)
-        #txtObj.rotate(x=90)
+        if mesh:
+            txtObj = (cb.BpyObj.Cube(object_name or "Coldtype", collection))
+            build_mesh(txtObj.obj)
+        else:
+            txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
+            txtObj.draw(p, set_origin=False, fill=True)
+            txtObj.extrude(0)
+            #txtObj.rotate(x=90)
         output.append(txtObj)
     
+    print(output[0].obj)
     return output
