@@ -131,6 +131,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                     
                     obj = bpy.context.object
                     obj.name = key
+                    obj.ctxyz.meshOffsetX = mg.originOffsetX
+                    obj.ctxyz.meshOffsetY = mg.originOffsetY
 
                     mcc.objects.link(obj)
                     for c in obj.users_collection:
@@ -141,28 +143,44 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         
         def build_mesh(empty):
             print(">", empty, p)
+
+            current = {}
+            for o in bpy.data.objects:
+                if o.parent == empty:
+                    idx = int(o.name.split(".")[-1])
+                    current[idx] = o
+
             for idx, x in enumerate(p):
                 key = f"{font_name}.{x.glyphName}"
-                found = None
-                
-                for o in bpy.data.objects:
-                    if o.parent == empty and o.name.endswith(f"glyph.{idx}"):
-                        found = o
-                
                 prototype = bpy.data.objects[key]
+                existing = current.get(idx, None)
                 
-                if found:
-                    mesh_glyph = found
+                if existing:
+                    mesh_glyph = existing
                 else:
                     mesh_glyph = prototype.copy()
                 
                 mesh_glyph.data = prototype.data.copy()
                 mesh_glyph.name = f"{empty.name}.glyph.{idx}"
                 mesh_glyph.parent = empty
-                mesh_glyph.location = (1, 0, 0)
 
-                if found is None:
+                mesh_glyph.scale = (0.3, 0.3, 0.3)
+
+                amb = x.ambit(th=0, tv=0)
+                mesh_glyph.location = (
+                    amb.x + prototype.ctxyz.meshOffsetX*0.003,
+                    0,
+                    prototype.ctxyz.meshOffsetY*0.003
+                    )
+
+                print(">", x.ambit().x)
+
+                if existing is None:
                     empty.users_collection[0].objects.link(mesh_glyph)
+            
+            for idx, o in current.items():
+                if idx >= len(p):
+                    bpy.data.objects.remove(current[idx], do_unlink=True)
     
     # need to check baking glyphwise?
 
