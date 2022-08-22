@@ -1,5 +1,6 @@
 import bpy, tempfile
 from mathutils import Vector
+from pathlib import Path
 
 try:
     import coldtype.text as ct
@@ -104,9 +105,9 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             bpy.context.scene.collection.children.link(coll)
         
         mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
-        #mcc.hide_select = True
-        #mcc.hide_viewport = True
-        #mcc.hide_render = True
+        mcc.hide_select = True
+        mcc.hide_viewport = True
+        mcc.hide_render = True
         font_name = font.path.stem
 
         for x in p:
@@ -115,31 +116,34 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             if key not in bpy.data.objects:
                 mg = mesh.strikes[1000].glyphs[x.glyphName]
 
-                with tempfile.NamedTemporaryFile("wb", suffix=".glb") as glbf:
+                with tempfile.NamedTemporaryFile("wb", suffix=".glb", delete=False) as glbf:
                     glbf.write(mg.meshData)
-                    bpy.ops.import_scene.gltf(
-                        filepath=glbf.name,
-                        #filter_glob="*.glb;*.gltf",
-                        #files=[],
-                        #loglevel=0,
-                        #import_pack_images=True,
-                        #merge_vertices=False,
-                        #import_shading='NORMALS',
-                        #bone_heuristic='TEMPERANCE',
-                        #guess_original_bind_pose=True
-                        )
-                    
-                    obj = bpy.context.object
-                    obj.name = key
-                    obj.ctxyz.meshOffsetX = mg.originOffsetX
-                    obj.ctxyz.meshOffsetY = mg.originOffsetY
+                
+                bpy.ops.import_scene.gltf(
+                    filepath=glbf.name,
+                    #filter_glob="*.glb;*.gltf",
+                    #files=[],
+                    #loglevel=0,
+                    #import_pack_images=True,
+                    #merge_vertices=False,
+                    #import_shading='NORMALS',
+                    #bone_heuristic='TEMPERANCE',
+                    #guess_original_bind_pose=True
+                    )
+                
+                Path(glbf.name).unlink()
+                
+                obj = bpy.context.object
+                obj.name = key
+                obj.ctxyz.meshOffsetX = mg.originOffsetX
+                obj.ctxyz.meshOffsetY = mg.originOffsetY
 
-                    mcc.objects.link(obj)
-                    for c in obj.users_collection:
-                        if c != mcc:
-                            c.objects.unlink(obj)
-                        
-                    print(">>> imported mesh:", x.glyphName)
+                mcc.objects.link(obj)
+                for c in obj.users_collection:
+                    if c != mcc:
+                        c.objects.unlink(obj)
+                    
+                print(">>> imported mesh:", x.glyphName)
         
         def build_mesh(empty):
             print(">", empty, p)
