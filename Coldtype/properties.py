@@ -20,12 +20,6 @@ def build_properties(update_type, update_type_and_copy):
             update=lambda p, c: update_type_and_copy("text", p, c))
         
         font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
-
-        font_path_alt1: bpy.props.StringProperty(name="Font Alt 1", default="", update=lambda p, c: update_type_and_copy("font_path_alt1", p, c))
-
-        font_path_alt2: bpy.props.StringProperty(name="Font Alt 2", default="", update=lambda p, c: update_type_and_copy("font_path_alt2", p, c))
-
-        font_path_alt3: bpy.props.StringProperty(name="Font Alt 3", default="", update=lambda p, c: update_type_and_copy("font_path_alt3", p, c))
         
         # internal
         
@@ -34,6 +28,11 @@ def build_properties(update_type, update_type_and_copy):
         baked: bpy.props.BoolProperty(name="Baked", default=False)
         baked_from: bpy.props.StringProperty(name="Baked From", default="")
         bake_frame: bpy.props.IntProperty(name="Bake Frame", default=-1)
+
+        # mesh-state
+
+        meshOffsetX: bpy.props.IntProperty(name="Mesh Offset X", default=0)
+        meshOffsetY: bpy.props.IntProperty(name="Mesh Offset Y", default=0)
         
         # ui-state
         

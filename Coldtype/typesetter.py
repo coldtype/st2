@@ -1,5 +1,6 @@
 import bpy, tempfile
 from mathutils import Vector
+from pathlib import Path
 
 try:
     import coldtype.text as ct
@@ -104,13 +105,20 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             bpy.context.scene.collection.children.link(coll)
         
         mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
+        mcc.hide_select = True
+        mcc.hide_viewport = True
+        mcc.hide_render = True
+        font_name = font.path.stem
+
         for x in p:
-            #if x.glyphName not in 
-            mg = mesh.strikes[1000].glyphs[x.glyphName]
-            print(len(mg.meshData))
-            # load glb's into cache here
-            with tempfile.NamedTemporaryFile("wb", suffix=".glb") as glbf:
-                glbf.write(mg.meshData)
+            key = f"{font_name}.{x.glyphName}"
+            
+            if key not in bpy.data.objects:
+                mg = mesh.strikes[1000].glyphs[x.glyphName]
+
+                with tempfile.NamedTemporaryFile("wb", suffix=".glb", delete=False) as glbf:
+                    glbf.write(mg.meshData)
+                
                 bpy.ops.import_scene.gltf(
                     filepath=glbf.name,
                     #filter_glob="*.glb;*.gltf",
@@ -122,7 +130,61 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                     #bone_heuristic='TEMPERANCE',
                     #guess_original_bind_pose=True
                     )
-                print(">>>", bpy.context.object.name)
+                
+                Path(glbf.name).unlink()
+                
+                obj = bpy.context.object
+                obj.name = key
+                obj.ctxyz.meshOffsetX = mg.originOffsetX
+                obj.ctxyz.meshOffsetY = mg.originOffsetY
+
+                mcc.objects.link(obj)
+                for c in obj.users_collection:
+                    if c != mcc:
+                        c.objects.unlink(obj)
+                    
+                print(">>> imported mesh:", x.glyphName)
+        
+        def build_mesh(empty):
+            print(">", empty, p)
+
+            current = {}
+            for o in bpy.data.objects:
+                if o.parent == empty:
+                    idx = int(o.name.split(".")[-1])
+                    current[idx] = o
+
+            for idx, x in enumerate(p):
+                key = f"{font_name}.{x.glyphName}"
+                prototype = bpy.data.objects[key]
+                existing = current.get(idx, None)
+                
+                if existing:
+                    mesh_glyph = existing
+                else:
+                    mesh_glyph = prototype.copy()
+                
+                mesh_glyph.data = prototype.data.copy()
+                mesh_glyph.name = f"{empty.name}.glyph.{idx}"
+                mesh_glyph.parent = empty
+
+                mesh_glyph.scale = (0.3, 0.3, 0.3)
+
+                amb = x.ambit(th=0, tv=0)
+                mesh_glyph.location = (
+                    amb.x + prototype.ctxyz.meshOffsetX*0.003,
+                    0,
+                    prototype.ctxyz.meshOffsetY*0.003
+                    )
+
+                print(">", x.ambit().x)
+
+                if existing is None:
+                    empty.users_collection[0].objects.link(mesh_glyph)
+            
+            for idx, o in current.items():
+                if idx >= len(p):
+                    bpy.data.objects.remove(current[idx], do_unlink=True)
     
     # need to check baking glyphwise?
 
@@ -213,15 +275,25 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
             txtObj = cb.BpyObj()
             txtObj.obj = object
-            txtObj.draw(p, set_origin=False, fill=False)
+            if mesh:
+                build_mesh(object)
+            else:
+                txtObj.obj = object
+                txtObj.draw(p, set_origin=False, fill=False)
+            
             output.append(txtObj)
     else:
         # initial creation of live text
 
-        txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
-        txtObj.draw(p, set_origin=False, fill=True)
-        txtObj.extrude(0)
-        #txtObj.rotate(x=90)
+        if mesh:
+            txtObj = (cb.BpyObj.Empty(object_name or "Coldtype", collection))
+            #txtObj = (cb.BpyObj.Cube(object_name or "Coldtype", collection))
+            build_mesh(txtObj.obj)
+        else:
+            txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
+            txtObj.draw(p, set_origin=False, fill=True)
+            txtObj.extrude(0)
+            #txtObj.rotate(x=90)
         output.append(txtObj)
     
     return output
