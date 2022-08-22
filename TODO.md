@@ -1,0 +1,2 @@
+- Control to stagger letters in a given dimension (to create stair-case effect), though this probably needs to be part of the "export glyphs" functionality for simplicity's sake
+- Control to emboss letters (would require two extrusion controls)

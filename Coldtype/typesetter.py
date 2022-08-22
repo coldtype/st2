@@ -11,6 +11,43 @@ except ImportError:
 
 MESH_CACHE_COLLECTION = "Coldtype.MeshCache"
 
+def read_mesh_glyphs_into_cache(font, p, mesh_table):
+    if MESH_CACHE_COLLECTION not in bpy.data.collections:
+        coll = bpy.data.collections.new(MESH_CACHE_COLLECTION)
+        bpy.context.scene.collection.children.link(coll)
+    
+    mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
+    mcc.hide_select = True
+    mcc.hide_viewport = True
+    mcc.hide_render = True
+    
+    font_name = font.path.stem
+
+    for x in p:
+        key = f"{font_name}.{x.glyphName}"
+        
+        if key not in bpy.data.objects:
+            mg = mesh_table.strikes[1000].glyphs[x.glyphName]
+
+            with tempfile.NamedTemporaryFile("wb", suffix=".glb", delete=False) as glbf:
+                glbf.write(mg.meshData)
+            
+            bpy.ops.import_scene.gltf(filepath=glbf.name)
+            Path(glbf.name).unlink()
+            
+            obj = bpy.context.object
+            obj.name = key
+            obj.ctxyz.meshOffsetX = mg.originOffsetX
+            obj.ctxyz.meshOffsetY = mg.originOffsetY
+
+            mcc.objects.link(obj)
+            for c in obj.users_collection:
+                if c != mcc:
+                    c.objects.unlink(obj)
+                
+            print(">>> imported mesh:", x.glyphName)
+
+
 def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, object_name=None, collection=None):
     # if ufo, don't cache?
 
@@ -100,54 +137,9 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
     p.collapse()
 
     if mesh:
-        if MESH_CACHE_COLLECTION not in bpy.data.collections:
-            coll = bpy.data.collections.new(MESH_CACHE_COLLECTION)
-            bpy.context.scene.collection.children.link(coll)
-        
-        mcc = bpy.data.collections[MESH_CACHE_COLLECTION]
-        mcc.hide_select = True
-        mcc.hide_viewport = True
-        mcc.hide_render = True
-        font_name = font.path.stem
-
-        for x in p:
-            key = f"{font_name}.{x.glyphName}"
-            
-            if key not in bpy.data.objects:
-                mg = mesh.strikes[1000].glyphs[x.glyphName]
-
-                with tempfile.NamedTemporaryFile("wb", suffix=".glb", delete=False) as glbf:
-                    glbf.write(mg.meshData)
-                
-                bpy.ops.import_scene.gltf(
-                    filepath=glbf.name,
-                    #filter_glob="*.glb;*.gltf",
-                    #files=[],
-                    #loglevel=0,
-                    #import_pack_images=True,
-                    #merge_vertices=False,
-                    #import_shading='NORMALS',
-                    #bone_heuristic='TEMPERANCE',
-                    #guess_original_bind_pose=True
-                    )
-                
-                Path(glbf.name).unlink()
-                
-                obj = bpy.context.object
-                obj.name = key
-                obj.ctxyz.meshOffsetX = mg.originOffsetX
-                obj.ctxyz.meshOffsetY = mg.originOffsetY
-
-                mcc.objects.link(obj)
-                for c in obj.users_collection:
-                    if c != mcc:
-                        c.objects.unlink(obj)
-                    
-                print(">>> imported mesh:", x.glyphName)
+        read_mesh_glyphs_into_cache(font, p, mesh)
         
         def build_mesh(empty):
-            print(">", empty, p)
-
             current = {}
             for o in bpy.data.objects:
                 if o.parent == empty:
@@ -155,7 +147,7 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                     current[idx] = o
 
             for idx, x in enumerate(p):
-                key = f"{font_name}.{x.glyphName}"
+                key = f"{font.path.stem}.{x.glyphName}"
                 prototype = bpy.data.objects[key]
                 existing = current.get(idx, None)
                 
@@ -167,17 +159,16 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 mesh_glyph.data = prototype.data.copy()
                 mesh_glyph.name = f"{empty.name}.glyph.{idx}"
                 mesh_glyph.parent = empty
+                mesh_glyph.ctxyz.parent = empty.name
 
                 mesh_glyph.scale = (0.3, 0.3, 0.3)
 
                 amb = x.ambit(th=0, tv=0)
+                # 0.003 is b/c of the 3pt fontSize hardcoded above
                 mesh_glyph.location = (
                     amb.x + prototype.ctxyz.meshOffsetX*0.003,
-                    0,
-                    prototype.ctxyz.meshOffsetY*0.003
-                    )
-
-                print(">", x.ambit().x)
+                    0, #mesh_glyph.location.y,
+                    prototype.ctxyz.meshOffsetY*0.003)
 
                 if existing is None:
                     empty.users_collection[0].objects.link(mesh_glyph)
@@ -287,13 +278,13 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
         if mesh:
             txtObj = (cb.BpyObj.Empty(object_name or "Coldtype", collection))
-            #txtObj = (cb.BpyObj.Cube(object_name or "Coldtype", collection))
             build_mesh(txtObj.obj)
         else:
             txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
             txtObj.draw(p, set_origin=False, fill=True)
             txtObj.extrude(0)
             #txtObj.rotate(x=90)
+        
         output.append(txtObj)
     
     return output

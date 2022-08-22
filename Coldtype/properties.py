@@ -29,6 +29,8 @@ def build_properties(update_type, update_type_and_copy):
         baked_from: bpy.props.StringProperty(name="Baked From", default="")
         bake_frame: bpy.props.IntProperty(name="Bake Frame", default=-1)
 
+        parent: bpy.props.StringProperty(name="Parent", default="")
+
         # mesh-state
 
         meshOffsetX: bpy.props.IntProperty(name="Mesh Offset X", default=0)
@@ -118,6 +120,10 @@ def build_properties(update_type, update_type_and_copy):
             ("UPPER", "", "", "TRIA_UP", 1),
             ("LOWER", "", "", "TRIA_DOWN", 2),
         ], default="TYPED", update=update_type)
+
+        individual_glyphs: bpy.props.BoolProperty(name="Individual Glyphs", default=False)
+        stagger_y: bpy.props.FloatProperty(name="Stagger Y", default=0)
+        stagger_z: bpy.props.FloatProperty(name="Stagger Z", default=0)
         
         fvar_axis1: axisprop(1, 0)
         fvar_axis2: axisprop(2, 0)
@@ -193,6 +199,9 @@ def build_properties(update_type, update_type_and_copy):
         
         def editable(self, obj):
             return obj.select_get() and obj.ctxyz.updatable and not obj.ctxyz.baked
+        
+        def get_parent(self, obj):
+            pass
 
     
     return ColdtypePropertiesGroup

@@ -116,7 +116,11 @@ def find_ctxyz_all_selected(context):
 def find_ctxyz(context):
     ob = context.active_object
     if ob is not None and ob.select_get():
-        return ob.ctxyz, ob
+        if ob.ctxyz.parent:
+            pob = bpy.data.objects[ob.ctxyz.parent]
+            return pob.ctxyz, pob
+        else:
+            return ob.ctxyz, ob
     else:
         return context.scene.ctxyz, None
 
@@ -272,6 +276,13 @@ def font_advanced(layout, data, font, obj):
                 if ss_name:
                     row = box.row()
                     row.prop(data, "fea_ss{:02d}".format(x), text=f"{tag}: {ss_name}")
+        
+    # box = layout.box()
+    # row = box.row()
+    # row.prop(data, "individual_glyphs")
+    # row = box.row()
+    # row.prop(data, "stagger_y")
+    # row.prop(data, "stagger_z")
 
 
 def dimensional_advanced(layout, data, obj):
@@ -367,6 +378,7 @@ def layout_editor(layout, data, obj, context):
     
     if font and not data.updatable:
         layout.row().separator()
+        #layout.row().prop(data, "individual_glyphs")
         layout.row().operator("ctxyz.settype_with_scene_defaults", text="Build Text", icon="SORTALPHA")
     
     layout.row().separator()
@@ -393,6 +405,9 @@ class ColdtypeMainPanel(bpy.types.Panel):
             frame_changers.append(update_type_frame_change)
 
         obj = bpy.context.active_object
+        if obj and obj.select_get() and obj.ctxyz.parent:
+            pobj = bpy.data.objects[obj.ctxyz.parent]
+            layout_editor(self.layout, pobj.ctxyz, pobj, context)
         if obj and obj.select_get() and obj.ctxyz.updatable:
             layout_editor(self.layout, obj.ctxyz, obj, context)
         else:
@@ -572,7 +587,6 @@ class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
                 diff = abs(v["maxValue"]-v["minValue"])
                 v = (v["defaultValue"]-v["minValue"])/diff
                 setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
-                print(">", axis, v)
 
         return {"FINISHED"}
 
