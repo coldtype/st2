@@ -1,18 +1,6 @@
 import importlib.util as iu
 import time, os, sys
 
-def require_coldtype(global_vars):
-    if iu.find_spec("coldtype"):
-        #from coldtype.text import StSt, Glyphwise, Style, Font, FontNotFoundException
-        #from coldtype.blender import BpyObj
-        import coldtype.text as ct
-        import coldtype.blender as cb
-        global_vars["coldtype_found"] = True
-        global_vars["ct"] = ct
-        global_vars["cb"] = cb
-    else:
-        global_vars["coldtype_found"] = False
-
 
 def install_coldtype(context, global_vars):
     from subprocess import run
@@ -32,10 +20,7 @@ def install_coldtype(context, global_vars):
     print("---"*20)
     print("/installed coldtype")
 
-    time.sleep(1)
-    #globals()["coldtype"] = importlib.import_module("coldtype")
-
-    require_coldtype(global_vars)
+    time.sleep(0.25)
     print("imported successfully")
 
 
