@@ -651,6 +651,7 @@ class Coldtype_OT_ExportSlug(bpy.types.Operator):
         bake_frames(context, framewise=False, glyphwise=False, frames=[context.scene.frame_current])
         return {"FINISHED"}
 
+
 class Coldtype_OT_ExportGlyphs(bpy.types.Operator):
     """Export glyphs as individual shapes"""
 
@@ -813,8 +814,6 @@ class Coldtype_OT_InstallColdtype(bpy.types.Operator):
     def execute(self, context):
         importer.install_coldtype(context, globals())
         bpy.ops.script.reload()
-        #from Coldtype import typesetter
-        #globals()["ctxyz_typesetter"] = typesetter
         return {"FINISHED"}
 
 
