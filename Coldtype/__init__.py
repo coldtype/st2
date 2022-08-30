@@ -322,14 +322,22 @@ def export_options(layout, data, obj):
 
         row = box.row()
         row.label(text="Options")
-        row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
         row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
-        row.prop(data, "export_apply_transforms", icon="DRIVER_TRANSFORM", icon_only=True)
+        row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
+        if data.export_meshes:
+            row = box.row()
+            col = row.column()
+            #col.enabled = data.export_meshes
+            col.prop(data, "export_apply_transforms", icon="DRIVER_TRANSFORM", text="Apply Transforms")
+            col = row.column()
+            #col.enabled = data.export_meshes
+            col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", text="Add Rigid Body")
 
         row = box.row()
         row.label(text="Export Static")
         row.operator("ctxyz.export_slug", text="Slug")
         row.operator("ctxyz.export_glyphs", text="Glyphs")
+        row.operator("ctxyz.export_shapes", text="Shapes")
     
         if obj.ctxyz.has_keyframes(obj):
             row = box.row()
@@ -487,7 +495,7 @@ class Coldtype_OT_SetTypeWithObject(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def bake_frames(context, framewise=True, frames=None, glyphwise=False, progress_fn=None):
+def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, progress_fn=None):
     obj = context.active_object
     obj.ctxyz.frozen = True
     sc = context.scene
@@ -525,7 +533,8 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, progress_
             , context=context
             , scene=context.scene
             , framewise=framewise
-            , glyphwise=glyphwise)
+            , glyphwise=glyphwise
+            , shapewise=shapewise)
         #bpy.context.view_layer.update()
     
     sc.frame_set(current)
@@ -661,6 +670,18 @@ class Coldtype_OT_ExportGlyphs(bpy.types.Operator):
     
     def execute(self, context):
         bake_frames(context, framewise=False, glyphwise=True, frames=[context.scene.frame_current])
+        return {"FINISHED"}
+
+
+class Coldtype_OT_ExportShapes(bpy.types.Operator):
+    """Export word broken down into individual shapes"""
+
+    bl_label = "Coldtype Export Shapes"
+    bl_idname = "ctxyz.export_shapes"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        bake_frames(context, framewise=False, glyphwise=True, shapewise=True, frames=[context.scene.frame_current])
         return {"FINISHED"}
 
 
@@ -826,6 +847,7 @@ classes = [
     Coldtype_OT_ClearFont,
     Coldtype_OT_ExportSlug,
     Coldtype_OT_ExportGlyphs,
+    Coldtype_OT_ExportShapes,
     Coldtype_OT_BakeFrames,
     Coldtype_OT_BakeFramesNoTiming,
     Coldtype_OT_InterpolateStrings,

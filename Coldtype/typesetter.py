@@ -48,7 +48,7 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             print(">>> imported mesh:", x.glyphName)
 
 
-def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, object_name=None, collection=None):
+def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, object_name=None, collection=None):
     # if ufo, don't cache?
 
     font = ct.Font.Cacheable(ts.font_path)
@@ -245,6 +245,11 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                     bpy.ops.object.convert(target="MESH")
                     if ts.export_apply_transforms:
                         bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
+                    if ts.export_rigidbody_active:
+                        bpy.ops.rigidbody.object_add()
+                        txtObj.obj.rigid_body.type = "ACTIVE"
+                        #bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
+                        pass
                 if ts.export_geometric_origins:
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                 txtObj.obj.select_set(False)
@@ -257,6 +262,10 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 return txtObj
             
             if glyphwise:
+                if shapewise:
+                    p.mapv(lambda _p: _p.explode())
+                    p.collapse()
+                
                 for glyph in p:
                     output.append(export(glyph))
             else:
