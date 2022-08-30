@@ -23,8 +23,16 @@ except ImportError:
     print("-- failed FeatureCompiler --")
     pass
 
+try:
+    import coldtype as C
+    import coldtype.text as ct
+    import coldtype.blender as cb
+except ImportError:
+    C = None
+    ct = None
+    cb = None
+
 if "bpy" in locals():
-    # bpy.ops.scripts.reload() was called
     importlib.reload(importer)
     importlib.reload(properties)
     importlib.reload(typesetter)
@@ -33,17 +41,11 @@ else:
     from bpy_extras.io_utils import ImportHelper
     from Coldtype import importer
     from Coldtype import properties
-
-importer.require_coldtype(globals())
-
-if globals().get("coldtype_found") == True:
     from Coldtype import typesetter
-    from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
 
-    registerCustomTableClass(
-        "MESH",
-        "Coldtype.meshtable",
-        "table__M_E_S_H")
+if C is not None:
+    from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
+    registerCustomTableClass("MESH", "Coldtype.meshtable", "table__M_E_S_H")
 
 
 def _update_type(props, context):
@@ -338,7 +340,7 @@ def export_options(layout, data, obj):
 
 
 def layout_editor(layout, data, obj, context):
-    if not globals().get("coldtype_found"):
+    if C is None:
         return importer.editor_needs_coldtype(layout)
 
     if data.baked:
@@ -810,8 +812,9 @@ class Coldtype_OT_InstallColdtype(bpy.types.Operator):
     
     def execute(self, context):
         importer.install_coldtype(context, globals())
-        from Coldtype import typesetter
-        globals()["ctxyz_typesetter"] = typesetter
+        bpy.ops.script.reload()
+        #from Coldtype import typesetter
+        #globals()["ctxyz_typesetter"] = typesetter
         return {"FINISHED"}
 
 
