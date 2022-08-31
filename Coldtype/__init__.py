@@ -172,7 +172,8 @@ def font_basics(layout, data, font, obj):
     if mesh:
         row = layout.row()
         row.label(text=">>> MESH font")
-    else:
+    
+    if True:
         row = layout.row()
         row.label(text="Position")
 
@@ -418,7 +419,7 @@ class ColdtypeMainPanel(bpy.types.Panel):
         if obj and obj.select_get() and obj.ctxyz.parent:
             pobj = bpy.data.objects[obj.ctxyz.parent]
             layout_editor(self.layout, pobj.ctxyz, pobj, context)
-        if obj and obj.select_get() and obj.ctxyz.updatable:
+        elif obj and obj.select_get() and obj.ctxyz.updatable:
             layout_editor(self.layout, obj.ctxyz, obj, context)
         else:
             layout_editor(self.layout, context.scene.ctxyz, None, context)
@@ -502,6 +503,10 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     current = sc.frame_current
 
     anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
+    
+    anchor.obj.scale = obj.scale
+    anchor.obj.location = obj.location
+    anchor.obj.rotation_euler = obj.rotation_euler
     
     for k in obj.ctxyz.__annotations__.keys():
         v = getattr(obj.ctxyz, k)
