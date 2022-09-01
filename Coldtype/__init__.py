@@ -468,7 +468,7 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
 
 
 class ColdtypeMainPanel(bpy.types.Panel):
-    bl_label = "Coldtype"
+    bl_label = "Coldtype Text Settings"
     bl_idname = "COLDTYPE_PT_2_MAINPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
