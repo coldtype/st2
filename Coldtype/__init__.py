@@ -359,9 +359,6 @@ def export_options(layout, data, obj):
 
 
 def layout_editor(layout, data, obj, context):
-    if C is None:
-        return importer.editor_needs_coldtype(layout, coldtype_status)
-
     if data.baked:
         return editor_for_exported_text(layout, data)
 
@@ -375,8 +372,8 @@ def layout_editor(layout, data, obj, context):
             row.prop(context.scene.ctxyz, "interpolator_easing", text="")
             layout.row().separator()
     
-    row = layout.row()
-    row.prop(data, "text")
+    layout.row().prop(data, "text")
+    layout.row().prop(data, "text_file")
 
     font = None
     if data.font_path:
@@ -402,11 +399,11 @@ def layout_editor(layout, data, obj, context):
         #layout.row().prop(data, "individual_glyphs")
         layout.row().operator("ctxyz.settype_with_scene_defaults", text="Build Text", icon="SORTALPHA")
     
-    layout.row().separator()
-    row = layout.row()
-    row.label(text="Global Render Settings")
-    row = layout.row()
-    row.prop(context.scene.ctxyz, "live_updating", text="")
+    # layout.row().separator()
+    # row = layout.row()
+    # row.label(text="Global Render Settings")
+    # row = layout.row()
+    # row.prop(context.scene.ctxyz, "live_updating", text="")
 
 
 def active_obj_has_ctxyz():
@@ -414,12 +411,31 @@ def active_obj_has_ctxyz():
     return ob and ob.select_get() and ob.ctxyz.updatable
 
 
-class ColdtypeMainPanel(bpy.types.Panel):
+class ColdtypeInstallPanel(bpy.types.Panel):
     bl_label = "Coldtype"
-    bl_idname = "COLDTYPE_PT_MAINPANEL"
+    bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        return C is None
+    
+    def draw(self, context):
+        return importer.editor_needs_coldtype(self.layout, coldtype_status)
+
+
+class ColdtypeMainPanel(bpy.types.Panel):
+    bl_label = "Coldtype"
+    bl_idname = "COLDTYPE_PT_0_MAINPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        return C is not None
     
     def draw(self, context):
         if len(bpy.app.handlers.frame_change_post) == 0:
@@ -433,6 +449,22 @@ class ColdtypeMainPanel(bpy.types.Panel):
             layout_editor(self.layout, obj.ctxyz, obj, context)
         else:
             layout_editor(self.layout, context.scene.ctxyz, None, context)
+
+
+class ColdtypeGlobalPanel(bpy.types.Panel):
+    bl_label = "Render Settings"
+    bl_idname = "COLDTYPE_PT_9_GLOBALPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        return C is not None
+    
+    def draw(self, context):
+        row = self.layout.row()
+        row.prop(context.scene.ctxyz, "live_updating", text="")
 
 
 class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
@@ -871,7 +903,11 @@ classes = [
     Coldtype_OT_LoadNextFont,
     Coldtype_OT_LoadPrevFont,
     Coldtype_OT_ShowFont,
+    
+    ColdtypeInstallPanel,
     ColdtypeMainPanel,
+    ColdtypeGlobalPanel,
+    
     WM_OT_ColdtypeChooseFont,
 ]
 
@@ -915,7 +951,3 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-
-#register()
-
-#bpy.ops.ctxyz.settype_with_scene_defaults()
