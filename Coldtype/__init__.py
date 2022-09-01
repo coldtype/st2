@@ -447,24 +447,10 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
         row.prop(data, "align_x", text="X", expand=True)
         row.prop(data, "align_y", text="Y", expand=True)
 
-        #icon = 'TRIA_DOWN' if data.font_variations_open else 'TRIA_RIGHT'
-        #row.prop(data, 'font_variations_open', icon=icon, icon_only=True)
         row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
         row.prop(data, "default_extrude")
-        #row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
-        #row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
-        
-        #layout.row().separator()
-        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
-        # obj = bpy.context.active_object
-        # if not obj or obj and not obj.select_get():
-        #     pobj = bpy.data.objects[obj.ctxyz.parent]
-        #     layout_editor(self.layout, pobj.ctxyz, pobj, context)
-        # elif obj and obj.select_get() and obj.ctxyz.updatable:
-        #     layout_editor(self.layout, obj.ctxyz, obj, context)
-        # else:
-        #     layout_editor(self.layout, context.scene.ctxyz, None, context)
+        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
 
 class ColdtypeMainPanel(bpy.types.Panel):
@@ -553,6 +539,13 @@ class Coldtype_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.ctxyz
+        font = ct.Font.Cacheable(data.font_path)
+
+        for idx, (_, v) in enumerate(font.variations().items()):
+            diff = abs(v["maxValue"]-v["minValue"])
+            v = (v["defaultValue"]-v["minValue"])/diff
+            setattr(data, f"fvar_axis{idx+1}", v)
+
         txtObj = typesetter.set_type(data)[0]
         
         for k in data.__annotations__.keys():
