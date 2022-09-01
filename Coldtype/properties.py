@@ -19,7 +19,14 @@ def build_properties(update_type, update_type_and_copy):
         text: bpy.props.StringProperty(name="Text", default="Text",
             update=lambda p, c: update_type_and_copy("text", p, c))
         
+        text_file: bpy.props.StringProperty(name="Text File", default="", subtype="FILE_PATH",
+            update=lambda p, c: update_type_and_copy("text_file", p, c))
+        
         font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
+
+        default_upright: bpy.props.BoolProperty(name="Default to Upright", default=False)
+
+        default_extrude: bpy.props.FloatProperty(name="Default Extrude Depth", default=0.1)
         
         # internal
         
