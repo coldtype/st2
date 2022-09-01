@@ -398,12 +398,6 @@ def layout_editor(layout, data, obj, context):
         layout.row().separator()
         #layout.row().prop(data, "individual_glyphs")
         layout.row().operator("ctxyz.settype_with_scene_defaults", text="Build Text", icon="SORTALPHA")
-    
-    # layout.row().separator()
-    # row = layout.row()
-    # row.label(text="Global Render Settings")
-    # row = layout.row()
-    # row.prop(context.scene.ctxyz, "live_updating", text="")
 
 
 def active_obj_has_ctxyz():
@@ -412,7 +406,7 @@ def active_obj_has_ctxyz():
 
 
 class ColdtypeInstallPanel(bpy.types.Panel):
-    bl_label = "Coldtype"
+    bl_label = "Coldtype Install"
     bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -426,33 +420,78 @@ class ColdtypeInstallPanel(bpy.types.Panel):
         return importer.editor_needs_coldtype(self.layout, coldtype_status)
 
 
-class ColdtypeMainPanel(bpy.types.Panel):
-    bl_label = "Coldtype"
-    bl_idname = "COLDTYPE_PT_0_MAINPANEL"
+class ColdtypeDefaultPanel(bpy.types.Panel):
+    bl_label = "Coldtype Defaults"
+    bl_idname = "COLDTYPE_PT_1_DEFAULTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
 
     @classmethod
     def poll(cls, context):
-        return C is not None
+        obj = bpy.context.active_object
+        return C is not None and not (obj and obj.select_get())
     
     def draw(self, context):
         if len(bpy.app.handlers.frame_change_post) == 0:
             frame_changers.append(update_type_frame_change)
 
+        layout = self.layout
+        data = context.scene.ctxyz
+
+        individual_font(layout, data)
+
+        row = layout.row()
+        row.label(text="Defaults")
+
+        row.prop(data, "align_x", text="X", expand=True)
+        row.prop(data, "align_y", text="Y", expand=True)
+
+        #icon = 'TRIA_DOWN' if data.font_variations_open else 'TRIA_RIGHT'
+        #row.prop(data, 'font_variations_open', icon=icon, icon_only=True)
+        row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
+        row.prop(data, "default_extrude")
+        #row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
+        #row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
+        
+        #layout.row().separator()
+        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+
+        # obj = bpy.context.active_object
+        # if not obj or obj and not obj.select_get():
+        #     pobj = bpy.data.objects[obj.ctxyz.parent]
+        #     layout_editor(self.layout, pobj.ctxyz, pobj, context)
+        # elif obj and obj.select_get() and obj.ctxyz.updatable:
+        #     layout_editor(self.layout, obj.ctxyz, obj, context)
+        # else:
+        #     layout_editor(self.layout, context.scene.ctxyz, None, context)
+
+
+class ColdtypeMainPanel(bpy.types.Panel):
+    bl_label = "Coldtype"
+    bl_idname = "COLDTYPE_PT_2_MAINPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        obj = bpy.context.active_object
+        return C is not None and obj and obj.select_get()
+    
+    def draw(self, context):
         obj = bpy.context.active_object
         if obj and obj.select_get() and obj.ctxyz.parent:
             pobj = bpy.data.objects[obj.ctxyz.parent]
             layout_editor(self.layout, pobj.ctxyz, pobj, context)
         elif obj and obj.select_get() and obj.ctxyz.updatable:
             layout_editor(self.layout, obj.ctxyz, obj, context)
-        else:
-            layout_editor(self.layout, context.scene.ctxyz, None, context)
+        #else:
+            #layout_editor(self.layout, context.scene.ctxyz, None, context)
 
 
 class ColdtypeGlobalPanel(bpy.types.Panel):
-    bl_label = "Render Settings"
+    bl_label = "Coldtype Render Settings"
     bl_idname = "COLDTYPE_PT_9_GLOBALPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -513,13 +552,18 @@ class Coldtype_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
-        ts = context.scene.ctxyz
-        txtObj = typesetter.set_type(ts)[0]
+        data = context.scene.ctxyz
+        txtObj = typesetter.set_type(data)[0]
         
-        for k in ts.__annotations__.keys():
-            v = getattr(ts, k)
+        for k in data.__annotations__.keys():
+            v = getattr(data, k)
             setattr(txtObj.obj.ctxyz, k, v)
         
+        if data.default_upright:
+            txtObj.rotate(x=90)
+        
+        txtObj.extrude(data.default_extrude)
+
         txtObj.obj.ctxyz.updatable = True
         txtObj.obj.ctxyz.frozen = False
         txtObj.obj.select_set(True)
@@ -905,6 +949,7 @@ classes = [
     Coldtype_OT_ShowFont,
     
     ColdtypeInstallPanel,
+    ColdtypeDefaultPanel,
     ColdtypeMainPanel,
     ColdtypeGlobalPanel,
     
