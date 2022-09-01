@@ -1,12 +1,11 @@
+import importlib
 import time, os, sys
 
 
-def install_coldtype(context, global_vars):
+def install_coldtype(context, global_vars, required_version):
     from subprocess import run
     
-    args = ["coldtype[blender]"]
-    #if True:
-    #    args = ["-e", str(Path("~/Goodhertz/coldtype[blender]").expanduser())]
+    args = [f"coldtype[blender]>={required_version}"]
     
     print("---"*20)
     print("> INSTALLING COLDTYPE")
@@ -20,17 +19,31 @@ def install_coldtype(context, global_vars):
     print("/installed coldtype")
 
     time.sleep(0.25)
-    print("imported successfully")
+    print("/imported successfully")
+
+    import coldtype as C
+    importlib.reload(C)
+    print(">>>", C.__version__)
 
 
-def editor_needs_coldtype(layout):
-    warning = """This addon requires Coldtype
-        (coldtype.xyz) as a Python package.
-        -
-        Clicking the button below will
-        download and install Coldtype.
-        It should only take a few moments
-        to install."""
+def editor_needs_coldtype(layout, status):
+    if status < 0:
+        download = "Download & Install Coldtype"
+        warning = """This addon requires Coldtype
+            (coldtype.xyz) as a Python package.
+            -
+            Clicking the button below will
+            download and install Coldtype.
+            It should only take a few moments
+            to install."""
+    else:
+        download = "Update Coldtype"
+        warning = """This version requires an update
+            to the coldtype python package
+            -
+            Clicking the button below will download
+            and install an updated coldtype-python.
+            It should only take a few moments."""
     
     for line in warning.splitlines():
         if line.strip() == "-":
@@ -41,4 +54,4 @@ def editor_needs_coldtype(layout):
             row.label(text=line.strip())
     
     layout.row().separator()
-    layout.row().operator("ctxyz.install_coldtype", icon="WORLD_DATA", text="Download & Install Coldtype")
+    layout.row().operator("ctxyz.install_coldtype", icon="WORLD_DATA", text=download)

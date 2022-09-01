@@ -23,14 +23,23 @@ except ImportError:
     print("-- failed FeatureCompiler --")
     pass
 
+def vt(v): return tuple(map(int, (v.split("."))))
+
+REQUIRED_COLDTYPE = "0.9.10"
+coldtype_status = 1
+
 try:
     import coldtype as C
     import coldtype.text as ct
     import coldtype.blender as cb
+
+    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
+        C, ct, cb = None, None, None
+        coldtype_status = 0
+
 except ImportError:
-    C = None
-    ct = None
-    cb = None
+    C, ct, cb = None, None, None
+    coldtype_status = -1
 
 if "bpy" in locals():
     importlib.reload(importer)
@@ -42,6 +51,7 @@ else:
     from Coldtype import importer
     from Coldtype import properties
     from Coldtype import typesetter
+
 
 if C is not None:
     from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
@@ -350,7 +360,7 @@ def export_options(layout, data, obj):
 
 def layout_editor(layout, data, obj, context):
     if C is None:
-        return importer.editor_needs_coldtype(layout)
+        return importer.editor_needs_coldtype(layout, coldtype_status)
 
     if data.baked:
         return editor_for_exported_text(layout, data)
@@ -838,7 +848,7 @@ class Coldtype_OT_InstallColdtype(bpy.types.Operator):
     bl_idname = "ctxyz.install_coldtype"
     
     def execute(self, context):
-        importer.install_coldtype(context, globals())
+        importer.install_coldtype(context, globals(), REQUIRED_COLDTYPE)
         bpy.ops.script.reload()
         return {"FINISHED"}
 
