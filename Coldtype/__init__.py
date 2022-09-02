@@ -10,50 +10,23 @@ bl_info = {
     "category": "Coldtype",
 }
 
-# TODO
-# - justification of words? (ala the line-crunching example)
-
 import importlib
 from pathlib import Path
-
-# apparently if you require this twice, it'll work the second time (??)
-try:
-    from ufo2ft.featureCompiler import FeatureCompiler
-except ImportError:
-    print("-- failed FeatureCompiler --")
-    pass
-
-def vt(v): return tuple(map(int, (v.split("."))))
-
-REQUIRED_COLDTYPE = "0.9.10"
-coldtype_status = 1
-
-try:
-    import coldtype as C
-    import coldtype.text as ct
-    import coldtype.blender as cb
-
-    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
-        C, ct, cb = None, None, None
-        coldtype_status = 0
-
-except ImportError:
-    C, ct, cb = None, None, None
-    coldtype_status = -1
+from bpy_extras.io_utils import ImportHelper
 
 if "bpy" in locals():
-    importlib.reload(importer)
-    importlib.reload(properties)
-    importlib.reload(typesetter)
+    for module in modules:
+        importlib.reload(module)
 else:
     import bpy
-    from bpy_extras.io_utils import ImportHelper
-    from Coldtype import importer
-    from Coldtype import properties
-    from Coldtype import typesetter
+    from Coldtype import importer, operations, properties, typesetter
+
+#from Coldtype import importer
+
+modules = [importer, properties, operations, typesetter]
 
 
-if C is not None:
+if importer.C is not None:
     from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
     registerCustomTableClass("MESH", "Coldtype.meshtable", "table__M_E_S_H")
 
@@ -111,31 +84,6 @@ def update_type_frame_change(scene, depsgraph):
         if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
             typesetter.set_type(data, obj, scene=scene)
 
-def find_ctxyz_editables(context):
-    editables = []
-    for o in context.scene.objects:
-        if o.ctxyz.editable(o):
-            editables.append(o)
-    return editables
-
-def find_ctxyz_all_selected(context):
-    selected = []
-    for o in context.scene.objects:
-        if o.ctxyz.editable(o) and o.select_get():
-            selected.append(o)
-    return selected
-
-def find_ctxyz(context):
-    ob = context.active_object
-    if ob is not None and ob.select_get():
-        if ob.ctxyz.parent:
-            pob = bpy.data.objects[ob.ctxyz.parent]
-            return pob.ctxyz, pob
-        else:
-            return ob.ctxyz, ob
-    else:
-        return context.scene.ctxyz, None
-
 
 ColdtypePropertiesGroup = properties.build_properties(
     update_type, update_type_and_copy)
@@ -146,7 +94,7 @@ def individual_font(layout, data):
     op = row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
     font_path = data.font_path
 
-    font = ct.Font.Cacheable(font_path)
+    font = importer.ct.Font.Cacheable(font_path)
     mesh = None
     try:
         mesh = font.font.ttFont["MESH"]
@@ -313,7 +261,7 @@ def dimensional_advanced(layout, data, obj):
 
 def layout_editor(layout, data, obj, context):
     if data.updatable and obj:
-        editables = find_ctxyz_editables(context)
+        editables = operations.find_ctxyz_editables(context)
 
         if len(editables) == 2:
             row = layout.row()
@@ -328,8 +276,8 @@ def layout_editor(layout, data, obj, context):
     font = None
     if data.font_path:
         try:
-            font = ct.Font.Cacheable(data.font_path)
-        except ct.FontNotFoundException:
+            font = importer.ct.Font.Cacheable(data.font_path)
+        except importer.ct.FontNotFoundException:
             font = None
 
     mesh = font_basics(layout, data, font, obj)
@@ -355,19 +303,19 @@ def active_obj_has_ctxyz():
     return ob and ob.select_get() and ob.ctxyz.updatable
 
 
-class ColdtypeInstallPanel(bpy.types.Panel):
-    bl_label = "Coldtype Install"
-    bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Coldtype"
+# class ColdtypeInstallPanel(bpy.types.Panel):
+#     bl_label = "Coldtype Install"
+#     bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
+#     bl_space_type = "VIEW_3D"
+#     bl_region_type = "UI"
+#     bl_category = "Coldtype"
 
-    @classmethod
-    def poll(cls, context):
-        return C is None
+#     @classmethod
+#     def poll(cls, context):
+#         return C is None
     
-    def draw(self, context):
-        return importer.editor_needs_coldtype(self.layout, coldtype_status)
+#     def draw(self, context):
+#         return importer.editor_needs_coldtype(self.layout, coldtype_status)
 
 
 class ColdtypeDefaultPanel(bpy.types.Panel):
@@ -380,7 +328,7 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = bpy.context.active_object
-        return C is not None and not (obj and obj.select_get())
+        return importer.C is not None and not (obj and obj.select_get())
     
     def draw(self, context):
         if len(bpy.app.handlers.frame_change_post) == 0:
@@ -413,7 +361,7 @@ class ColdtypeMainPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = bpy.context.active_object
-        return C is not None and obj and obj.select_get() and not obj.ctxyz.baked
+        return importer.C is not None and obj and obj.select_get() and not obj.ctxyz.baked
     
     def draw(self, context):
         obj = bpy.context.active_object
@@ -436,7 +384,8 @@ class ColdtypeExportPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = bpy.context.active_object
-        return (C is not None
+        return (
+            importer.C is not None
             and obj
             and obj.select_get()
             and not obj.ctxyz.parent
@@ -460,7 +409,7 @@ class ColdtypeExportPanel(bpy.types.Panel):
             col = row.column()
             col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", text="Add Rigid Body")
 
-        font = ct.Font.Cacheable(data.font_path)
+        font = importer.ct.Font.Cacheable(data.font_path)
 
         layout.row().separator()
         layout.row().operator("ctxyz.export_slug", text="Export Slug")
@@ -488,7 +437,7 @@ class ColdtypeBakedPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = bpy.context.active_object
-        return (C is not None
+        return (importer.C is not None
             and obj
             and obj.select_get()
             and obj.ctxyz.baked)
@@ -511,7 +460,7 @@ class ColdtypeGlobalPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return C is not None
+        return importer.C is not None
     
     def draw(self, context):
         row = self.layout.row()
@@ -536,9 +485,9 @@ class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         path = Path(self.filepath)
-        data, _ = find_ctxyz(context)
+        data, _ = operations.find_ctxyz(context)
         
-        font = ct.Font.Cacheable(path)
+        font = importer.ct.Font.Cacheable(path)
         data.font_path = str(font.path)
         return {'FINISHED'}
 
@@ -565,7 +514,7 @@ class Coldtype_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.ctxyz
-        font = ct.Font.Cacheable(data.font_path)
+        font = importer.ct.Font.Cacheable(data.font_path)
 
         for idx, (_, v) in enumerate(font.variations().items()):
             diff = abs(v["maxValue"]-v["minValue"])
@@ -607,7 +556,7 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     sc = context.scene
     current = sc.frame_current
 
-    anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
+    anchor = importer.cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
     
     anchor.obj.scale = obj.scale
     anchor.obj.location = obj.location
@@ -678,85 +627,13 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
             for o in mcc.objects:
                 bpy.data.objects.remove(o, do_unlink=True)
 
-        editables = find_ctxyz_editables(context)
+        editables = operations.find_ctxyz_editables(context)
         for e in editables:
             for k in [kp:=e.ctxyz.font_path, str(kp)]:
                 if k in FontCache:
                     del FontCache[k]
             
             typesetter.set_type(e.ctxyz, e, context=context)
-        return {"FINISHED"}
-
-
-class Coldtype_OT_ShowFont(bpy.types.Operator):
-    """Show the selected font in your OS file system browser"""
-
-    bl_label = "Coldtype Show Font"
-    bl_idname = "ctxyz.show_font"
-    
-    def execute(self, context):
-        ctxyz, _ = find_ctxyz(context)
-        import os
-        os.system(f"open {str(Path(ctxyz.font_path).parent)}")
-        return {"FINISHED"}
-
-
-class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
-    """Set variable font axes to their font-specified default values"""
-
-    bl_label = "Coldtype Load Var Axes Defaults"
-    bl_idname = "ctxyz.load_var_axes_defaults"
-    
-    def execute(self, context):
-        for o in find_ctxyz_all_selected(context):
-            font = ct.Font.Cacheable(o.ctxyz.font_path)
-            for idx, (axis, v) in enumerate(font.variations().items()):
-                diff = abs(v["maxValue"]-v["minValue"])
-                v = (v["defaultValue"]-v["minValue"])/diff
-                setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
-
-        return {"FINISHED"}
-
-
-def cycle_font(context, inc):
-    data, obj = find_ctxyz(context)
-    font_path = Path(data.font_path)
-    fonts = []
-    for file in sorted(font_path.parent.iterdir(), key=lambda x: x.name):
-        if file.suffix in [".otf", ".ttf", ".ufo"]:
-            fonts.append(file)
-    
-    fidx = fonts.index(font_path)
-    try:
-        adj_font = fonts[fidx+inc]
-    except IndexError:
-        if inc > 0:
-            adj_font = fonts[0]
-        else:
-            adj_font = fonts[len(fonts)-1]
-    
-    data.font_path = str(adj_font)
-
-
-class Coldtype_OT_LoadNextFont(bpy.types.Operator):
-    """Load next font in directory"""
-
-    bl_label = "Coldtype Load Next Font"
-    bl_idname = "ctxyz.load_next_font"
-    
-    def execute(self, context):
-        cycle_font(context, +1)
-        return {"FINISHED"}
-
-
-class Coldtype_OT_LoadPrevFont(bpy.types.Operator):
-    """Load previous font in directory"""
-
-    bl_label = "Coldtype Load Previous Font"
-    bl_idname = "ctxyz.load_prev_font"
-    
-    def execute(self, context):
-        cycle_font(context, -1)
         return {"FINISHED"}
 
 
@@ -817,12 +694,12 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.ctxyz
-        editables = find_ctxyz_editables(context)
+        editables = operations.find_ctxyz_editables(context)
         a = editables[0]
         b = editables[1]
         collection = a.users_collection[0]
 
-        font = ct.Font.Cacheable(a.ctxyz.font_path)
+        font = importer.ct.Font.Cacheable(a.ctxyz.font_path)
         fvars = font.variations()
 
         from coldtype.time.easing import ease
@@ -949,24 +826,11 @@ class Coldtype_OT_DeleteBake(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_InstallColdtype(bpy.types.Operator):
-    """In order to work properly, Coldtype needs to download and install the Coldtype python package. You can install that package by clicking this button."""
-
-    bl_label = "Coldtype Install Coldtype"
-    bl_idname = "ctxyz.install_coldtype"
-    
-    def execute(self, context):
-        importer.install_coldtype(context, globals(), REQUIRED_COLDTYPE)
-        bpy.ops.script.reload()
-        return {"FINISHED"}
-
-
 classes = [
     ColdtypePropertiesGroup,
     Coldtype_OT_SetTypeWithSceneDefaults,
     Coldtype_OT_SetTypeWithObject,
     Coldtype_OT_RefreshSettings,
-    Coldtype_OT_LoadVarAxesDefaults,
     Coldtype_OT_ClearFont,
     Coldtype_OT_ExportSlug,
     Coldtype_OT_ExportGlyphs,
@@ -976,12 +840,7 @@ classes = [
     Coldtype_OT_BakeFramesNoTiming,
     Coldtype_OT_InterpolateStrings,
     Coldtype_OT_DeleteBake,
-    Coldtype_OT_InstallColdtype,
-    Coldtype_OT_LoadNextFont,
-    Coldtype_OT_LoadPrevFont,
-    Coldtype_OT_ShowFont,
     
-    ColdtypeInstallPanel,
     ColdtypeDefaultPanel,
     ColdtypeMainPanel,
     ColdtypeExportPanel,
@@ -1013,8 +872,12 @@ def clear_frame_changers():
 def register():
     print("---COLDTYPE---", bl_info["version"])
 
-    for cl in classes:
-        bpy.utils.register_class(cl)
+    for module in modules:
+        for c in module.classes:
+            bpy.utils.register_class(c)
+
+    for c in classes:
+        bpy.utils.register_class(c)
 
     bpy.types.Scene.ctxyz = bpy.props.PointerProperty(type=ColdtypePropertiesGroup, name="Coldtype", description="Default Coldtype properties")
     bpy.types.Object.ctxyz = bpy.props.PointerProperty(type=ColdtypePropertiesGroup, name="Coldtype", description="Coldtype properties")
@@ -1024,8 +887,12 @@ def register():
 
 
 def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+    for module in reversed(modules):
+        for c in reversed(module.classes):
+            bpy.utils.unregister_class(c)
+
+    for c in reversed(classes):
+        bpy.utils.unregister_class(c)
 
     clear_frame_changers()
 

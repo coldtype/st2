@@ -299,3 +299,6 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         output.append(txtObj)
     
     return output
+
+
+classes = []
