@@ -187,6 +187,10 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             p.remove_overlap()
         
         if ts.outline:
+            if shapewise:
+                p.mapv(lambda _p: _p.explode())
+                p.collapse()
+
             ow = ts.outline_weight/100
             if ts.outline_outer or ow < 0:
                 p_inner = p.copy()
@@ -263,8 +267,9 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             
             if glyphwise:
                 if shapewise:
-                    p.mapv(lambda _p: _p.explode())
-                    p.collapse()
+                    if not ts.outline:
+                        p.mapv(lambda _p: _p.explode())
+                        p.collapse()
                 #if layerwise:
                 #    p.mapv(lambda _p: _p.explode())
                 
