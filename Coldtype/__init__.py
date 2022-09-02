@@ -11,19 +11,15 @@ bl_info = {
 }
 
 import importlib
-from pathlib import Path
-
 
 if "bpy" in locals():
     for module in modules:
         importlib.reload(module)
 else:
     import bpy
-    from Coldtype import importer, operations, properties, typesetter, search, exporting
+    from Coldtype import importer, operations, properties, typesetter, search, exporting, font
 
-#from Coldtype import importer
-
-modules = [importer, properties, operations, typesetter, search, exporting]
+modules = [importer, properties, operations, typesetter, search, exporting, font]
 
 
 if importer.C is not None:
@@ -47,6 +43,7 @@ def _update_type(props, context):
 def update_type(props, context):
     _update_type(props, context)
 
+
 def update_type_and_copy(prop, props, context):
     active = _update_type(props, context)
     if active:
@@ -64,6 +61,7 @@ def is_rendering():
     except:
         pass
     return False
+
 
 def update_type_frame_change(scene, depsgraph):
     rendered_view = is_rendering()
@@ -135,11 +133,6 @@ def font_basics(layout, data, font, obj):
         row.prop(data, "align_x", text="X", expand=True)
         row.prop(data, "align_y", text="Y", expand=True)
 
-        #row = layout.row()
-
-    #if mesh:
-    #    row = layout.row()
-
     row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
     row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
 
@@ -147,11 +140,7 @@ def font_basics(layout, data, font, obj):
         row = layout.row()
         row.prop(data, "combine_glyphs", text="", icon="META_DATA")
         row.prop(data, "remove_overlap", text="", icon="OVERLAY")
-        
-        #row.separator()
-        #row.label(text="Outline")
 
-        #row = layout.row()
         row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
         row.prop(data, "outline_weight", text="Weight")
         row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
@@ -168,97 +157,6 @@ def font_basics(layout, data, font, obj):
     row.prop(data, "align_lines_x", text="LX", expand=True)
 
     return mesh
-
-
-def font_advanced(layout, data, font, obj):
-    fvars = font.variations()
-    if len(fvars) > 0:
-        row = layout.row()
-        icon = 'TRIA_DOWN' if data.font_variations_open else 'TRIA_RIGHT'
-        row.prop(data, 'font_variations_open', icon=icon, icon_only=True)
-        row.label(text='Font Variations')
-
-        if data.font_variations_open:
-            row.operator("ctxyz.load_var_axes_defaults", icon="EMPTY_AXIS", text="")
-            #box = layout.box()
-        
-            for idx, (k, v) in enumerate(fvars.items()):
-                layout.row().prop(data, f"fvar_axis{idx+1}", text=k)
-        
-            if obj.ctxyz.has_keyframes(obj):
-                #layout.row().label(text="Variation Offsets")
-
-                for idx, (k, v) in enumerate(fvars.items()):
-                    layout.row().prop(data, f"fvar_axis{idx+1}_offset", text=f"{k} offset")
-            
-            layout.separator()
-    
-    row = layout.row()
-    icon = 'TRIA_DOWN' if data.font_features_open else 'TRIA_RIGHT'
-    row.prop(data, 'font_features_open', icon=icon, icon_only=True)
-    row.label(text='Font Features')
-
-    if data.font_features_open:
-        box = layout.box()
-
-        fi = 0
-        row = None
-
-        def show_fea(fea):
-            nonlocal fi, row
-            if fi%4 == 0 or row is None:
-                row = box.row()
-            
-            row.prop(data, f"fea_{fea}")
-            fi += 1
-        
-        for fea in font.font.featuresGPOS:
-            if not hasattr(data, f"fea_{fea}"):
-                #print("!", fea)
-                pass
-            else:
-                show_fea(fea)
-
-        for fea in font.font.featuresGSUB:
-            if not fea.startswith("cv") and not fea.startswith("ss"):
-                if not hasattr(data, f"fea_{fea}"):
-                    #print(fea)
-                    pass
-                else:
-                    show_fea(fea)
-        
-        if len(font.font.stylisticSetNames) > 0:
-            for x in range(1, 21):
-                tag = "ss{:02d}".format(x)
-                ss_name = font.font.stylisticSetNames.get(tag)
-                if ss_name:
-                    row = box.row()
-                    row.prop(data, "fea_ss{:02d}".format(x), text=f"{tag}: {ss_name}")
-        
-    # box = layout.box()
-    # row = box.row()
-    # row.prop(data, "individual_glyphs")
-    # row = box.row()
-    # row.prop(data, "stagger_y")
-    # row.prop(data, "stagger_z")
-
-
-def dimensional_advanced(layout, data, obj):
-    row = layout.row()
-    icon = 'TRIA_DOWN' if data.dimensional_open else 'TRIA_RIGHT'
-    row.prop(data, 'dimensional_open', icon=icon, icon_only=True)
-    row.label(text='3D Settings')
-
-    if data.dimensional_open:
-        box = layout.box()
-        if obj:
-            row = box.row()
-            row.prop(obj, "rotation_euler", text="Rotation")
-            row = box.row()
-            row.prop(obj.data, "extrude", text="Extrude")
-            row.prop(obj.data, "bevel_depth", text="Bevel")
-            row = box.row()
-            row.prop(obj.data, "fill_mode", text="Fill Mode")
 
 
 def layout_editor(layout, data, obj, context):
@@ -284,26 +182,6 @@ def layout_editor(layout, data, obj, context):
 
     mesh = font_basics(layout, data, font, obj)
 
-    if font:
-        if data.updatable and obj:
-            font_advanced(layout, data, font, obj)
-            if not mesh:
-                dimensional_advanced(layout, data, obj)
-            #export_options(layout, data, obj)
-        else:
-            # TODO dimensional defaults, but need new props
-            pass
-    
-    if font and not data.updatable:
-        layout.row().separator()
-        #layout.row().prop(data, "individual_glyphs")
-        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Build Text", icon="SORTALPHA")
-
-
-def active_obj_has_ctxyz():
-    ob = bpy.context.active_object
-    return ob and ob.select_get() and ob.ctxyz.updatable
-
 
 class ColdtypeDefaultPanel(bpy.types.Panel):
     bl_label = "Defaults"
@@ -314,8 +192,11 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        obj = bpy.context.active_object
-        return importer.C is not None and not (obj and obj.select_get())
+        if not importer.C:
+            return False
+        else:
+            ko = search.active_key_object(context, disallow_baked=False)
+            return not bool(ko)
     
     def draw(self, context):
         if len(bpy.app.handlers.frame_change_post) == 0:
@@ -347,26 +228,21 @@ class ColdtypeMainPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        obj = bpy.context.active_object
-        return importer.C is not None and obj and obj.select_get() and not obj.ctxyz.baked
+        ko = search.active_key_object(context)
+        return ko and not ko.ctxyz.baked
     
     def draw(self, context):
-        obj = bpy.context.active_object
-        if obj and obj.select_get() and obj.ctxyz.parent:
-            pobj = bpy.data.objects[obj.ctxyz.parent]
-            layout_editor(self.layout, pobj.ctxyz, pobj, context)
-        elif obj and obj.select_get() and obj.ctxyz.updatable:
-            layout_editor(self.layout, obj.ctxyz, obj, context)
-        #else:
-            #layout_editor(self.layout, context.scene.ctxyz, None, context)
+        ko = search.active_key_object(context)
+        layout_editor(self.layout, ko.ctxyz, ko, context)
 
 
 class ColdtypeGlobalPanel(bpy.types.Panel):
     bl_label = "Render Settings"
-    bl_idname = "COLDTYPE_PT_9_GLOBALPANEL"
+    bl_idname = "COLDTYPE_PT_999_GLOBALPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):

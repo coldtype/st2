@@ -1,5 +1,10 @@
 import bpy
 
+try:
+    import coldtype.text as ct
+except ImportError:
+    ct = None
+
 
 def find_ctxyz(context):
     ob = context.active_object
@@ -27,6 +32,21 @@ def find_ctxyz_editables(context):
         if o.ctxyz.editable(o):
             editables.append(o)
     return editables
+
+
+def active_key_object(context, disallow_baked=True):
+    if not ct:
+        return None
+    
+    obj = context.active_object
+    if obj and obj.select_get():
+        if obj.ctxyz.parent:
+            return bpy.data.objects[obj.ctxyz.parent]
+        elif obj.ctxyz.updatable:
+            if not disallow_baked:
+                return obj
+            elif not obj.ctxyz.baked:
+                return obj
 
 
 classes = []

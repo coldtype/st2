@@ -8,6 +8,7 @@ except ImportError:
 
 
 from Coldtype import typesetter
+from Coldtype import search
 
 
 def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
@@ -195,31 +196,33 @@ class Coldtype_OT_DeleteBake(bpy.types.Operator):
 
 class ColdtypeExportPanel(bpy.types.Panel):
     bl_label = "Text Export"
-    bl_idname = "COLDTYPE_PT_3_EXPORTPANEL"
+    bl_idname = "COLDTYPE_PT_4_EXPORTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
 
     @classmethod
     def poll(cls, context):
-        obj = bpy.context.active_object
-        return (
-            cb is not None
-            and obj
-            and obj.select_get()
-            and not obj.ctxyz.parent
-            and not obj.ctxyz.baked)
+        return bool(search.active_key_object(context))
+        # obj = bpy.context.active_object
+        # return (
+        #     cb is not None
+        #     and obj
+        #     and obj.select_get()
+        #     and obj.ctxyz.updatable
+        #     and not obj.ctxyz.parent
+        #     and not obj.ctxyz.baked)
     
     def draw(self, context):
         layout = self.layout
-        obj = bpy.context.active_object
-        data = obj.ctxyz
+        ko = search.active_key_object(context)
+        data = ko.ctxyz
 
         row = layout.row()
 
         row.label(text="Options")
-        row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", text="Geometric Origins")
-        row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", text="As Mesh")
+        row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
+        row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
 
         if data.export_meshes:
             row = layout.row()
@@ -238,7 +241,7 @@ class ColdtypeExportPanel(bpy.types.Panel):
         if font._colr:
             row.operator("ctxyz.export_layers", text="Layers")
     
-        if obj.ctxyz.has_keyframes(obj):
+        if ko.ctxyz.has_keyframes(ko):
             row = layout.row()
             row.label(text="Export Animated")
             row.operator("ctxyz.bake_frames", text="Timed")
@@ -255,17 +258,14 @@ class ColdtypeBakedPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        obj = bpy.context.active_object
-        return (cb is not None
-            and obj
-            and obj.select_get()
-            and obj.ctxyz.baked)
+        ko = search.active_key_object(context, disallow_baked=False)
+        if ko and ko.ctxyz.baked:
+            return True
     
     def draw(self, context):
-        obj = bpy.context.active_object
-        data = obj.ctxyz
+        ko = search.active_key_object(context, disallow_baked=False)
 
-        self.layout.row().label(text=f"Baked: “{data.text}”")
+        self.layout.row().label(text=f"Baked: “{ko.ctxyz.text}”")
         self.layout.row().operator("ctxyz.delete_bake", text="Delete Bake")
 
 

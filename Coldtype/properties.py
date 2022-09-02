@@ -68,7 +68,7 @@ def build_properties(update_type, update_type_and_copy):
 
         # exporting
 
-        export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=False)
+        export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=True)
         
         export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
 

@@ -14,6 +14,7 @@ class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
 
     bl_label = "Coldtype Load Var Axes Defaults"
     bl_idname = "ctxyz.load_var_axes_defaults"
+    bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
         for o in search.find_ctxyz_all_selected(context):
@@ -271,5 +272,5 @@ classes = [
 ]
 
 panels = [
-    
+
 ]
