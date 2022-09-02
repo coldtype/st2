@@ -48,7 +48,7 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             print(">>> imported mesh:", x.glyphName)
 
 
-def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, object_name=None, collection=None):
+def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, object_name=None, collection=None):
     # if ufo, don't cache?
 
     font = ct.Font.Cacheable(ts.font_path)
@@ -265,6 +265,8 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 if shapewise:
                     p.mapv(lambda _p: _p.explode())
                     p.collapse()
+                #if layerwise:
+                #    p.mapv(lambda _p: _p.explode())
                 
                 for glyph in p:
                     output.append(export(glyph))
