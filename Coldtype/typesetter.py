@@ -302,3 +302,4 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
 
 classes = []
+panels = []

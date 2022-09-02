@@ -216,3 +216,4 @@ def build_properties(update_type, update_type_and_copy):
     return ColdtypePropertiesGroup
 
 classes = []
+panels = []

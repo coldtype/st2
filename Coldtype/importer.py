@@ -111,5 +111,8 @@ class ColdtypeInstallPanel(bpy.types.Panel):
 
 classes = [
     Coldtype_OT_InstallColdtype,
+]
+
+panels = [
     ColdtypeInstallPanel
 ]
