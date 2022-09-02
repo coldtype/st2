@@ -1,10 +1,35 @@
-import importlib
-import time, os, sys
+import importlib, bpy, time, os, sys
+
+# apparently if you require this twice, it'll work the second time (??)
+try:
+    from ufo2ft.featureCompiler import FeatureCompiler
+except ImportError:
+    print("-- failed FeatureCompiler --")
+    pass
+
+def vt(v):
+    return tuple(map(int, (v.split("."))))
+
+REQUIRED_COLDTYPE = "0.9.10"
+coldtype_status = 1
+
+try:
+    import coldtype as C
+    import coldtype.text as ct
+    import coldtype.blender as cb
+
+    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
+        C, ct, cb = None, None, None
+        coldtype_status = 0
+
+except ImportError:
+    C, ct, cb = None, None, None
+    coldtype_status = -1
 
 
 def install_coldtype(context, global_vars, required_version):
     from subprocess import run
-    
+
     args = [f"coldtype[blender]>={required_version}"]
     
     print("---"*20)
@@ -29,7 +54,7 @@ def install_coldtype(context, global_vars, required_version):
 def editor_needs_coldtype(layout, status):
     if status < 0:
         download = "Download & Install Coldtype"
-        warning = """This addon requires Coldtype
+        warning = """This addon requires coldtype
             (coldtype.xyz) as a Python package.
             -
             Clicking the button below will
@@ -55,3 +80,39 @@ def editor_needs_coldtype(layout, status):
     
     layout.row().separator()
     layout.row().operator("ctxyz.install_coldtype", icon="WORLD_DATA", text=download)
+
+
+class Coldtype_OT_InstallColdtype(bpy.types.Operator):
+    """In order to work properly, Coldtype needs to download and install the Coldtype python package. You can install that package by clicking this button."""
+
+    bl_label = "Coldtype Install Coldtype"
+    bl_idname = "ctxyz.install_coldtype"
+    
+    def execute(self, context):
+        install_coldtype(context, globals(), REQUIRED_COLDTYPE)
+        bpy.ops.script.reload()
+        return {"FINISHED"}
+
+
+class ColdtypeInstallPanel(bpy.types.Panel):
+    bl_label = "Coldtype Install"
+    bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        return C is None
+    
+    def draw(self, context):
+        return editor_needs_coldtype(self.layout, coldtype_status)
+
+
+classes = [
+    Coldtype_OT_InstallColdtype,
+]
+
+panels = [
+    ColdtypeInstallPanel
+]

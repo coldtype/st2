@@ -4,3 +4,4 @@
 
 - Control to export "layers" of a color font (unstyled?), with option to stagger them in a certain dimension, so a layered color font is automatically a 3d font
 
+- justification of words? (ala the line-crunching example)

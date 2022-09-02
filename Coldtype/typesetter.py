@@ -209,9 +209,9 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 txtObj = (cb.BpyObj.Curve(f"{object.name}Frozen", collection))
                 txtObj.obj.data = object.data.copy()
                 txtObj.obj.animation_data_clear()
-                #txtObj.obj.scale = object.scale
-                #txtObj.obj.location = object.location
-                #txtObj.obj.rotation_euler = object.rotation_euler
+                txtObj.obj.scale = object.scale
+                txtObj.obj.location = object.location
+                txtObj.obj.rotation_euler = object.rotation_euler
 
                 if glyph:
                     txtObj.draw(glyph, set_origin=False, fill=False)
@@ -299,3 +299,7 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         output.append(txtObj)
     
     return output
+
+
+classes = []
+panels = []

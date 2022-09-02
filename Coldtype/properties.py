@@ -68,11 +68,11 @@ def build_properties(update_type, update_type_and_copy):
 
         # exporting
 
-        export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=False)
+        export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=True)
         
         export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
 
-        export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=False)
+        export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=True)
 
         export_rigidbody_active: bpy.props.BoolProperty(name="Export with Active Rigid Body", default=False)
 
@@ -214,3 +214,6 @@ def build_properties(update_type, update_type_and_copy):
 
     
     return ColdtypePropertiesGroup
+
+classes = []
+panels = []
