@@ -101,7 +101,7 @@ class ColdtypeFontStylisticSetsPanel(bpy.types.Panel):
         fi = 0
         row = None
 
-        styles = [fea for fea in font.font.featuresGSUB if fea.startswith("ss")]
+        styles = [fea for fea in sorted(font.font.featuresGSUB) if fea.startswith("ss")]
 
         for style in styles:
             if fi%2 == 0 or row is None:

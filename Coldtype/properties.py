@@ -72,7 +72,7 @@ def build_properties(update_type, update_type_and_copy):
         
         export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
 
-        export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=False)
+        export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=True)
 
         export_rigidbody_active: bpy.props.BoolProperty(name="Export with Active Rigid Body", default=False)
 

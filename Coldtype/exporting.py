@@ -19,9 +19,9 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
 
     anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
     
-    anchor.obj.scale = obj.scale
-    anchor.obj.location = obj.location
-    anchor.obj.rotation_euler = obj.rotation_euler
+    #anchor.obj.scale = obj.scale
+    #anchor.obj.location = obj.location
+    #anchor.obj.rotation_euler = obj.rotation_euler
     
     for k in obj.ctxyz.__annotations__.keys():
         v = getattr(obj.ctxyz, k)
@@ -195,7 +195,7 @@ class Coldtype_OT_DeleteBake(bpy.types.Operator):
 
 
 class ColdtypeExportPanel(bpy.types.Panel):
-    bl_label = "Text Export"
+    bl_label = "Export"
     bl_idname = "COLDTYPE_PT_4_EXPORTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -203,15 +203,11 @@ class ColdtypeExportPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return bool(search.active_key_object(context))
-        # obj = bpy.context.active_object
-        # return (
-        #     cb is not None
-        #     and obj
-        #     and obj.select_get()
-        #     and obj.ctxyz.updatable
-        #     and not obj.ctxyz.parent
-        #     and not obj.ctxyz.baked)
+        ko = search.active_key_object(context)
+        if ko and not ko.ctxyz.has_keyframes(ko):
+            return True
+        else:
+            return False
     
     def draw(self, context):
         layout = self.layout
@@ -224,34 +220,60 @@ class ColdtypeExportPanel(bpy.types.Panel):
         row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
         row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
 
-        if data.export_meshes:
-            row = layout.row()
-            col = row.column()
-            col.prop(data, "export_apply_transforms", icon="DRIVER_TRANSFORM", text="Apply Transforms")
-            col = row.column()
-            col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", text="Add Rigid Body")
-
+        #row = layout.row()
+        col = row.column()
+        col.enabled = data.export_meshes
+        col.prop(data, "export_apply_transforms", icon="DRIVER_TRANSFORM", icon_only=True)
+        col = row.column()
+        col.enabled = data.export_meshes
+        col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", icon_only=True)
+        
         font = ct.Font.Cacheable(data.font_path)
-
-        layout.row().separator()
+    
         layout.row().operator("ctxyz.export_slug", text="Export Slug")
         layout.row().operator("ctxyz.export_glyphs", text="Export Glyphs")
         layout.row().operator("ctxyz.export_shapes", text="Export Shapes")
 
         if font._colr:
             row.operator("ctxyz.export_layers", text="Layers")
+
+
+class ColdtypeBakeAnimationPanel(bpy.types.Panel):
+    bl_label = "Bake Animation"
+    bl_idname = "COLDTYPE_PT_5_BAKEPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        ko = search.active_key_object(context)
+        if ko and ko.ctxyz.has_keyframes(ko):
+            return True
+        else:
+            return False
     
-        if ko.ctxyz.has_keyframes(ko):
-            row = layout.row()
-            row.label(text="Export Animated")
-            row.operator("ctxyz.bake_frames", text="Timed")
-            row.operator("ctxyz.bake_frames_no_timing", text="Untimed")
-            row.prop(data, "export_every_x_frame", text="")
+    def draw(self, context):
+        layout = self.layout
+        ko = search.active_key_object(context)
+        data = ko.ctxyz
+
+        row = layout.row()
+
+        row.label(text="Options")
+        #row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
+
+        row.prop(data, "export_every_x_frame", text="Frame Interval")
+        row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
+
+        layout.row().operator("ctxyz.bake_frames", text="Bake Timed")
+        layout.row().operator("ctxyz.bake_frames_no_timing", text="Export Untimed")
+        
 
 
 class ColdtypeBakedPanel(bpy.types.Panel):
     bl_label = "Baked"
-    bl_idname = "COLDTYPE_PT_4_BAKEDPANEL"
+    bl_idname = "COLDTYPE_PT_6_BAKEDPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
@@ -281,5 +303,6 @@ classes = [
 
 panels = [
     ColdtypeExportPanel,
+    ColdtypeBakeAnimationPanel,
     ColdtypeBakedPanel,
 ]
