@@ -49,5 +49,17 @@ def active_key_object(context, disallow_baked=True):
                 return obj
 
 
+def active_baked_object(context, prefer_parent=False):
+    if not ct:
+        return None
+    
+    obj = context.active_object
+    if obj and obj.select_get() and obj.ctxyz.baked:
+        if obj.parent and prefer_parent:
+            return obj.parent
+        else:
+            return obj
+
+
 classes = []
 panels = []

@@ -260,6 +260,7 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                 
                 if parent:
                     txtObj.obj.parent = parent
+                    #txtObj.obj.ctxyz.parent = parent.name
                 
                 txtObj.obj.ctxyz.updatable = True
                 txtObj.obj.visible_camera = object.visible_camera

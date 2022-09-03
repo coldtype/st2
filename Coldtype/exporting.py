@@ -153,6 +153,22 @@ class Coldtype_OT_BakeFramesNoTiming(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class Coldtype_OT_BakeSelectAll(bpy.types.Operator):
+    bl_label = "Coldtype Bake Select All"
+    bl_idname = "ctxyz.bake_select_all"
+    #bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        ko = search.active_baked_object(context, prefer_parent=True)
+        
+        for o in context.scene.objects:
+            if o.parent and o.parent == ko:
+                o.select_set(True)
+        
+        ko.select_set(True)
+        return {"FINISHED"}
+
+
 class Coldtype_OT_DeleteBake(bpy.types.Operator):
     bl_label = "Coldtype Delete Bake"
     bl_idname = "ctxyz.delete_bake"
@@ -287,7 +303,21 @@ class ColdtypeBakedPanel(bpy.types.Panel):
     def draw(self, context):
         ko = search.active_key_object(context, disallow_baked=False)
 
+        anchor = None
+        if ko.parent:
+            anchor = ko.parent
+        else:
+            anchor = ko
+
+        # children = []
+        # for o in bpy.data.objects:
+        #     if o.parent and o.parent.name == ko.name:
+        #         children.append(o)
+        
+        # print(">>>", children)
+
         self.layout.row().label(text=f"Baked: “{ko.ctxyz.text}”")
+        self.layout.row().operator("ctxyz.bake_select_all", text="Select All")
         self.layout.row().operator("ctxyz.delete_bake", text="Delete Bake")
 
 
@@ -298,6 +328,7 @@ classes = [
     Coldtype_OT_ExportLayers,
     Coldtype_OT_BakeFrames,
     Coldtype_OT_BakeFramesNoTiming,
+    Coldtype_OT_BakeSelectAll,
     Coldtype_OT_DeleteBake,
 ]
 
