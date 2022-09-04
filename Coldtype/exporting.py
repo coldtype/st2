@@ -169,44 +169,39 @@ class Coldtype_OT_BakeSelectAll(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def delete_at_frame(context, o:bpy.types.Object, frame:int):
+    context.scene.frame_set(frame)
+    bpy.ops.object.select_all(action='DESELECT')
+    o.select_set(True)
+    bpy.ops.object.delete()
+
+
 class Coldtype_OT_DeleteBake(bpy.types.Operator):
     bl_label = "Coldtype Delete Bake"
     bl_idname = "ctxyz.delete_bake"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
-        obj = context.active_object
-        ts = obj.ctxyz
-        ts_baked_from = ts.baked_from
-        if ts.baked and ts.baked_from:
-            baked_from = context.scene.objects[ts.baked_from]
-            current = context.scene.frame_current
+        ko = search.active_baked_object(context, prefer_parent=True)
+        baked_from = context.scene.objects[ko.ctxyz.baked_from]
 
-            for obj in context.scene.objects:
-                # TODO delete only the actual composition in question
-                if obj.ctxyz.bake_frame > -1 and obj.ctxyz.baked_from == ts_baked_from:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    context.scene.frame_set(obj.ctxyz.bake_frame)
-                    obj.select_set(True)
-                    bpy.ops.object.delete()
-            
-            for obj in context.scene.objects:
-                if obj.ctxyz.bake_frame == -1 and obj.ctxyz.baked:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    obj.select_set(True)
-                    bpy.ops.object.delete()
-            
-            baked_from.hide_set(False)
-            baked_from.hide_render = False
+        bpy.context.view_layer.objects.active = None
+        current = context.scene.frame_current
 
-            bpy.context.view_layer.objects.active = None
-            bpy.context.view_layer.objects.active = baked_from
-            bpy.ops.object.select_all(action='DESELECT')
-            baked_from.select_set(True)
-            
-            #context.scene.frame_set(current)
-            # make original visible
+        for o in context.scene.objects:
+            if o.parent and o.parent == ko:
+                delete_at_frame(context, o, o.ctxyz.bake_frame)
 
+        delete_at_frame(context, ko, current)
+
+        baked_from.hide_set(False)
+        baked_from.hide_render = False
+
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = baked_from
+        bpy.ops.object.select_all(action='DESELECT')
+        baked_from.select_set(True)
+        
         return {"FINISHED"}
 
 
@@ -296,25 +291,10 @@ class ColdtypeBakedPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        ko = search.active_key_object(context, disallow_baked=False)
-        if ko and ko.ctxyz.baked:
-            return True
+        return bool(search.active_baked_object(context))
     
     def draw(self, context):
-        ko = search.active_key_object(context, disallow_baked=False)
-
-        anchor = None
-        if ko.parent:
-            anchor = ko.parent
-        else:
-            anchor = ko
-
-        # children = []
-        # for o in bpy.data.objects:
-        #     if o.parent and o.parent.name == ko.name:
-        #         children.append(o)
-        
-        # print(">>>", children)
+        ko = search.active_baked_object(context, prefer_parent=True)
 
         self.layout.row().label(text=f"Baked: “{ko.ctxyz.text}”")
         self.layout.row().operator("ctxyz.bake_select_all", text="Select All")
