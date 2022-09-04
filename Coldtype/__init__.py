@@ -110,17 +110,17 @@ def layout_editor(layout, data, obj, context):
             row.prop(context.scene.ctxyz, "interpolator_easing", text="")
             layout.row().separator()
     
-    layout.row().prop(data, "text")
-    #layout.row().prop(data, "text_file")
-
-    font = None
-    if data.font_path:
-        try:
-            font = importer.ct.Font.Cacheable(data.font_path)
-        except importer.ct.FontNotFoundException:
-            font = None
-
-    mesh = font_basics(layout, data, font, obj)
+    row = layout.row()
+    col = row.column()
+    col.enabled = not data.text_file_enable
+    col.prop(data, "text")
+    row.prop(data, "text_file_enable", icon="FILE_TEXT", text="")
+    
+    if data.text_file_enable:
+        row = layout.row()
+        row.prop(data, "text_file")
+        row.prop(data, "text_file_indexed", icon="PRESET_NEW", text="")
+        layout.row().prop(data, "text_file_index")
 
 
 class ColdtypeDefaultPanel(bpy.types.Panel):
@@ -160,8 +160,8 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
 
 
 class ColdtypeMainPanel(bpy.types.Panel):
-    bl_label = "Selected Text"
-    bl_idname = "COLDTYPE_PT_2_MAINPANEL"
+    bl_label = "Text"
+    bl_idname = "COLDTYPE_PT_20_MAINPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
@@ -174,6 +174,26 @@ class ColdtypeMainPanel(bpy.types.Panel):
     def draw(self, context):
         ko = search.active_key_object(context)
         layout_editor(self.layout, ko.ctxyz, ko, context)
+
+class ColdtypeFontPanel(bpy.types.Panel):
+    bl_label = "Font"
+    bl_idname = "COLDTYPE_PT_21_FONTPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Coldtype"
+
+    @classmethod
+    def poll(cls, context):
+        ko = search.active_key_object(context)
+        return ko and not ko.ctxyz.baked
+    
+    def draw(self, context):
+        ko = search.active_key_object(context)
+        
+        data = ko.ctxyz
+        font = importer.ct.Font.Cacheable(data.font_path)
+        #print(">>>", font)
+        mesh = font_basics(self.layout, data, font, ko)
 
 
 class ColdtypeGlobalPanel(bpy.types.Panel):
@@ -200,6 +220,7 @@ classes = [
 panels = [
     ColdtypeDefaultPanel,
     ColdtypeMainPanel,
+    ColdtypeFontPanel,
     ColdtypeGlobalPanel,
 ]
 

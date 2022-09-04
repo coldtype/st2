@@ -59,7 +59,18 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
 
     collection = collection or "Global"
 
-    text = "\n".join(ts.text.split("¶"))
+    if ts.text_file_enable:
+        if ts.text_file:
+            text_path = Path(ts.text_file).expanduser().absolute()
+            text = text_path.read_text()
+            if ts.text_file_indexed:
+                text = text.split("\n\n")[ts.text_file_index-1]
+        else:
+            text = "Select file"
+    else:
+        text = "\n".join(ts.text.split("¶"))
+
+
     if ts.case == "TYPED":
         pass
     elif ts.case == "UPPER":
