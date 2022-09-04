@@ -27,66 +27,6 @@ if importer.C is not None:
     registerCustomTableClass("MESH", "Coldtype.meshtable", "table__M_E_S_H")
 
 
-def _update_type(props, context):
-#    data, active = find_ctxyz(context)
-#    if props != data:
-
-    for obj in context.scene.objects:
-        if obj.ctxyz == props and obj.ctxyz.frozen != True:
-            typesetter.set_type(obj.ctxyz, obj, scene=context.scene)
-            return obj
-    
-    # if data.updatable and not data.baked:
-    #     set_type(data, active, scene=context.scene)
-    #return data, active
-
-def update_type(props, context):
-    _update_type(props, context)
-
-
-def update_type_and_copy(prop, props, context):
-    active = _update_type(props, context)
-    if active:
-        for obj in context.scene.objects:
-            if obj.ctxyz.editable(obj) and obj != active and obj != context.active_object:
-                setattr(obj.ctxyz, prop, getattr(active.ctxyz, prop))
-
-def is_rendering():
-    try:
-        for area in bpy.context.screen.areas:
-            if area.type == 'VIEW_3D':
-                for space in area.spaces:
-                    if space.type == 'VIEW_3D' and space.shading.type == "RENDERED":
-                        return True
-    except:
-        pass
-    return False
-
-
-def update_type_frame_change(scene, depsgraph):
-    rendered_view = is_rendering()
-    playing = bpy.context.screen.is_animation_playing if bpy.context.screen else False
-    lu = scene.ctxyz.live_updating
-
-    if lu == "NOPREVIEW":
-        return
-    elif lu == "NONRENDERSTATIC" and (rendered_view or playing):
-        return
-    elif lu == "NONRENDERANIMATE" and rendered_view:
-        return
-    elif lu == "RENDERSTATIC" and rendered_view and playing:
-        return
-
-    for obj in scene.objects:
-        data = obj.ctxyz
-        if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
-            typesetter.set_type(data, obj, scene=scene)
-
-
-ColdtypePropertiesGroup = properties.build_properties(
-    update_type, update_type_and_copy)
-
-
 def individual_font(layout, data):
     row = layout.row()
     op = row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
@@ -200,7 +140,7 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
     
     def draw(self, context):
         if len(bpy.app.handlers.frame_change_post) == 0:
-            frame_changers.append(update_type_frame_change)
+            frame_changers.append(properties.update_type_frame_change)
 
         layout = self.layout
         data = context.scene.ctxyz
@@ -254,7 +194,7 @@ class ColdtypeGlobalPanel(bpy.types.Panel):
 
 
 classes = [
-    ColdtypePropertiesGroup,
+    #ColdtypePropertiesGroup,
 ]
 
 panels = [
@@ -283,7 +223,7 @@ def clear_frame_changers():
         ]:
         remove = []
         for handler in funcs:
-            if handler.__name__ == update_type_frame_change.__name__:
+            if handler.__name__ == properties.update_type_frame_change.__name__:
                 remove.append(handler)
 
         for func in remove:
@@ -302,11 +242,11 @@ def register():
     for p in all_panels:
         bpy.utils.register_class(p)
 
-    bpy.types.Scene.ctxyz = bpy.props.PointerProperty(type=ColdtypePropertiesGroup, name="Coldtype", description="Default Coldtype properties")
-    bpy.types.Object.ctxyz = bpy.props.PointerProperty(type=ColdtypePropertiesGroup, name="Coldtype", description="Coldtype properties")
+    bpy.types.Scene.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Default Coldtype properties")
+    bpy.types.Object.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Coldtype properties")
 
     clear_frame_changers()
-    frame_changers.append(update_type_frame_change)
+    frame_changers.append(properties.update_type_frame_change)
 
 
 def unregister():
