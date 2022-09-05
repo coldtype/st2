@@ -120,7 +120,8 @@ def layout_editor(layout, data, obj, context):
         row = layout.row()
         row.prop(data, "text_file")
         row.prop(data, "text_file_indexed", icon="PRESET_NEW", text="")
-        layout.row().prop(data, "text_file_index")
+        if data.text_file_indexed:
+            layout.row().prop(data, "text_file_index")
 
 
 class ColdtypeDefaultPanel(bpy.types.Panel):
