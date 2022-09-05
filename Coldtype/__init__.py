@@ -17,9 +17,9 @@ if "bpy" in locals():
         importlib.reload(module)
 else:
     import bpy
-    from Coldtype import importer, operations, properties, typesetter, search, exporting, font
+    from Coldtype import importer, operations, properties, typesetter, search, exporting, font, util
 
-modules = [importer, properties, operations, typesetter, search, exporting, font]
+modules = [importer, properties, operations, typesetter, search, exporting, font, util]
 
 
 if importer.C is not None:
@@ -139,8 +139,7 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
             return not bool(ko)
     
     def draw(self, context):
-        if len(bpy.app.handlers.frame_change_post) == 0:
-            frame_changers.append(properties.update_type_frame_change)
+        util.ensure_frame_changer(frame_changers, properties.update_type_frame_change)
 
         layout = self.layout
         data = context.scene.ctxyz
@@ -237,22 +236,6 @@ all_panels = sorted(all_panels, key=lambda p: p.bl_idname)
 
 frame_changers = bpy.app.handlers.frame_change_post
 
-def clear_frame_changers():
-    for funcs in [
-        bpy.app.handlers.frame_change_pre,
-        bpy.app.handlers.frame_change_post
-        ]:
-        remove = []
-        for handler in funcs:
-            if handler.__name__ == properties.update_type_frame_change.__name__:
-                remove.append(handler)
-
-        for func in remove:
-            try:
-                funcs.remove(func)
-            except ValueError:
-                pass
-
 
 def register():
     print("---COLDTYPE---", bl_info["version"])
@@ -266,8 +249,8 @@ def register():
     bpy.types.Scene.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Default Coldtype properties")
     bpy.types.Object.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Coldtype properties")
 
-    clear_frame_changers()
-    frame_changers.append(properties.update_type_frame_change)
+    util.clear_frame_changers(properties.update_type_and_copy)
+    util.ensure_frame_changer(frame_changers, properties.update_type_frame_change)
 
 
 def unregister():
@@ -277,7 +260,7 @@ def unregister():
     for c in reversed(all_classes):
         bpy.utils.unregister_class(c)
 
-    clear_frame_changers()
+    util.clear_frame_changers(properties.update_type_frame_change)
 
 if __name__ == "__main__":
     register()
