@@ -115,13 +115,15 @@ def layout_editor(layout, data, obj, context):
     col.enabled = not data.text_file_enable
     col.prop(data, "text")
     row.prop(data, "text_file_enable", icon="FILE_TEXT", text="")
+    row.prop(data, "text_indexed", icon="PRESET_NEW", text="")
     
     if data.text_file_enable:
         row = layout.row()
         row.prop(data, "text_file")
-        row.prop(data, "text_file_indexed", icon="PRESET_NEW", text="")
-        if data.text_file_indexed:
-            layout.row().prop(data, "text_file_index")
+        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+    
+    if data.text_indexed:
+        layout.row().prop(data, "text_index")
 
 
 class ColdtypeDefaultPanel(bpy.types.Panel):

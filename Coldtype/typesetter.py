@@ -63,12 +63,23 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
         if ts.text_file:
             text_path = Path(ts.text_file).expanduser().absolute()
             text = text_path.read_text()
-            if ts.text_file_indexed:
-                text = text.split("\n\n")[ts.text_file_index-1]
+            if ts.text_indexed:
+                lines = text.split("\n\n")
+                try:
+                    text = lines[ts.text_index-1]
+                except IndexError:
+                    text = lines[-1]
         else:
             text = "Select file"
     else:
-        text = "\n".join(ts.text.split("¶"))
+        lines = ts.text.split("¶")
+        if ts.text_indexed:
+            try:
+                text = lines[ts.text_index-1]
+            except IndexError:
+                text = lines[-1]
+        else:
+            text = "\n".join(lines)
 
 
     if ts.case == "TYPED":

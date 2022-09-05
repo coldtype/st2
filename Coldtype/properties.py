@@ -82,9 +82,9 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     text_file: bpy.props.StringProperty(name="Text File", default="", subtype="FILE_PATH",
         update=lambda p, c: update_type_and_copy("text_file", p, c))
     
-    text_file_indexed: bpy.props.BoolProperty(name="Text File Indexed", default=False, update=lambda p, c: update_type_and_copy("text_file_indexed", p, c))
+    text_indexed: bpy.props.BoolProperty(name="Text Indexed", default=False, update=lambda p, c: update_type_and_copy("text_indexed", p, c))
     
-    text_file_index: bpy.props.IntProperty(name="Text File Index", default=1, min=1, update=lambda p, c: update_type_and_copy("text_file_index", p, c))
+    text_index: bpy.props.IntProperty(name="Text Index", default=1, min=1, update=lambda p, c: update_type_and_copy("text_index", p, c))
     
     font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
 
