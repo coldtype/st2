@@ -214,7 +214,10 @@ class ColdtypeGlobalPanel(bpy.types.Panel):
     
     def draw(self, context):
         row = self.layout.row()
-        row.prop(context.scene.ctxyz, "live_updating", text="")
+        row.prop(context.scene.ctxyz, "live_updating", text="Frame Updating")
+
+        row = self.layout.row()
+        row.prop(context.scene.ctxyz, "interpolator_style")
 
 
 classes = [
