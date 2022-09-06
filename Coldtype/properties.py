@@ -76,11 +76,19 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     text: bpy.props.StringProperty(name="Text", default="Text",
         update=lambda p, c: update_type_and_copy("text", p, c))
     
-    text_file_enable: bpy.props.BoolProperty(name="Text File Enable", default=False,
-        update=lambda p, c: update_type_and_copy("text_file_enable", p, c))
+    text_mode: bpy.props.EnumProperty(name="Text Mode",
+        description="Where to source the text",
+        items=[
+            ("UI", "UI", "As typed above", "SMALL_CAPS", 0),
+            ("BLOCK", "Block", "From a text-block in Blender", "TEXT", 1),
+            ("FILE", "Text file", "From an external text file", "FILE_TEXT", 2),
+        ],
+        default="UI",
+        update=lambda p, c: update_type_and_copy("text_mode", p, c))
     
-    text_file: bpy.props.StringProperty(name="Text File", default="", subtype="FILE_PATH",
-        update=lambda p, c: update_type_and_copy("text_file", p, c))
+    text_file: bpy.props.StringProperty(name="Text File", default="", subtype="FILE_PATH", update=lambda p, c: update_type_and_copy("text_file", p, c))
+    
+    text_block: bpy.props.StringProperty(name="Text Block", default="", update=lambda p, c: update_type_and_copy("text_block", p, c))
     
     text_indexed: bpy.props.BoolProperty(name="Text Indexed", default=False, update=lambda p, c: update_type_and_copy("text_indexed", p, c))
     
@@ -101,6 +109,8 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     bake_frame: bpy.props.IntProperty(name="Bake Frame", default=-1)
 
     parent: bpy.props.StringProperty(name="Parent", default="")
+
+    auto_rename: bpy.props.BoolProperty(name="Auto Rename", default=True)
 
     # mesh-state
 
@@ -147,6 +157,8 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     interpolator_easing: bpy.props.StringProperty(name="Interpolator Easing", default="linear")
 
     interpolator_count: bpy.props.IntProperty(name="Interpolator Count", default=1, min=1, max=50)
+
+    interpolated: bpy.props.BoolProperty(name="Interpolated", default=False)
     
     # font state
 

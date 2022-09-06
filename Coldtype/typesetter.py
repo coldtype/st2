@@ -48,61 +48,86 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             print(">>> imported mesh:", x.glyphName)
 
 
-def set_type(ts, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, object_name=None, collection=None):
+def set_type(data, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, collection=None):
     # if ufo, don't cache?
 
-    font = ct.Font.Cacheable(ts.font_path)
+    font = ct.Font.Cacheable(data.font_path)
     try:
         mesh = font.font.ttFont["MESH"]
     except KeyError:
         mesh = None
 
     collection = collection or "Global"
+    using_file = False
 
-    if ts.text_file_enable:
-        if ts.text_file:
-            text_path = Path(ts.text_file).expanduser().absolute()
+    if data.text_mode == "FILE":
+        using_file = True
+        if data.text_file:
+            text_path = Path(data.text_file).expanduser().absolute()
             text = text_path.read_text()
-            if ts.text_indexed:
+            if data.text_indexed:
                 lines = text.split("\n\n")
                 try:
-                    text = lines[ts.text_index-1]
+                    text = lines[data.text_index-1]
                 except IndexError:
                     text = lines[-1]
         else:
             text = "Select file"
-    else:
-        lines = ts.text.split("¶")
-        if ts.text_indexed:
+        fulltext = text
+    elif data.text_mode == "BLOCK":
+        using_file = True
+        if data.text_block:
             try:
-                text = lines[ts.text_index-1]
+                text = bpy.data.texts[data.text_block].as_string()
+                if data.text_indexed:
+                    lines = text.split("\n\n")
+                    try:
+                        text = lines[data.text_index-1]
+                    except IndexError:
+                        text = lines[-1]
+            except KeyError:
+                text = "Invalid"
+        else:
+            text = "Enter block name"
+        fulltext = text
+    else:
+        if data.text == "":
+            text = "Text"
+        else:
+            text = data.text
+
+        lines = text.split("¶")
+        fulltext = "\n".join(lines)
+        if data.text_indexed:
+            try:
+                text = lines[data.text_index-1]
             except IndexError:
                 text = lines[-1]
         else:
-            text = "\n".join(lines)
+            text = fulltext
 
 
-    if ts.case == "TYPED":
+    if data.case == "TYPED":
         pass
-    elif ts.case == "UPPER":
+    elif data.case == "UPPER":
         text = text.upper()
-    elif ts.case == "LOWER":
+    elif data.case == "LOWER":
         text = text.lower()
     
     features = {}
-    for k, v in ts.__annotations__.items():
+    for k, v in data.__annotations__.items():
         if k.startswith("fea_"):
-            features[k[4:]] = getattr(ts, k)
+            features[k[4:]] = getattr(data, k)
 
     variations = {}
     for idx, (k, v) in enumerate(font.variations().items()):
-        variations[k] = getattr(ts, f"fvar_axis{idx+1}")
+        variations[k] = getattr(data, f"fvar_axis{idx+1}")
 
     if not object or not object.ctxyz.has_keyframes(object):
         p = (ct.StSt(text, font
             , fontSize=3
-            , leading=ts.leading
-            , tu=ts.tracking
+            , leading=data.leading
+            , tu=data.tracking
             , multiline=True
             , **features
             , **variations))
@@ -111,7 +136,7 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             _vars = {}
             for idx, (k, v) in enumerate(font.variations().items()):
                 dp = f"fvar_axis{idx+1}"
-                fvar_offset = getattr(ts, f"{dp}_offset")
+                fvar_offset = getattr(data, f"{dp}_offset")
                 found = False
                 for fcu in object.animation_data.action.fcurves:
                     #print(fcu.data_path, dp)
@@ -120,37 +145,37 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                         _vars[k] = fcu.evaluate((scene.frame_current - x.i*fvar_offset)%(scene.frame_end+1 - scene.frame_start))
                 
                 if not found:
-                    _vars[k] = getattr(ts, dp)
+                    _vars[k] = getattr(data, dp)
 
             return ct.Style(font, 3,
-                tu=ts.tracking,
+                tu=data.tracking,
                 **features,
                 **_vars)
 
         p = ct.Glyphwise(text, styler, multiline=True)
-        if ts.leading:
-            p.lead(ts.leading)
+        if data.leading:
+            p.lead(data.leading)
     
     amb = p.ambit(
-        th=not ts.use_horizontal_font_metrics,
-        tv=not ts.use_vertical_font_metrics)
+        th=not data.use_horizontal_font_metrics,
+        tv=not data.use_vertical_font_metrics)
 
-    p.xalign(rect=amb, x=ts.align_lines_x, th=not ts.use_horizontal_font_metrics)
+    p.xalign(rect=amb, x=data.align_lines_x, th=not data.use_horizontal_font_metrics)
 
     ax, ay, aw, ah = p.ambit(
-        th=not ts.use_horizontal_font_metrics,
-        tv=not ts.use_vertical_font_metrics)
+        th=not data.use_horizontal_font_metrics,
+        tv=not data.use_vertical_font_metrics)
 
     p.t(-ax, -ay)
 
-    if ts.align_x == "CX":
+    if data.align_x == "CX":
         p.t(-aw/2, 0)
-    elif ts.align_x == "E":
+    elif data.align_x == "E":
         p.t(-aw, 0)
     
-    if ts.align_y == "CY":
+    if data.align_y == "CY":
         p.t(0, -ah/2)
-    elif ts.align_y == "N":
+    elif data.align_y == "N":
         p.t(0, -ah)
 
     if mesh:
@@ -202,27 +227,27 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
     # need to check baking glyphwise?
 
     if not mesh:
-        if ts.combine_glyphs and not glyphwise:
+        if data.combine_glyphs and not glyphwise:
             p = p.pen()
 
-        if ts.remove_overlap:
+        if data.remove_overlap:
             p.remove_overlap()
         
-        if ts.outline:
+        if data.outline:
             if shapewise:
                 p.mapv(lambda _p: _p.explode())
                 p.collapse()
 
-            ow = ts.outline_weight/100
-            if ts.outline_outer or ow < 0:
+            ow = data.outline_weight/100
+            if data.outline_outer or ow < 0:
                 p_inner = p.copy()
             
-            p.outline(ts.outline_weight/100, miterLimit=ts.outline_miter_limit)
+            p.outline(data.outline_weight/100, miterLimit=data.outline_miter_limit)
             
             if ow < 0:
                 p_inner.difference(p)
                 p = p_inner
-            elif ts.outline_outer:
+            elif data.outline_outer:
                 p.difference(p_inner)
     
     output = []
@@ -260,23 +285,23 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
                     hide(True)
                     context.scene.frame_set(frame)
                     hide(False)
-                    context.scene.frame_set(frame+ts.export_every_x_frame-1)
+                    context.scene.frame_set(frame+data.export_every_x_frame-1)
                     hide(False)
-                    context.scene.frame_set(frame+ts.export_every_x_frame)
+                    context.scene.frame_set(frame+data.export_every_x_frame)
                     hide(True)
                     context.scene.frame_set(frame)
                 
                 txtObj.obj.select_set(True)
-                if ts.export_meshes:
+                if data.export_meshes:
                     bpy.ops.object.convert(target="MESH")
-                    if ts.export_apply_transforms:
+                    if data.export_apply_transforms:
                         bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
-                    if ts.export_rigidbody_active:
+                    if data.export_rigidbody_active:
                         bpy.ops.rigidbody.object_add()
                         txtObj.obj.rigid_body.type = "ACTIVE"
                         #bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
                         pass
-                if ts.export_geometric_origins:
+                if data.export_geometric_origins:
                     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
                 txtObj.obj.select_set(False)
                 
@@ -290,7 +315,7 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             
             if glyphwise:
                 if shapewise:
-                    if not ts.outline:
+                    if not data.outline:
                         p.mapv(lambda _p: _p.explode())
                         p.collapse()
                 #if layerwise:
@@ -310,16 +335,25 @@ def set_type(ts, object=None, parent=None, baking=False, context=None, scene=Non
             else:
                 txtObj.obj = object
                 txtObj.draw(p, set_origin=False, fill=False)
+
+                #if data.interpolated:
+                #    txtObj.obj.name = "Text.interpolated"
+
+                if data.auto_rename:
+                    if using_file:
+                        txtObj.obj.name = "Coldtype::File"
+                    else:
+                        txtObj.obj.name = "Coldtype:" + fulltext[:20]
             
             output.append(txtObj)
     else:
         # initial creation of live text
 
         if mesh:
-            txtObj = (cb.BpyObj.Empty(object_name or "Coldtype", collection))
+            txtObj = (cb.BpyObj.Empty("Coldtype:Text", collection))
             build_mesh(txtObj.obj)
         else:
-            txtObj = (cb.BpyObj.Curve(object_name or "Coldtype", collection))
+            txtObj = (cb.BpyObj.Curve("Coldtype:Text", collection))
             txtObj.draw(p, set_origin=False, fill=True)
             txtObj.extrude(0)
             #txtObj.rotate(x=90)

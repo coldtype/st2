@@ -189,75 +189,6 @@ class Coldtype_OT_SetTypeWithObject(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
-    """Interpolate multiple strings"""
-
-    bl_label = "Coldtype Interpolate Strings"
-    bl_idname = "ctxyz.interpolate_strings"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        data = context.scene.ctxyz
-        editables = search.find_ctxyz_editables(context)
-        a = editables[0]
-        b = editables[1]
-        collection = a.users_collection[0]
-
-        font = ct.Font.Cacheable(a.ctxyz.font_path)
-        fvars = font.variations()
-
-        from coldtype.time.easing import ease
-        from coldtype.interpolation import norm
-
-        created = []
-
-        context.window_manager.progress_begin(0, 1)
-
-        for x in range(0, data.interpolator_count):
-            xi = x + 1
-            p = xi / (data.interpolator_count + 1)
-            e, _ = ease(data.interpolator_easing, p)
-
-            context.window_manager.progress_update(e)
-
-            c = typesetter.set_type(data, object_name=f"{a.name}_{b.name}_Interpolated", collection=f"{a.name}_{b.name}_Interpolations")[0]
-            c = c.obj
-
-            created.append(c)
-            
-            c.location = a.location.lerp(b.location, e)
-
-            c.data = a.data.copy()
-            c.animation_data_clear()
-
-            for ax in range(0, 3):
-                c.rotation_euler[ax] = norm(e, a.rotation_euler[ax], b.rotation_euler[ax])
-
-                c.scale[ax] = norm(e, a.scale[ax], b.scale[ax])
-            
-            c.data.extrude = norm(e, a.data.extrude, b.data.extrude)
-
-            for k in a.ctxyz.__annotations__.keys():
-                v = getattr(a.ctxyz, k)
-                setattr(c.ctxyz, k, v)
-            
-            c.ctxyz.frozen = True
-            for idx, (k, v) in enumerate(fvars.items()):
-                prop = f"fvar_axis{idx+1}"
-                setattr(c.ctxyz, prop, norm(e, getattr(a.ctxyz, prop), getattr(b.ctxyz, prop)))
-            c.ctxyz.frozen = False
-
-            typesetter.set_type(c.ctxyz, c, context=context)
-
-        context.window_manager.progress_end()
-
-        bpy.ops.object.select_all(action='DESELECT')
-        for obj in created:
-            obj.select_set(True)
-
-        return {"FINISHED"}
-
-
 classes = [
     Coldtype_OT_LoadVarAxesDefaults,
     Coldtype_OT_LoadNextFont,
@@ -267,7 +198,6 @@ classes = [
     Coldtype_OT_RefreshSettings,
     Coldtype_OT_SetTypeWithSceneDefaults,
     Coldtype_OT_SetTypeWithObject,
-    Coldtype_OT_InterpolateStrings,
     WM_OT_ColdtypeChooseFont,
 ]
 

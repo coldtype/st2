@@ -17,9 +17,9 @@ if "bpy" in locals():
         importlib.reload(module)
 else:
     import bpy
-    from Coldtype import importer, operations, properties, typesetter, search, exporting, font, util
+    from Coldtype import importer, operations, properties, typesetter, search, exporting, font, util, interpolation
 
-modules = [importer, properties, operations, typesetter, search, exporting, font, util]
+modules = [importer, properties, operations, typesetter, search, exporting, font, util, interpolation]
 
 
 if importer.C is not None:
@@ -102,26 +102,30 @@ def font_basics(layout, data, font, obj):
 
 
 def layout_editor(layout, data, obj, context):
-    if data.updatable and obj:
-        editables = search.find_ctxyz_editables(context)
-
-        if len(editables) == 2:
-            row = layout.row()
-            row.operator("ctxyz.interpolate_strings", text="Interpolate")
-            row.prop(context.scene.ctxyz, "interpolator_count", text="")
-            row.prop(context.scene.ctxyz, "interpolator_easing", text="")
-            layout.row().separator()
-    
     row = layout.row()
     col = row.column()
-    col.enabled = not data.text_file_enable
-    col.prop(data, "text")
-    row.prop(data, "text_file_enable", icon="FILE_TEXT", text="")
-    row.prop(data, "text_indexed", icon="PRESET_NEW", text="")
+    col.enabled = data.text_mode == "UI"
+    col.prop(data, "text", text="")
+
+    row = layout.row()
+    row.prop(data, "text_mode", text="", expand=True)
     
-    if data.text_file_enable:
+    #row = layout.grid_flow(columns=4)
+    #col = row.column()
+    #col.enabled = False
+    #col.prop(data, "text_file_enable", icon="FILE_TEXT", text="")
+    #row.prop(data, "text_block_enable", icon="TEXT", text="")
+
+    row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
+    row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Rename")
+    
+    if data.text_mode == "FILE":
         row = layout.row()
-        row.prop(data, "text_file")
+        row.prop(data, "text_file", text="File")
+        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+    elif data.text_mode == "BLOCK":
+        row = layout.row()
+        row.prop(data, "text_block", text="Block")
         row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
     
     if data.text_indexed:
@@ -180,9 +184,10 @@ class ColdtypeMainPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         layout_editor(self.layout, ko.ctxyz, ko, context)
 
+
 class ColdtypeFontPanel(bpy.types.Panel):
     bl_label = "Font"
-    bl_idname = "COLDTYPE_PT_21_FONTPANEL"
+    bl_idname = "COLDTYPE_PT_22_FONTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Coldtype"
