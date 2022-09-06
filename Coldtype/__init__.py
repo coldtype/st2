@@ -109,12 +109,6 @@ def layout_editor(layout, data, obj, context):
 
     row = layout.row()
     row.prop(data, "text_mode", text="", expand=True)
-    
-    #row = layout.grid_flow(columns=4)
-    #col = row.column()
-    #col.enabled = False
-    #col.prop(data, "text_file_enable", icon="FILE_TEXT", text="")
-    #row.prop(data, "text_block_enable", icon="TEXT", text="")
 
     row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
     row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Rename")
