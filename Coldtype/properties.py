@@ -159,6 +159,12 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     interpolator_count: bpy.props.IntProperty(name="Interpolator Count", default=1, min=1, max=50)
 
     interpolated: bpy.props.BoolProperty(name="Interpolated", default=False)
+
+    interpolator_style: bpy.props.EnumProperty(name="Interpolator Style", items=[
+        ("TOP", "", "Create new interpolated object(s) at top-level", "MESH_CUBE", 0),
+        ("PARENT", "", "Create new interpolated object(s) that are parented to an empty at the origin", "EMPTY_AXIS", 1),
+        ("COLLECTION", "", "Create new interpolated object(s) that are added to a collection", "COLLECTION_NEW", 2),
+    ], default="TOP", update=lambda p, c: update_type_and_copy("interpolator_style", p, c))
     
     # font state
 

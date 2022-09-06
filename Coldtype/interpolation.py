@@ -27,6 +27,15 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
 
         context.window_manager.progress_begin(0, 1)
 
+        coll, parent = None, None
+        if data.interpolator_style == "PARENT":
+            parent = True
+        elif data.interpolator_style == "COLLECTION":
+            coll = f"Coldtype:Interpolations"
+
+        if parent:
+            parent = typesetter.cb.BpyObj.Empty(f"Coldtype:InterpolationAnchor", collection="Global")
+
         for x in range(0, data.interpolator_count):
             xi = x + 1
             p = xi / (data.interpolator_count + 1)
@@ -34,12 +43,7 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
 
             context.window_manager.progress_update(e)
 
-            collection = None #if data.interpolator_count == 1 else f""
-            #f"{a.name}_{b.name}_Interpolations"
-
-            # Todo make collection or parent optional
-
-            c = typesetter.set_type(data, collection=collection)[0]
+            c = typesetter.set_type(data, collection=coll)[0]
             c = c.obj
 
             created.append(c)
@@ -70,6 +74,9 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
 
             typesetter.set_type(c.ctxyz, c, context=context)
 
+            if parent:
+                c.parent = parent.obj
+
         context.window_manager.progress_end()
 
         bpy.ops.object.select_all(action='DESELECT')
@@ -98,9 +105,12 @@ class ColdtypeInterpolationPanel(bpy.types.Panel):
 
         if len(editables) == 2:
             row = self.layout.row()
-            row.operator("ctxyz.interpolate_strings", text="Interpolate")
             row.prop(context.scene.ctxyz, "interpolator_count", text="")
             row.prop(context.scene.ctxyz, "interpolator_easing", text="")
+            row.prop(context.scene.ctxyz, "interpolator_style", text=None, expand=True)
+
+            row = self.layout.row()
+            row.operator("ctxyz.interpolate_strings", text="Interpolate")
 
 
 classes = [
