@@ -33,6 +33,8 @@ def individual_font(layout, data):
     font_path = data.font_path
 
     if not font_path:
+        for x in ["< Choose a font to get started"]:
+            row.label(text=x)
         return
 
     font = importer.ct.Font.Cacheable(font_path)
@@ -149,16 +151,17 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
 
         individual_font(layout, data)
 
-        row = layout.row()
-        row.label(text="Defaults")
+        if data.font_path:
+            row = layout.row()
+            row.label(text="Defaults")
 
-        row.prop(data, "align_x", text="X", expand=True)
-        row.prop(data, "align_y", text="Y", expand=True)
+            row.prop(data, "align_x", text="X", expand=True)
+            row.prop(data, "align_y", text="Y", expand=True)
 
-        row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
-        row.prop(data, "default_extrude")
+            row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
+            row.prop(data, "default_extrude")
 
-        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+            layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
 
 class ColdtypeMainPanel(bpy.types.Panel):

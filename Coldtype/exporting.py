@@ -71,6 +71,8 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     bpy.ops.object.select_all(action='DESELECT')
     #print("deselecting all")
     anchor.obj.select_set(True)
+
+    sc.frame_set(0)
     return anchor
 
 
