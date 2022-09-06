@@ -8,6 +8,24 @@ except ImportError:
 from Coldtype import search
 
 
+class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
+    """Set variable font axes to their font-specified default values"""
+
+    bl_label = "Coldtype Load Var Axes Defaults"
+    bl_idname = "ctxyz.load_var_axes_defaults"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        for o in search.find_ctxyz_all_selected(context):
+            font = ct.Font.Cacheable(o.ctxyz.font_path)
+            for idx, (axis, v) in enumerate(font.variations().items()):
+                diff = abs(v["maxValue"]-v["minValue"])
+                v = (v["defaultValue"]-v["minValue"])/diff
+                setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
+
+        return {"FINISHED"}
+
+
 class ColdtypeText3DSettingsPanel(bpy.types.Panel):
     bl_label = "3D Settings"
     bl_idname = "COLDTYPE_PT_30_TEXT3DPANEL"
@@ -60,7 +78,22 @@ class ColdtypeFontVariationsPanel(bpy.types.Panel):
         fvars = font.variations()
     
         for idx, (k, v) in enumerate(fvars.items()):
-            layout.row().prop(data, f"fvar_axis{idx+1}", text=k)
+            prop = f"fvar_axis{idx+1}"
+            
+            norm_v = getattr(data, prop)
+            diff = abs(v["maxValue"]-v["minValue"])
+            unnorm_v = v["minValue"] + (diff * norm_v)
+
+            row = layout.row()
+            split = row.split(factor=0.85)
+            col = split.column()
+            col.prop(data, prop, text=k)
+            #col = row.column()
+            #col.alignment = "RIGHT"
+            #col.width = 50
+            col = split.column()
+            col.alignment = "RIGHT"
+            col.label(text="{:d}".format(round(unnorm_v)))
     
         if ko.ctxyz.has_keyframes(ko):
             #layout.row().label(text="Variation Offsets")
@@ -163,7 +196,7 @@ class ColdtypeFontFeaturesPanel(bpy.types.Panel):
 
 
 classes = [
-    
+    Coldtype_OT_LoadVarAxesDefaults,
 ]
 
 panels = [

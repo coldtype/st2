@@ -9,24 +9,6 @@ except ImportError:
     pass
 
 
-class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
-    """Set variable font axes to their font-specified default values"""
-
-    bl_label = "Coldtype Load Var Axes Defaults"
-    bl_idname = "ctxyz.load_var_axes_defaults"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        for o in search.find_ctxyz_all_selected(context):
-            font = ct.Font.Cacheable(o.ctxyz.font_path)
-            for idx, (axis, v) in enumerate(font.variations().items()):
-                diff = abs(v["maxValue"]-v["minValue"])
-                v = (v["defaultValue"]-v["minValue"])/diff
-                setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
-
-        return {"FINISHED"}
-
-
 class Coldtype_OT_ShowFont(bpy.types.Operator):
     """Show the selected font in your OS file system browser"""
 
@@ -190,7 +172,6 @@ class Coldtype_OT_SetTypeWithObject(bpy.types.Operator):
 
 
 classes = [
-    Coldtype_OT_LoadVarAxesDefaults,
     Coldtype_OT_LoadNextFont,
     Coldtype_OT_LoadPrevFont,
     Coldtype_OT_ShowFont,
