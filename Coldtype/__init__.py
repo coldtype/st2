@@ -27,105 +27,6 @@ if importer.C is not None:
     registerCustomTableClass("MESH", "Coldtype.meshtable", "table__M_E_S_H")
 
 
-def individual_font(layout, data):
-    row = layout.row()
-    op = row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
-    font_path = data.font_path
-
-    if not font_path:
-        for x in ["< Choose a font to get started"]:
-            row.label(text=x)
-        return
-
-    font = importer.ct.Font.Cacheable(font_path)
-    mesh = None
-    try:
-        mesh = font.font.ttFont["MESH"]
-    except KeyError:
-        pass
-    
-    if font:
-        row.label(text=f"“{font.path.stem}”")
-    else:
-        row.label(text="No font selected")
-
-    if font:
-        if not data.updatable:
-            row.operator("ctxyz.clear_font", text="", icon="X")
-        else:
-            row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
-            row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
-            row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
-            row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
-        
-    return mesh
-
-
-def font_basics(layout, data, font, obj):
-    mesh = individual_font(layout, data)
-
-    if mesh:
-        row = layout.row()
-        row.label(text=">>> MESH font")
-    
-    if True:
-        row = layout.row()
-        row.label(text="Position")
-
-        row.prop(data, "align_x", text="X", expand=True)
-        row.prop(data, "align_y", text="Y", expand=True)
-
-    row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
-    row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
-
-    if not mesh:
-        row = layout.row()
-        row.prop(data, "combine_glyphs", text="", icon="META_DATA")
-        row.prop(data, "remove_overlap", text="", icon="OVERLAY")
-
-        row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
-        row.prop(data, "outline_weight", text="Weight")
-        row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
-        row.prop(data, "outline_miter_limit")
-
-    row = layout.row()
-    row.prop(data, "tracking")
-    row.prop(data, "leading")
-    
-    row = layout.row()
-    row.label(text="Case")
-    row.prop(data, "case", text="LX", expand=True)
-    row.label(text="Line Align")
-    row.prop(data, "align_lines_x", text="LX", expand=True)
-
-    return mesh
-
-
-def layout_editor(layout, data, obj, context):
-    row = layout.row()
-    col = row.column()
-    col.enabled = data.text_mode == "UI"
-    col.prop(data, "text", text="")
-
-    row = layout.row()
-    row.prop(data, "text_mode", text="", expand=True)
-
-    row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
-    row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
-    
-    if data.text_mode == "FILE":
-        row = layout.row()
-        row.prop(data, "text_file", text="File")
-        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
-    elif data.text_mode == "BLOCK":
-        row = layout.row()
-        row.prop(data, "text_block", text="Block")
-        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
-    
-    if data.text_indexed:
-        layout.row().prop(data, "text_index")
-
-
 class ColdtypeDefaultPanel(bpy.types.Panel):
     bl_label = "Defaults"
     bl_idname = "COLDTYPE_PT_1_DEFAULTPANEL"
@@ -147,19 +48,33 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
         layout = self.layout
         data = context.scene.ctxyz
 
-        individual_font(layout, data)
+        row = layout.row()
+        row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+        font_path = data.font_path
 
-        if data.font_path:
-            row = layout.row()
-            row.label(text="Defaults")
+        if not font_path:
+            for x in ["< Choose a font to get started"]:
+                row.label(text=x)
+            return
 
-            row.prop(data, "align_x", text="X", expand=True)
-            row.prop(data, "align_y", text="Y", expand=True)
+        font = importer.ct.Font.Cacheable(font_path)
+        row.label(text=f"“{font.path.stem}”")
 
-            row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
-            row.prop(data, "default_extrude")
+        row.operator("ctxyz.clear_font", text="", icon="X")
+        row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
+        row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
+        row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
 
-            layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+        row = layout.row()
+        row.label(text="Defaults")
+
+        row.prop(data, "align_x", text="X", expand=True)
+        row.prop(data, "align_y", text="Y", expand=True)
+
+        row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
+        row.prop(data, "default_extrude")
+
+        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
 
 class ColdtypeMainPanel(bpy.types.Panel):
@@ -176,7 +91,33 @@ class ColdtypeMainPanel(bpy.types.Panel):
     
     def draw(self, context):
         ko = search.active_key_object(context)
-        layout_editor(self.layout, ko.ctxyz, ko, context)
+        data = ko.ctxyz
+        
+        row = self.layout.row()
+        col = row.column()
+        col.enabled = data.text_mode == "UI"
+        col.prop(data, "text", text="")
+
+        row = self.layout.row()
+        row.prop(data, "text_mode", text="", expand=True)
+
+        row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
+        row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
+        
+        if data.text_mode == "FILE":
+            row = self.layout.row()
+            row.prop(data, "text_file", text="File")
+            row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+        elif data.text_mode == "BLOCK":
+            row = self.layout.row()
+            row.prop(data, "text_block", text="Block")
+            row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+        
+        if data.text_indexed:
+            self.layout.row().prop(data, "text_index")
+        
+        if not ko.data:
+            self.layout.row().operator("ctxyz.delete_parented_text", text="Delete All")
 
 
 class ColdtypeFontPanel(bpy.types.Panel):
@@ -193,11 +134,63 @@ class ColdtypeFontPanel(bpy.types.Panel):
     
     def draw(self, context):
         ko = search.active_key_object(context)
-        
         data = ko.ctxyz
+
         font = importer.ct.Font.Cacheable(data.font_path)
         #print(">>>", font)
-        mesh = font_basics(self.layout, data, font, ko)
+        
+        row = self.layout.row()
+        row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+        font_path = data.font_path
+
+        font = importer.ct.Font.Cacheable(font_path)
+        mesh = None
+        try:
+            mesh = font.font.ttFont["MESH"]
+        except KeyError:
+            pass
+        
+        row.label(text=f"“{font.path.stem}”")
+        
+        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+        row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
+        row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
+        row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
+        
+        row = self.layout.row()
+        row.label(text="Position")
+
+        row.prop(data, "align_x", text="X", expand=True)
+        row.prop(data, "align_y", text="Y", expand=True)
+
+        row.prop(data, "use_horizontal_font_metrics", text="", icon="EVENT_X")
+        row.prop(data, "use_vertical_font_metrics", text="", icon="EVENT_Y")
+
+        if mesh:
+            if data.use_mesh:
+                self.layout.row().operator("ctxyz.convert_mesh_to_flat", text="Convert Mesh to Outlines")
+            else:
+                self.layout.row().operator("ctxyz.convert_flat_to_mesh", text="Convert Outlines to Mesh")
+
+        row = self.layout.row()
+        row.enabled = not mesh or (mesh and not data.use_mesh)
+        row.prop(data, "combine_glyphs", text="", icon="META_DATA")
+        row.prop(data, "remove_overlap", text="", icon="OVERLAY")
+
+        row.prop(data, "outline", text="", icon="OUTLINER_DATA_VOLUME")
+        row.prop(data, "outline_weight", text="Weight")
+        row.prop(data, "outline_outer", text="", icon="SELECT_DIFFERENCE")
+        row.prop(data, "outline_miter_limit")
+
+        row = self.layout.row()
+        row.prop(data, "tracking")
+        row.prop(data, "leading")
+        
+        row = self.layout.row()
+        row.label(text="Case")
+        row.prop(data, "case", text="LX", expand=True)
+        row.label(text="Line Align")
+        row.prop(data, "align_lines_x", text="LX", expand=True)
 
 
 class ColdtypeGlobalPanel(bpy.types.Panel):
@@ -216,8 +209,9 @@ class ColdtypeGlobalPanel(bpy.types.Panel):
         row = self.layout.row()
         row.prop(context.scene.ctxyz, "live_updating", text="Frame Updating")
 
-        row = self.layout.row()
-        row.prop(context.scene.ctxyz, "interpolator_style")
+        self.layout.row().label(text="New Objects")
+        self.layout.row().prop(context.scene.ctxyz, "interpolator_style", text="Interpolate")
+        self.layout.row().prop(context.scene.ctxyz, "export_style", text="Export")
 
 
 classes = [

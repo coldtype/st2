@@ -116,6 +116,8 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
 
     meshOffsetX: bpy.props.IntProperty(name="Mesh Offset X", default=0)
     meshOffsetY: bpy.props.IntProperty(name="Mesh Offset Y", default=0)
+
+    use_mesh: bpy.props.BoolProperty(name="Use Mesh", default=True)
     
     # ui-state
     
@@ -165,6 +167,12 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
         ("PARENT", "Empty Parent", "Create new interpolated object(s) that are parented to an empty at the origin", "EMPTY_AXIS", 1),
         ("COLLECTION", "Collection", "Create new interpolated object(s) that are added to a collection", "COLLECTION_NEW", 2),
     ], default="TOP", update=lambda p, c: update_type_and_copy("interpolator_style", p, c))
+
+    export_style: bpy.props.EnumProperty(name="Export Style", items=[
+        ("TOP", "Top-level", "Export object(s) at top-level", "MESH_CUBE", 0),
+        ("PARENT", "Empty Parent", "Export object(s) parented to an empty at the origin", "EMPTY_AXIS", 1),
+        ("COLLECTION", "Collection", "Export object(s) into a collection", "COLLECTION_NEW", 2),
+    ], default="PARENT", update=lambda p, c: update_type_and_copy("export_style", p, c))
     
     # font state
 

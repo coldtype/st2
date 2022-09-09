@@ -36,7 +36,9 @@ class ColdtypeText3DSettingsPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return bool(search.active_key_object(context))
+        ko = search.active_key_object(context)
+        if ko and ko.data:
+            return True
     
     def draw(self, context):
         ko = search.active_key_object(context)

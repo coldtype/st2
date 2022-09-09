@@ -13,49 +13,63 @@ from Coldtype import search
 
 def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
     obj = context.active_object
-    obj.ctxyz.frozen = True
+    data = obj.ctxyz
+    data.frozen = True
+
     sc = context.scene
     current = sc.frame_current
-
-    anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
-    
-    #anchor.obj.scale = obj.scale
-    #anchor.obj.location = obj.location
-    #anchor.obj.rotation_euler = obj.rotation_euler
-    
-    for k in obj.ctxyz.__annotations__.keys():
-        v = getattr(obj.ctxyz, k)
-        setattr(anchor.obj.ctxyz, k, v)
-    
-    anchor.obj.ctxyz.baked = True
-    anchor.obj.ctxyz.baked_from = obj.name
-    anchor.obj.ctxyz.bake_frame = -1
-    anchor.obj.ctxyz.updatable = True
 
     if not frames:
         frames = range(sc.frame_start, sc.frame_end+1)
 
     duration = len(frames)
 
+    if data.export_style == "TOP":
+        parent, coll = None, None
+    elif data.export_style == "PARENT":
+        parent, coll = True, None
+    elif data.export_style == "COLLECTION":
+        parent, coll = None, True
+
+    if parent:
+        anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
+    
+        for k in data.__annotations__.keys():
+            v = getattr(data, k)
+            setattr(anchor.obj.ctxyz, k, v)
+        
+        anchor.obj.ctxyz.baked = True
+        anchor.obj.ctxyz.baked_from = obj.name
+        anchor.obj.ctxyz.bake_frame = -1
+        anchor.obj.ctxyz.updatable = True
+        parent = anchor
+    
+    if coll:
+        coll = f"Coldtype:Export_{obj.name}"
+
+    results = []
+
     for frame in frames:
         if progress_fn:
             progress_fn(frame/duration)
         
-        if frame%obj.ctxyz.export_every_x_frame != 0:
+        if frame%data.export_every_x_frame != 0:
             print("skipping", frame)
             continue
         
         sc.frame_set(frame)
         print("> baking:", frame)
-        typesetter.set_type(obj.ctxyz, obj
+        results.append(typesetter.set_type(data, obj
             , baking=True
-            , parent=anchor.obj
+            , parent=parent.obj if parent else None
+            , collection=coll if coll else None
             , context=context
             , scene=context.scene
             , framewise=framewise
             , glyphwise=glyphwise
             , shapewise=shapewise
-            , layerwise=layerwise)
+            , layerwise=layerwise))
+        
         #bpy.context.view_layer.update()
     
     sc.frame_set(current)
@@ -64,16 +78,22 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     obj.hide_render = True
     obj.hide_set(True)
 
-    print(">>>>>>> BAKED")
-
-    bpy.context.view_layer.objects.active = None
-    bpy.context.view_layer.objects.active = anchor.obj
-    bpy.ops.object.select_all(action='DESELECT')
-    #print("deselecting all")
-    anchor.obj.select_set(True)
+    if parent:
+        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = parent.obj
+        bpy.ops.object.select_all(action='DESELECT')
+        parent.obj.select_set(True)
+    elif coll:
+        pass
+    else:
+        bpy.context.view_layer.objects.active = None
+        bpy.ops.object.select_all(action='DESELECT')
+        for res in results:
+            for bp in res:
+                bp.obj.select_set(True)
+        bpy.context.view_layer.objects.active = bp.obj
 
     sc.frame_set(0)
-    return anchor
 
 
 class Coldtype_OT_ExportSlug(bpy.types.Operator):
@@ -101,7 +121,7 @@ class Coldtype_OT_ExportGlyphs(bpy.types.Operator):
 
 
 class Coldtype_OT_ExportShapes(bpy.types.Operator):
-    """Export word broken down into individual shapes"""
+    """Export text broken down into individual shapes"""
 
     bl_label = "Coldtype Export Shapes"
     bl_idname = "ctxyz.export_shapes"
@@ -113,7 +133,7 @@ class Coldtype_OT_ExportShapes(bpy.types.Operator):
 
 
 class Coldtype_OT_ExportLayers(bpy.types.Operator):
-    """Export word broken down by individual glyph layers"""
+    """Export text broken down by individual glyph layers"""
 
     bl_label = "Coldtype Export Layers"
     bl_idname = "ctxyz.export_layers"
@@ -217,10 +237,8 @@ class ColdtypeExportPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        if ko and not ko.ctxyz.has_keyframes(ko):
+        if ko and ko.data and not ko.ctxyz.has_keyframes(ko):
             return True
-        else:
-            return False
     
     def draw(self, context):
         layout = self.layout
@@ -240,6 +258,10 @@ class ColdtypeExportPanel(bpy.types.Panel):
         col = row.column()
         col.enabled = data.export_meshes
         col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", icon_only=True)
+
+        row = layout.row()
+        row.label(text="New Objects")
+        row.prop(data, "export_style", text="", expand=True)
         
         font = ct.Font.Cacheable(data.font_path)
     

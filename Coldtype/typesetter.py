@@ -41,6 +41,7 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             obj.ctxyz.meshOffsetY = mg.originOffsetY
 
             mcc.objects.link(obj)
+
             for c in obj.users_collection:
                 if c != mcc:
                     c.objects.unlink(obj)
@@ -48,14 +49,20 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             print(">>> imported mesh:", x.glyphName)
 
 
-def set_type(data, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, collection=None):
+def set_type(data, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, collection=None, override_use_mesh=None):
     # if ufo, don't cache?
 
     font = ct.Font.Cacheable(data.font_path)
+
     try:
         mesh = font.font.ttFont["MESH"]
     except KeyError:
         mesh = None
+    
+    if override_use_mesh is not None:
+        meshing = mesh and override_use_mesh
+    else:
+        meshing = mesh and data.use_mesh
 
     collection = collection or "Global"
     using_file = False
@@ -178,12 +185,12 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
     elif data.align_y == "N":
         p.t(0, -ah)
 
-    if mesh:
+    if meshing:
         p.mapv(lambda g: g.record(C.P(g.ambit(th=1, tv=1))))
     
     p.collapse()
 
-    if mesh:
+    if meshing:
         read_mesh_glyphs_into_cache(font, p, mesh)
         
         def build_mesh(empty):
@@ -276,6 +283,8 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 txtObj.obj.ctxyz.baked_from = object.name
                 txtObj.obj.ctxyz.bake_frame = frame
 
+                txtObj.obj.ctxyz._baked_frame = object
+
                 if framewise:
                     def hide(hidden):
                         txtObj.obj.scale = Vector((0, 0, 0)) if hidden else object.scale
@@ -330,7 +339,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
 
             txtObj = cb.BpyObj()
             txtObj.obj = object
-            if mesh:
+            if meshing:
                 build_mesh(object)
             else:
                 txtObj.obj = object
@@ -349,7 +358,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
     else:
         # initial creation of live text
 
-        if mesh:
+        if meshing:
             txtObj = (cb.BpyObj.Empty("Coldtype:Text", collection))
             build_mesh(txtObj.obj)
         else:

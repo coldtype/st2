@@ -47,6 +47,7 @@ class Coldtype_OT_LoadNextFont(bpy.types.Operator):
 
     bl_label = "Coldtype Load Next Font"
     bl_idname = "ctxyz.load_next_font"
+    bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
         cycle_font(context, +1)
@@ -58,6 +59,7 @@ class Coldtype_OT_LoadPrevFont(bpy.types.Operator):
 
     bl_label = "Coldtype Load Previous Font"
     bl_idname = "ctxyz.load_prev_font"
+    bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
         cycle_font(context, -1)
@@ -101,11 +103,32 @@ class Coldtype_OT_RefreshSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def delete_parent_recursively(ko):
+    for o in bpy.data.objects:
+        if o.parent == ko:
+            bpy.data.objects.remove(o, do_unlink=True)
+    
+    bpy.data.objects.remove(ko, do_unlink=True)
+
+
+class Coldtype_OT_DeleteParentedText(bpy.types.Operator):
+    bl_label = "Coldtype Delete Parented Text"
+    bl_idname = "ctxyz.delete_parented_text"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        ko = search.active_key_object(context)
+        delete_parent_recursively(ko)
+        return {"FINISHED"}
+
+
 class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     """Open file dialog to pick a font"""
     
     bl_idname = "wm.ctxyz_choose_font"
     bl_label = "Choose font file"
+    bl_options = {"REGISTER","UNDO"}
+    
     #filepath = bpy.props.StringProperty(subtype='DIR_PATH')
     
     filter_glob: bpy.props.StringProperty(
@@ -151,10 +174,83 @@ class Coldtype_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
         if data.default_upright:
             txtObj.rotate(x=90)
         
-        txtObj.extrude(data.default_extrude)
+        if txtObj.obj.data:
+            txtObj.extrude(data.default_extrude)
 
         txtObj.obj.ctxyz.updatable = True
         txtObj.obj.ctxyz.frozen = False
+        txtObj.obj.select_set(True)
+        
+        return {"FINISHED"}
+    
+
+class Coldtype_OT_ConvertMeshToFlat(bpy.types.Operator):
+    """Convert a mesh-based text setting to an outline-based text-setting"""
+
+    bl_label = "Coldtype Convert Mesh to Flat"
+    bl_idname = "ctxyz.convert_mesh_to_flat"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        ko = search.active_key_object(context)
+        data = ko.ctxyz
+
+        txtObj = typesetter.set_type(data, override_use_mesh=False)[0]
+
+        txtObj.obj.ctxyz.frozen = True
+        txtObj.obj.ctxyz.use_mesh = False
+        
+        for k in data.__annotations__.keys():
+            if k not in ["frozen", "use_mesh"]:
+                v = getattr(data, k)
+                setattr(txtObj.obj.ctxyz, k, v)
+        
+        if data.default_upright:
+            txtObj.rotate(x=90)
+        
+        if txtObj.obj.data:
+            txtObj.extrude(data.default_extrude)
+
+        txtObj.obj.ctxyz.updatable = True
+        txtObj.obj.ctxyz.frozen = False
+
+        for o in bpy.data.objects:
+            if o.parent == ko:
+                bpy.data.objects.remove(o, do_unlink=True)
+        
+        bpy.data.objects.remove(ko, do_unlink=True)
+
+        txtObj.obj.select_set(True)
+        
+        return {"FINISHED"}
+
+
+class Coldtype_OT_ConvertFlatToMesh(bpy.types.Operator):
+    """Convert an outline-based text setting to a mesh-based text-setting"""
+
+    bl_label = "Coldtype Convert Flat to Mesh"
+    bl_idname = "ctxyz.convert_flat_to_mesh"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        ko = search.active_key_object(context)
+        data = ko.ctxyz
+
+        txtObj = typesetter.set_type(data, override_use_mesh=True)[0]
+
+        txtObj.obj.ctxyz.frozen = True
+        txtObj.obj.ctxyz.use_mesh = True
+        
+        for k in data.__annotations__.keys():
+            if k not in ["frozen", "use_mesh"]:
+                v = getattr(data, k)
+                setattr(txtObj.obj.ctxyz, k, v)
+
+        txtObj.obj.ctxyz.updatable = True
+        txtObj.obj.ctxyz.frozen = False
+
+        bpy.data.objects.remove(ko, do_unlink=True)
+
         txtObj.obj.select_set(True)
         
         return {"FINISHED"}
@@ -177,8 +273,11 @@ classes = [
     Coldtype_OT_ShowFont,
     Coldtype_OT_ClearFont,
     Coldtype_OT_RefreshSettings,
+    Coldtype_OT_DeleteParentedText,
     Coldtype_OT_SetTypeWithSceneDefaults,
     Coldtype_OT_SetTypeWithObject,
+    Coldtype_OT_ConvertMeshToFlat,
+    Coldtype_OT_ConvertFlatToMesh,
     WM_OT_ColdtypeChooseFont,
 ]
 
