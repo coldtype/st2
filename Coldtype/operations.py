@@ -122,6 +122,19 @@ class Coldtype_OT_DeleteParentedText(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class Coldtype_OT_InsertNewlineSymbol(bpy.types.Operator):
+    """Insert an ¶ symbol to mark a newline in the single-line text editor"""
+
+    bl_label = "Insert Newline Symbol"
+    bl_idname = "ctxyz.insert_newline_symbol"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        ko = search.active_key_object(context)
+        ko.ctxyz.text = ko.ctxyz.text + "¶"
+        return {"FINISHED"}
+
+
 class WM_OT_ColdtypeChooseFont(bpy.types.Operator, ImportHelper):
     """Open file dialog to pick a font"""
     
@@ -274,6 +287,7 @@ classes = [
     Coldtype_OT_ClearFont,
     Coldtype_OT_RefreshSettings,
     Coldtype_OT_DeleteParentedText,
+    Coldtype_OT_InsertNewlineSymbol,
     Coldtype_OT_SetTypeWithSceneDefaults,
     Coldtype_OT_SetTypeWithObject,
     Coldtype_OT_ConvertMeshToFlat,

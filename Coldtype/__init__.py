@@ -103,6 +103,7 @@ class ColdtypeMainPanel(bpy.types.Panel):
 
         row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
         row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
+        row.operator("ctxyz.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
         
         if data.text_mode == "FILE":
             row = self.layout.row()
