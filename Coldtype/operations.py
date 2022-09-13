@@ -123,7 +123,7 @@ class Coldtype_OT_DeleteParentedText(bpy.types.Operator):
 
 
 class Coldtype_OT_InsertNewlineSymbol(bpy.types.Operator):
-    """Insert an ¶ symbol to mark a newline in the single-line text editor"""
+    """Insert a ¶ symbol to mark a newline in the single-line text editor"""
 
     bl_label = "Insert Newline Symbol"
     bl_idname = "ctxyz.insert_newline_symbol"
