@@ -163,15 +163,13 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         if data.leading:
             p.lead(data.leading)
     
-    amb = p.ambit(
-        th=not data.use_horizontal_font_metrics,
-        tv=not data.use_vertical_font_metrics)
+    thtv = dict(th=not data.use_horizontal_font_metrics, tv=not data.use_vertical_font_metrics)
+    
+    amb = p.ambit(**thtv)
 
     p.xalign(rect=amb, x=data.align_lines_x, th=not data.use_horizontal_font_metrics)
 
-    ax, ay, aw, ah = p.ambit(
-        th=not data.use_horizontal_font_metrics,
-        tv=not data.use_vertical_font_metrics)
+    ax, ay, aw, ah = p.ambit(**thtv)
 
     p.t(-ax, -ay)
 
@@ -256,6 +254,21 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 p = p_inner
             elif data.outline_outer:
                 p.difference(p_inner)
+        
+        if data.block:
+            def block(_p):
+                return (C.P(_p.ambit(
+                            th=not data.block_horizontal_metrics,
+                            tv=not data.block_vertical_metrics)
+                        .inset(data.block_inset_x, data.block_inset_y))
+                    #.skew(0.5, 0)
+                    #.translate(0.2, 0)
+                    .difference(_p.copy()))
+
+            if data.combine_glyphs:
+                p = block(p)
+            
+            p.mapv(block)
     
     output = []
     
@@ -263,13 +276,19 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         if baking:
             # converting live text to non-live text
 
-            def export(glyph=None):
+            def export(glyph=None, idx=None):
                 txtObj = (cb.BpyObj.Curve(f"{object.name}Frozen", collection))
                 txtObj.obj.data = object.data.copy()
                 txtObj.obj.animation_data_clear()
                 txtObj.obj.scale = object.scale
                 txtObj.obj.location = object.location
                 txtObj.obj.rotation_euler = object.rotation_euler
+
+                if glyph and idx is not None:
+                    if data.export_stagger_y:
+                        txtObj.locate_relative(y=idx*data.export_stagger_y)
+                    if data.export_stagger_z:
+                        txtObj.locate_relative(z=idx*data.export_stagger_z)
 
                 if glyph:
                     txtObj.draw(glyph, set_origin=False, fill=False)
@@ -330,8 +349,8 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 #if layerwise:
                 #    p.mapv(lambda _p: _p.explode())
                 
-                for glyph in p:
-                    output.append(export(glyph))
+                for idx, glyph in enumerate(p):
+                    output.append(export(glyph, idx=idx))
             else:
                 output.append(export())
         else:

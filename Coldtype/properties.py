@@ -145,14 +145,13 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     # exporting
 
     export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=True)
-    
     export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
-
     export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=True)
-
     export_rigidbody_active: bpy.props.BoolProperty(name="Export with Active Rigid Body", default=False)
-
     export_every_x_frame: bpy.props.IntProperty(name="Export Every X Frame", default=1, min=1, max=50)
+
+    export_stagger_y: bpy.props.FloatProperty(name="Export Stagger Y", default=0)
+    export_stagger_z: bpy.props.FloatProperty(name="Export Stagger Z", default=0)
 
     # interpolating
 
@@ -188,6 +187,12 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
 
     combine_glyphs: bpy.props.BoolProperty(name="Combine Glyphs", default=1, update=update_type)
 
+    block: bpy.props.BoolProperty(name="Set on Blocks", default=0, update=update_type)
+    block_inset_x: bpy.props.FloatProperty(name="Block Inset X", default=0, update=update_type)
+    block_inset_y: bpy.props.FloatProperty(name="Block Inset Y", default=-0.05, update=update_type)
+    block_horizontal_metrics: bpy.props.BoolProperty(name="Blocks Use Horizontal Font Metrics", default=True, update=update_type)
+    block_vertical_metrics: bpy.props.BoolProperty(name="Blocks Use Vertical Font Metrics", default=True, update=update_type)
+
     tracking: bpy.props.IntProperty(name="Tracking", default=0, min=-1000, max=1000, update=lambda p, c: update_type_and_copy("tracking", p, c))
     
     leading: bpy.props.FloatProperty(name="Leading", default=0.5, min=-10, max=10, update=lambda p, c: update_type_and_copy("leading", p, c))
@@ -221,8 +226,6 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     ], default="TYPED", update=update_type)
 
     individual_glyphs: bpy.props.BoolProperty(name="Individual Glyphs", default=False)
-    stagger_y: bpy.props.FloatProperty(name="Stagger Y", default=0)
-    stagger_z: bpy.props.FloatProperty(name="Stagger Z", default=0)
     
     fvar_axis1: axisprop(1, 0)
     fvar_axis2: axisprop(2, 0)

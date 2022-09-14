@@ -259,10 +259,15 @@ class ColdtypeExportPanel(bpy.types.Panel):
         col.enabled = data.export_meshes
         col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", icon_only=True)
 
+        # row = layout.row()
+        # row.label(text="New Objects")
+        # row.prop(data, "export_style", text="", expand=True)
+
         row = layout.row()
-        row.label(text="New Objects")
-        row.prop(data, "export_style", text="", expand=True)
-        
+        row.label(text="Stagger")
+        row.prop(data, "export_stagger_y", text="Y")
+        row.prop(data, "export_stagger_z", text="Z")
+
         font = ct.Font.Cacheable(data.font_path)
     
         layout.row().operator("ctxyz.export_slug", text="Export Slug")

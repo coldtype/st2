@@ -186,6 +186,14 @@ class ColdtypeFontPanel(bpy.types.Panel):
         row = self.layout.row()
         row.prop(data, "tracking")
         row.prop(data, "leading")
+
+        row = self.layout.row()
+        row.label(text="Blocks")
+        row.prop(data, "block", text="", icon="MESH_CUBE")
+        row.prop(data, "block_inset_x", text="X")
+        row.prop(data, "block_inset_y", text="Y")
+        row.prop(data, "block_horizontal_metrics", text="", icon="EVENT_X")
+        row.prop(data, "block_vertical_metrics", text="", icon="EVENT_Y")
         
         row = self.layout.row()
         row.label(text="Case")
