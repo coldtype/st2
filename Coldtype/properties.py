@@ -99,6 +99,9 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
     default_upright: bpy.props.BoolProperty(name="Default to Upright", default=False)
 
     default_extrude: bpy.props.FloatProperty(name="Default Extrude Depth", default=0.1)
+
+    #stagger: bpy.props.StringProperty(name="Stagger", default="")
+    #bounce: bpy.props.StringProperty(name="Bounce", default="")
     
     # internal
     
@@ -152,6 +155,10 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
 
     export_stagger_y: bpy.props.FloatProperty(name="Export Stagger Y", default=0)
     export_stagger_z: bpy.props.FloatProperty(name="Export Stagger Z", default=0)
+
+    export_rotate_x: bpy.props.FloatProperty(name="Export Rotate X", default=0, unit="ROTATION")
+    export_rotate_y: bpy.props.FloatProperty(name="Export Rotate Y", default=0, unit="ROTATION")
+    export_rotate_z: bpy.props.FloatProperty(name="Export Rotate Z", default=0, unit="ROTATION")
 
     # interpolating
 

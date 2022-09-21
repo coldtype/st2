@@ -263,10 +263,16 @@ class ColdtypeExportPanel(bpy.types.Panel):
         # row.label(text="New Objects")
         # row.prop(data, "export_style", text="", expand=True)
 
-        row = layout.row()
+        row = layout.row(align=True)
         row.label(text="Stagger")
         row.prop(data, "export_stagger_y", text="Y")
         row.prop(data, "export_stagger_z", text="Z")
+
+        row = layout.row(align=True)
+        row.label(text="Rotate")
+        row.prop(data, "export_rotate_x", text="X")
+        row.prop(data, "export_rotate_y", text="Y")
+        row.prop(data, "export_rotate_z", text="Z")
 
         font = ct.Font.Cacheable(data.font_path)
     

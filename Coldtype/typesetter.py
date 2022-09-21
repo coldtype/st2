@@ -1,4 +1,4 @@
-import bpy, tempfile
+import bpy, tempfile, math
 from mathutils import Vector
 from pathlib import Path
 
@@ -145,11 +145,15 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 dp = f"fvar_axis{idx+1}"
                 fvar_offset = getattr(data, f"{dp}_offset")
                 found = False
-                for fcu in object.animation_data.action.fcurves:
-                    #print(fcu.data_path, dp)
-                    if fcu.data_path.split(".")[-1] == dp:
-                        found = True
-                        _vars[k] = fcu.evaluate((scene.frame_current - x.i*fvar_offset)%(scene.frame_end+1 - scene.frame_start))
+                
+                try:
+                    for fcu in object.animation_data.action.fcurves:
+                        #print(fcu.data_path, dp)
+                        if fcu.data_path.split(".")[-1] == dp:
+                            found = True
+                            _vars[k] = fcu.evaluate((scene.frame_current - x.i*fvar_offset)%(scene.frame_end+1 - scene.frame_start))
+                except AttributeError:
+                    pass
                 
                 if not found:
                     _vars[k] = getattr(data, dp)
@@ -339,6 +343,11 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 
                 txtObj.obj.ctxyz.updatable = True
                 txtObj.obj.visible_camera = object.visible_camera
+
+                if glyph and idx is not None:
+                    if data.export_rotate_y:
+                        txtObj.rotate(y=math.degrees(data.export_rotate_y))
+
                 return txtObj
             
             if glyphwise:
@@ -356,22 +365,45 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         else:
             # interactive updating of live text
 
+            print(">>>", p)
+
             txtObj = cb.BpyObj()
             txtObj.obj = object
             if meshing:
                 build_mesh(object)
             else:
                 txtObj.obj = object
-                txtObj.draw(p, set_origin=False, fill=False)
-
-                #if data.interpolated:
-                #    txtObj.obj.name = "Text.interpolated"
 
                 if data.auto_rename:
                     if using_file:
                         txtObj.obj.name = "Coldtype::File"
                     else:
                         txtObj.obj.name = "Coldtype:" + fulltext[:20]
+
+                if len(p) == 1 or True:
+                    txtObj.draw(p, set_origin=False, fill=False)
+                else:
+                    tmps = []
+                    for idx, g in enumerate(p):
+                        tmpObj = (cb.BpyObj.Curve(f"Tmp_{txtObj.obj.name}", "Temporary"))
+                        tmpObj.draw(g, set_origin=True, fill=True)
+                        tmpObj.extrude(txtObj.obj.data.extrude)
+                        #tmpObj.locate_relative(z=idx*0.05)
+                        tmpObj.convertToMesh()
+                        tmps.append(tmpObj)
+                
+                    bpy.context.view_layer.objects.active = None
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for tmp in tmps:
+                        tmp.obj.select_set(True)
+                    bpy.context.view_layer.objects.active = tmp.obj
+
+                    bpy.ops.object.join()
+                    joined = bpy.context.object
+                    joinObj = cb.BpyObj()
+                    joinObj.obj = joined
+                    joinObj.origin_to_cursor()
+                    print(joined)
             
             output.append(txtObj)
     else:
