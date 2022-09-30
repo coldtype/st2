@@ -53,16 +53,16 @@ def install_coldtype(context, global_vars, required_version):
 
 def editor_needs_coldtype(layout, status):
     if status < 0:
-        download = "Download & Install ST2"
+        download = "Download & Install Coldtype"
         warning = """This addon requires coldtype
             (coldtype.xyz) as a Python package.
             -
             Clicking the button below will
-            download and install ST2.
+            download and install coldtype.
             It should only take a few moments
             to install."""
     else:
-        download = "Update ST2"
+        download = "Update coldtype"
         warning = """This version requires an update
             to the coldtype python package
             -
@@ -83,9 +83,9 @@ def editor_needs_coldtype(layout, status):
 
 
 class ST2_OT_InstallST2(bpy.types.Operator):
-    """In order to work properly, ST2 needs to download and install the ST2 python package. You can install that package by clicking this button."""
+    """In order to work properly, ST2 needs to download and install the coldtype python package. You can install that package by clicking this button."""
 
-    bl_label = "ST2 Install ST2"
+    bl_label = "ST2 Install coldtype"
     bl_idname = "st2.install_coldtype"
     
     def execute(self, context):
@@ -95,7 +95,7 @@ class ST2_OT_InstallST2(bpy.types.Operator):
 
 
 class ST2InstallPanel(bpy.types.Panel):
-    bl_label = "ST2 Install"
+    bl_label = "ST2 Setup"
     bl_idname = "ST2_PT_0_INSTALLPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"

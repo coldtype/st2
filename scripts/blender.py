@@ -10,7 +10,7 @@ def on_linux(): return _os() == "Linux"
 
 root = Path(__file__).parent.parent
 
-coldtype = (root / "ST2").absolute()
+addon_source = (root / "ST2").absolute()
 config = run_path(root / "config.py")
 
 blender = config.get("BLENDER")
