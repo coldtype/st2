@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Coldtype",
+    "name": "ST2",
     "author": "Rob Stenson",
     "version": (0, 5),
     "blender": (3, 0, 0),
@@ -17,22 +17,22 @@ if "bpy" in locals():
         importlib.reload(module)
 else:
     import bpy
-    from Coldtype import importer, operations, properties, typesetter, search, exporting, font, util, interpolation
+    from ST2 import importer, operations, properties, typesetter, search, exporting, font, util, interpolation
 
 modules = [importer, properties, operations, typesetter, search, exporting, font, util, interpolation]
 
 
 if importer.C is not None:
     from fontTools.ttLib.ttFont import TTFont, registerCustomTableClass
-    registerCustomTableClass("MESH", "Coldtype.meshtable", "table__M_E_S_H")
+    registerCustomTableClass("MESH", "ST2.meshtable", "table__M_E_S_H")
 
 
-class ColdtypeDefaultPanel(bpy.types.Panel):
+class ST2DefaultPanel(bpy.types.Panel):
     bl_label = "Defaults"
-    bl_idname = "COLDTYPE_PT_1_DEFAULTPANEL"
+    bl_idname = "ST2_PT_1_DEFAULTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
@@ -46,10 +46,10 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
         util.ensure_frame_changer(frame_changers, properties.update_type_frame_change)
 
         layout = self.layout
-        data = context.scene.ctxyz
+        data = context.scene.st2
 
         row = layout.row()
-        row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
         font_path = data.font_path
 
         if not font_path:
@@ -60,10 +60,10 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
         font = importer.ct.Font.Cacheable(font_path)
         row.label(text=f"“{font.path.stem}”")
 
-        row.operator("ctxyz.clear_font", text="", icon="X")
-        row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
-        row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
+        row.operator("st2.clear_font", text="", icon="X")
+        row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
+        row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
+        row.operator("st2.show_font", text="", icon="FILEBROWSER")
 
         row = layout.row()
         row.label(text="Defaults")
@@ -74,24 +74,24 @@ class ColdtypeDefaultPanel(bpy.types.Panel):
         row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
         row.prop(data, "default_extrude")
 
-        layout.row().operator("ctxyz.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+        layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
 
-class ColdtypeMainPanel(bpy.types.Panel):
+class ST2MainPanel(bpy.types.Panel):
     bl_label = "Text"
-    bl_idname = "COLDTYPE_PT_20_MAINPANEL"
+    bl_idname = "ST2_PT_20_MAINPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        return ko and not ko.ctxyz.baked
+        return ko and not ko.st2.baked
     
     def draw(self, context):
         ko = search.active_key_object(context)
-        data = ko.ctxyz
+        data = ko.st2
         
         row = self.layout.row()
         col = row.column()
@@ -103,45 +103,44 @@ class ColdtypeMainPanel(bpy.types.Panel):
 
         row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
         row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
-        row.operator("ctxyz.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
+        row.operator("st2.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
         
         if data.text_mode == "FILE":
             row = self.layout.row()
             row.prop(data, "text_file", text="File")
-            row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+            row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         elif data.text_mode == "BLOCK":
             row = self.layout.row()
             row.prop(data, "text_block", text="Block")
-            row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
+            row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         
         if data.text_indexed:
             self.layout.row().prop(data, "text_index")
         
         if not ko.data:
-            self.layout.row().operator("ctxyz.delete_parented_text", text="Delete All")
+            self.layout.row().operator("st2.delete_parented_text", text="Delete All")
 
 
-class ColdtypeFontPanel(bpy.types.Panel):
+class ST2FontPanel(bpy.types.Panel):
     bl_label = "Font"
-    bl_idname = "COLDTYPE_PT_22_FONTPANEL"
+    bl_idname = "ST2_PT_22_FONTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        return ko and not ko.ctxyz.baked
+        return ko and not ko.st2.baked
     
     def draw(self, context):
         ko = search.active_key_object(context)
-        data = ko.ctxyz
+        data = ko.st2
 
         font = importer.ct.Font.Cacheable(data.font_path)
-        #print(">>>", font)
         
         row = self.layout.row()
-        row.operator("wm.ctxyz_choose_font", text="", icon="FONTPREVIEW")
+        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
         font_path = data.font_path
 
         font = importer.ct.Font.Cacheable(font_path)
@@ -153,10 +152,10 @@ class ColdtypeFontPanel(bpy.types.Panel):
         
         row.label(text=f"“{font.path.stem}”")
         
-        row.operator("ctxyz.refresh_settings", text="", icon="FILE_REFRESH")
-        row.operator("ctxyz.load_prev_font", text="", icon="TRIA_LEFT")
-        row.operator("ctxyz.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("ctxyz.show_font", text="", icon="FILEBROWSER")
+        row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
+        row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
+        row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
+        row.operator("st2.show_font", text="", icon="FILEBROWSER")
         
         row = self.layout.row()
         row.label(text="Position")
@@ -169,9 +168,9 @@ class ColdtypeFontPanel(bpy.types.Panel):
 
         if mesh:
             if data.use_mesh:
-                self.layout.row().operator("ctxyz.convert_mesh_to_flat", text="Convert Mesh to Outlines")
+                self.layout.row().operator("st2.convert_mesh_to_flat", text="Convert Mesh to Outlines")
             else:
-                self.layout.row().operator("ctxyz.convert_flat_to_mesh", text="Convert Outlines to Mesh")
+                self.layout.row().operator("st2.convert_flat_to_mesh", text="Convert Outlines to Mesh")
 
         row = self.layout.row()
         row.enabled = not mesh or (mesh and not data.use_mesh)
@@ -202,12 +201,12 @@ class ColdtypeFontPanel(bpy.types.Panel):
         row.prop(data, "align_lines_x", text="LX", expand=True)
 
 
-class ColdtypeGlobalPanel(bpy.types.Panel):
+class ST2GlobalPanel(bpy.types.Panel):
     bl_label = "Render Settings"
-    bl_idname = "COLDTYPE_PT_999_GLOBALPANEL"
+    bl_idname = "ST2_PT_999_GLOBALPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
@@ -216,22 +215,22 @@ class ColdtypeGlobalPanel(bpy.types.Panel):
     
     def draw(self, context):
         row = self.layout.row()
-        row.prop(context.scene.ctxyz, "live_updating", text="Frame Updating")
+        row.prop(context.scene.st2, "live_updating", text="Frame Updating")
 
         self.layout.row().label(text="New Objects")
-        self.layout.row().prop(context.scene.ctxyz, "interpolator_style", text="Interpolate")
-        self.layout.row().prop(context.scene.ctxyz, "export_style", text="Export")
+        self.layout.row().prop(context.scene.st2, "interpolator_style", text="Interpolate")
+        self.layout.row().prop(context.scene.st2, "export_style", text="Export")
 
 
 classes = [
-    #ColdtypePropertiesGroup,
+    #ST2PropertiesGroup,
 ]
 
 panels = [
-    ColdtypeDefaultPanel,
-    ColdtypeMainPanel,
-    ColdtypeFontPanel,
-    ColdtypeGlobalPanel,
+    ST2DefaultPanel,
+    ST2MainPanel,
+    ST2FontPanel,
+    ST2GlobalPanel,
 ]
 
 all_classes = [*classes]
@@ -249,7 +248,7 @@ frame_changers = bpy.app.handlers.frame_change_post
 
 
 def register():
-    print("---COLDTYPE---", bl_info["version"])
+    print("---ST2---", bl_info["version"])
 
     for c in all_classes:
         bpy.utils.register_class(c)
@@ -257,8 +256,8 @@ def register():
     for p in all_panels:
         bpy.utils.register_class(p)
 
-    bpy.types.Scene.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Default Coldtype properties")
-    bpy.types.Object.ctxyz = bpy.props.PointerProperty(type=properties.ColdtypePropertiesGroup, name="Coldtype", description="Coldtype properties")
+    bpy.types.Scene.st2 = bpy.props.PointerProperty(type=properties.ST2PropertiesGroup, name="ST2", description="Default ST2 properties")
+    bpy.types.Object.st2 = bpy.props.PointerProperty(type=properties.ST2PropertiesGroup, name="ST2", description="ST2 properties")
 
     util.clear_frame_changers(properties.update_type_and_copy)
     util.ensure_frame_changer(frame_changers, properties.update_type_frame_change)

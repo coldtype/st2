@@ -10,7 +10,7 @@ except ImportError:
 def vt(v):
     return tuple(map(int, (v.split("."))))
 
-REQUIRED_COLDTYPE = "0.9.10"
+REQUIRED_ST2 = "0.9.10"
 coldtype_status = 1
 
 try:
@@ -18,7 +18,7 @@ try:
     import coldtype.text as ct
     import coldtype.blender as cb
 
-    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
+    if vt(C.__version__) < vt(REQUIRED_ST2):
         C, ct, cb = None, None, None
         coldtype_status = 0
 
@@ -33,7 +33,7 @@ def install_coldtype(context, global_vars, required_version):
     args = [f"coldtype[blender]>={required_version}"]
     
     print("---"*20)
-    print("> INSTALLING COLDTYPE")
+    print("> INSTALLING ST2")
     print(args)
     print("---"*20)
     time.sleep(1)
@@ -58,11 +58,11 @@ def editor_needs_coldtype(layout, status):
             (coldtype.xyz) as a Python package.
             -
             Clicking the button below will
-            download and install Coldtype.
+            download and install coldtype.
             It should only take a few moments
             to install."""
     else:
-        download = "Update Coldtype"
+        download = "Update coldtype"
         warning = """This version requires an update
             to the coldtype python package
             -
@@ -79,27 +79,27 @@ def editor_needs_coldtype(layout, status):
             row.label(text=line.strip())
     
     layout.row().separator()
-    layout.row().operator("ctxyz.install_coldtype", icon="WORLD_DATA", text=download)
+    layout.row().operator("st2.install_coldtype", icon="WORLD_DATA", text=download)
 
 
-class Coldtype_OT_InstallColdtype(bpy.types.Operator):
-    """In order to work properly, Coldtype needs to download and install the Coldtype python package. You can install that package by clicking this button."""
+class ST2_OT_InstallST2(bpy.types.Operator):
+    """In order to work properly, ST2 needs to download and install the coldtype python package. You can install that package by clicking this button."""
 
-    bl_label = "Coldtype Install Coldtype"
-    bl_idname = "ctxyz.install_coldtype"
+    bl_label = "ST2 Install coldtype"
+    bl_idname = "st2.install_coldtype"
     
     def execute(self, context):
-        install_coldtype(context, globals(), REQUIRED_COLDTYPE)
+        install_coldtype(context, globals(), REQUIRED_ST2)
         bpy.ops.script.reload()
         return {"FINISHED"}
 
 
-class ColdtypeInstallPanel(bpy.types.Panel):
-    bl_label = "Coldtype Install"
-    bl_idname = "COLDTYPE_PT_0_INSTALLPANEL"
+class ST2InstallPanel(bpy.types.Panel):
+    bl_label = "ST2 Setup"
+    bl_idname = "ST2_PT_0_INSTALLPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
@@ -110,9 +110,9 @@ class ColdtypeInstallPanel(bpy.types.Panel):
 
 
 classes = [
-    Coldtype_OT_InstallColdtype,
+    ST2_OT_InstallST2,
 ]
 
 panels = [
-    ColdtypeInstallPanel
+    ST2InstallPanel
 ]

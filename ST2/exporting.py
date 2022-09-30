@@ -7,13 +7,13 @@ except ImportError:
     ct, cb = None, None
 
 
-from Coldtype import typesetter
-from Coldtype import search
+from ST2 import typesetter
+from ST2 import search
 
 
 def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
     obj = context.active_object
-    data = obj.ctxyz
+    data = obj.st2
     data.frozen = True
 
     sc = context.scene
@@ -36,16 +36,16 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     
         for k in data.__annotations__.keys():
             v = getattr(data, k)
-            setattr(anchor.obj.ctxyz, k, v)
+            setattr(anchor.obj.st2, k, v)
         
-        anchor.obj.ctxyz.baked = True
-        anchor.obj.ctxyz.baked_from = obj.name
-        anchor.obj.ctxyz.bake_frame = -1
-        anchor.obj.ctxyz.updatable = True
+        anchor.obj.st2.baked = True
+        anchor.obj.st2.baked_from = obj.name
+        anchor.obj.st2.bake_frame = -1
+        anchor.obj.st2.updatable = True
         parent = anchor
     
     if coll:
-        coll = f"Coldtype:Export_{obj.name}"
+        coll = f"ST2:Export_{obj.name}"
 
     results = []
 
@@ -74,7 +74,7 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     
     sc.frame_set(current)
 
-    obj.ctxyz.frozen = False
+    obj.st2.frozen = False
     obj.hide_render = True
     obj.hide_set(True)
 
@@ -96,11 +96,11 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     sc.frame_set(0)
 
 
-class Coldtype_OT_ExportSlug(bpy.types.Operator):
+class ST2_OT_ExportSlug(bpy.types.Operator):
     """Export slug as single shape"""
 
-    bl_label = "Coldtype Export Slug"
-    bl_idname = "ctxyz.export_slug"
+    bl_label = "ST2 Export Slug"
+    bl_idname = "st2.export_slug"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -108,11 +108,11 @@ class Coldtype_OT_ExportSlug(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_ExportGlyphs(bpy.types.Operator):
+class ST2_OT_ExportGlyphs(bpy.types.Operator):
     """Export glyphs as individual shapes"""
 
-    bl_label = "Coldtype Export Glyphs"
-    bl_idname = "ctxyz.export_glyphs"
+    bl_label = "ST2 Export Glyphs"
+    bl_idname = "st2.export_glyphs"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -120,11 +120,11 @@ class Coldtype_OT_ExportGlyphs(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_ExportShapes(bpy.types.Operator):
+class ST2_OT_ExportShapes(bpy.types.Operator):
     """Export text broken down into individual shapes"""
 
-    bl_label = "Coldtype Export Shapes"
-    bl_idname = "ctxyz.export_shapes"
+    bl_label = "ST2 Export Shapes"
+    bl_idname = "st2.export_shapes"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -132,11 +132,11 @@ class Coldtype_OT_ExportShapes(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_ExportLayers(bpy.types.Operator):
+class ST2_OT_ExportLayers(bpy.types.Operator):
     """Export text broken down by individual glyph layers"""
 
-    bl_label = "Coldtype Export Layers"
-    bl_idname = "ctxyz.export_layers"
+    bl_label = "ST2 Export Layers"
+    bl_idname = "st2.export_layers"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -144,11 +144,11 @@ class Coldtype_OT_ExportLayers(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_BakeFrames(bpy.types.Operator):
+class ST2_OT_BakeFrames(bpy.types.Operator):
     """Bake animation as individual curves, shown/hidden per-frame"""
 
-    bl_label = "Coldtype Bake Frames"
-    bl_idname = "ctxyz.bake_frames"
+    bl_label = "ST2 Bake Frames"
+    bl_idname = "st2.bake_frames"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -159,11 +159,11 @@ class Coldtype_OT_BakeFrames(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_BakeFramesNoTiming(bpy.types.Operator):
+class ST2_OT_BakeFramesNoTiming(bpy.types.Operator):
     """Bake animation as individual curves, shown all at once"""
 
-    bl_label = "Coldtype Bake Frames with No Timing"
-    bl_idname = "ctxyz.bake_frames_no_timing"
+    bl_label = "ST2 Bake Frames with No Timing"
+    bl_idname = "st2.bake_frames_no_timing"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -175,9 +175,9 @@ class Coldtype_OT_BakeFramesNoTiming(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class Coldtype_OT_BakeSelectAll(bpy.types.Operator):
-    bl_label = "Coldtype Bake Select All"
-    bl_idname = "ctxyz.bake_select_all"
+class ST2_OT_BakeSelectAll(bpy.types.Operator):
+    bl_label = "ST2 Bake Select All"
+    bl_idname = "st2.bake_select_all"
     #bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
@@ -198,21 +198,21 @@ def delete_at_frame(context, o:bpy.types.Object, frame:int):
     bpy.ops.object.delete()
 
 
-class Coldtype_OT_DeleteBake(bpy.types.Operator):
-    bl_label = "Coldtype Delete Bake"
-    bl_idname = "ctxyz.delete_bake"
+class ST2_OT_DeleteBake(bpy.types.Operator):
+    bl_label = "ST2 Delete Bake"
+    bl_idname = "st2.delete_bake"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
         ko = search.active_baked_object(context, prefer_parent=True)
-        baked_from = context.scene.objects[ko.ctxyz.baked_from]
+        baked_from = context.scene.objects[ko.st2.baked_from]
 
         bpy.context.view_layer.objects.active = None
         current = context.scene.frame_current
 
         for o in context.scene.objects:
             if o.parent and o.parent == ko:
-                delete_at_frame(context, o, o.ctxyz.bake_frame)
+                delete_at_frame(context, o, o.st2.bake_frame)
 
         delete_at_frame(context, ko, current)
 
@@ -227,23 +227,23 @@ class Coldtype_OT_DeleteBake(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class ColdtypeExportPanel(bpy.types.Panel):
+class ST2ExportPanel(bpy.types.Panel):
     bl_label = "Export"
-    bl_idname = "COLDTYPE_PT_4_EXPORTPANEL"
+    bl_idname = "ST2_PT_4_EXPORTPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        if ko and ko.data and not ko.ctxyz.has_keyframes(ko):
+        if ko and ko.data and not ko.st2.has_keyframes(ko):
             return True
     
     def draw(self, context):
         layout = self.layout
         ko = search.active_key_object(context)
-        data = ko.ctxyz
+        data = ko.st2
 
         row = layout.row()
 
@@ -276,25 +276,25 @@ class ColdtypeExportPanel(bpy.types.Panel):
 
         font = ct.Font.Cacheable(data.font_path)
     
-        layout.row().operator("ctxyz.export_slug", text="Export Slug")
-        layout.row().operator("ctxyz.export_glyphs", text="Export Glyphs")
-        layout.row().operator("ctxyz.export_shapes", text="Export Shapes")
+        layout.row().operator("st2.export_slug", text="Export Slug")
+        layout.row().operator("st2.export_glyphs", text="Export Glyphs")
+        layout.row().operator("st2.export_shapes", text="Export Shapes")
 
         if font._colr:
-            row.operator("ctxyz.export_layers", text="Layers")
+            row.operator("st2.export_layers", text="Layers")
 
 
-class ColdtypeBakeAnimationPanel(bpy.types.Panel):
+class ST2BakeAnimationPanel(bpy.types.Panel):
     bl_label = "Bake Animation"
-    bl_idname = "COLDTYPE_PT_5_BAKEPANEL"
+    bl_idname = "ST2_PT_5_BAKEPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        if ko and ko.ctxyz.has_keyframes(ko):
+        if ko and ko.st2.has_keyframes(ko):
             return True
         else:
             return False
@@ -302,7 +302,7 @@ class ColdtypeBakeAnimationPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         ko = search.active_key_object(context)
-        data = ko.ctxyz
+        data = ko.st2
 
         row = layout.row()
 
@@ -312,17 +312,17 @@ class ColdtypeBakeAnimationPanel(bpy.types.Panel):
         row.prop(data, "export_every_x_frame", text="Frame Interval")
         row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
 
-        layout.row().operator("ctxyz.bake_frames", text="Bake Timed")
-        layout.row().operator("ctxyz.bake_frames_no_timing", text="Export Untimed")
+        layout.row().operator("st2.bake_frames", text="Bake Timed")
+        layout.row().operator("st2.bake_frames_no_timing", text="Export Untimed")
         
 
 
-class ColdtypeBakedPanel(bpy.types.Panel):
+class ST2BakedPanel(bpy.types.Panel):
     bl_label = "Baked"
-    bl_idname = "COLDTYPE_PT_6_BAKEDPANEL"
+    bl_idname = "ST2_PT_6_BAKEDPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
@@ -331,24 +331,24 @@ class ColdtypeBakedPanel(bpy.types.Panel):
     def draw(self, context):
         ko = search.active_baked_object(context, prefer_parent=True)
 
-        self.layout.row().label(text=f"Baked: “{ko.ctxyz.text}”")
-        self.layout.row().operator("ctxyz.bake_select_all", text="Select All")
-        self.layout.row().operator("ctxyz.delete_bake", text="Delete Bake")
+        self.layout.row().label(text=f"Baked: “{ko.st2.text}”")
+        self.layout.row().operator("st2.bake_select_all", text="Select All")
+        self.layout.row().operator("st2.delete_bake", text="Delete Bake")
 
 
 classes = [
-    Coldtype_OT_ExportSlug,
-    Coldtype_OT_ExportGlyphs,
-    Coldtype_OT_ExportShapes,
-    Coldtype_OT_ExportLayers,
-    Coldtype_OT_BakeFrames,
-    Coldtype_OT_BakeFramesNoTiming,
-    Coldtype_OT_BakeSelectAll,
-    Coldtype_OT_DeleteBake,
+    ST2_OT_ExportSlug,
+    ST2_OT_ExportGlyphs,
+    ST2_OT_ExportShapes,
+    ST2_OT_ExportLayers,
+    ST2_OT_BakeFrames,
+    ST2_OT_BakeFramesNoTiming,
+    ST2_OT_BakeSelectAll,
+    ST2_OT_DeleteBake,
 ]
 
 panels = [
-    ColdtypeExportPanel,
-    ColdtypeBakeAnimationPanel,
-    ColdtypeBakedPanel,
+    ST2ExportPanel,
+    ST2BakeAnimationPanel,
+    ST2BakedPanel,
 ]

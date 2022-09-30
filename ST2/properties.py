@@ -1,15 +1,15 @@
 import bpy
 
-from Coldtype import typesetter
+from ST2 import typesetter
 
 
 def _update_type(props, context):
-#    data, active = find_ctxyz(context)
+#    data, active = find_st2(context)
 #    if props != data:
 
     for obj in context.scene.objects:
-        if obj.ctxyz == props and obj.ctxyz.frozen != True:
-            typesetter.set_type(obj.ctxyz, obj, scene=context.scene)
+        if obj.st2 == props and obj.st2.frozen != True:
+            typesetter.set_type(obj.st2, obj, scene=context.scene)
             return obj
     
     # if data.updatable and not data.baked:
@@ -24,8 +24,8 @@ def update_type_and_copy(prop, props, context):
     active = _update_type(props, context)
     if active:
         for obj in context.scene.objects:
-            if obj.ctxyz.editable(obj) and obj != active and obj != context.active_object:
-                setattr(obj.ctxyz, prop, getattr(active.ctxyz, prop))
+            if obj.st2.editable(obj) and obj != active and obj != context.active_object:
+                setattr(obj.st2, prop, getattr(active.st2, prop))
 
 def is_rendering():
     try:
@@ -42,7 +42,7 @@ def is_rendering():
 def update_type_frame_change(scene, depsgraph):
     rendered_view = is_rendering()
     playing = bpy.context.screen.is_animation_playing if bpy.context.screen else False
-    lu = scene.ctxyz.live_updating
+    lu = scene.st2.live_updating
 
     if lu == "NOPREVIEW":
         return
@@ -54,7 +54,7 @@ def update_type_frame_change(scene, depsgraph):
         return
 
     for obj in scene.objects:
-        data = obj.ctxyz
+        data = obj.st2
         if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
             typesetter.set_type(data, obj, scene=scene)
 
@@ -72,7 +72,7 @@ def axisprop_offset(num, default=0):
     return bpy.props.FloatProperty(name=f"Axis {num} Offset", default=default, min=-20, max=20, update=update_type)
 
 
-class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
+class ST2PropertiesGroup(bpy.types.PropertyGroup):
     text: bpy.props.StringProperty(name="Text", default="Text",
         update=lambda p, c: update_type_and_copy("text", p, c))
     
@@ -301,17 +301,17 @@ class ColdtypePropertiesGroup(bpy.types.PropertyGroup):
         if obj.animation_data is not None and obj.animation_data.action is not None:
             has_coldtype_keyframes = False
             for fcu in obj.animation_data.action.fcurves:
-                if fcu.data_path.startswith("ctxyz."):
+                if fcu.data_path.startswith("st2."):
                     has_coldtype_keyframes = True
             return has_coldtype_keyframes
         return False
     
     def editable(self, obj):
-        return obj.select_get() and obj.ctxyz.updatable and not obj.ctxyz.baked
+        return obj.select_get() and obj.st2.updatable and not obj.st2.baked
     
     def get_parent(self, obj):
         pass
 
 
-classes = [ColdtypePropertiesGroup]
+classes = [ST2PropertiesGroup]
 panels = []

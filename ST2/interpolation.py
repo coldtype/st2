@@ -1,23 +1,23 @@
 import bpy
 
-from Coldtype import search, typesetter
+from ST2 import search, typesetter
 
 
-class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
+class ST2_OT_InterpolateStrings(bpy.types.Operator):
     """Interpolate multiple strings"""
 
-    bl_label = "Coldtype Interpolate Strings"
-    bl_idname = "ctxyz.interpolate_strings"
+    bl_label = "ST2 Interpolate Strings"
+    bl_idname = "st2.interpolate_strings"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
-        data = context.scene.ctxyz
-        editables = search.find_ctxyz_editables(context)
+        data = context.scene.st2
+        editables = search.find_st2_editables(context)
         a = editables[0]
         b = editables[1]
         collection = a.users_collection[0]
 
-        font = typesetter.ct.Font.Cacheable(a.ctxyz.font_path)
+        font = typesetter.ct.Font.Cacheable(a.st2.font_path)
         fvars = font.variations()
 
         from coldtype.time.easing import ease
@@ -31,10 +31,10 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
         if data.interpolator_style == "PARENT":
             parent = True
         elif data.interpolator_style == "COLLECTION":
-            coll = f"Coldtype:Interpolations"
+            coll = f"ST2:Interpolations"
 
         if parent:
-            parent = typesetter.cb.BpyObj.Empty(f"Coldtype:InterpolationAnchor", collection="Global")
+            parent = typesetter.cb.BpyObj.Empty(f"ST2:InterpolationAnchor", collection="Global")
 
         for x in range(0, data.interpolator_count):
             xi = x + 1
@@ -60,19 +60,19 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
             
             c.data.extrude = norm(e, a.data.extrude, b.data.extrude)
 
-            for k in a.ctxyz.__annotations__.keys():
-                v = getattr(a.ctxyz, k)
-                setattr(c.ctxyz, k, v)
+            for k in a.st2.__annotations__.keys():
+                v = getattr(a.st2, k)
+                setattr(c.st2, k, v)
             
-            c.ctxyz.frozen = True
+            c.st2.frozen = True
             for idx, (k, v) in enumerate(fvars.items()):
                 prop = f"fvar_axis{idx+1}"
-                setattr(c.ctxyz, prop, norm(e, getattr(a.ctxyz, prop), getattr(b.ctxyz, prop)))
-            c.ctxyz.frozen = False
+                setattr(c.st2, prop, norm(e, getattr(a.st2, prop), getattr(b.st2, prop)))
+            c.st2.frozen = False
 
-            c.ctxyz.interpolated = True
+            c.st2.interpolated = True
 
-            typesetter.set_type(c.ctxyz, c, context=context)
+            typesetter.set_type(c.st2, c, context=context)
 
             if parent:
                 c.parent = parent.obj
@@ -86,37 +86,37 @@ class Coldtype_OT_InterpolateStrings(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class ColdtypeInterpolationPanel(bpy.types.Panel):
+class ST2InterpolationPanel(bpy.types.Panel):
     bl_label = "Interpolation"
-    bl_idname = "COLDTYPE_PT_21_INTERPOLATIONPANEL"
+    bl_idname = "ST2_PT_21_INTERPOLATIONPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
 
     @classmethod
     def poll(cls, context):
-        editables = search.find_ctxyz_editables(context)
+        editables = search.find_st2_editables(context)
         if len(editables) == 2:
-            if editables[0].ctxyz.text == editables[1].ctxyz.text:
+            if editables[0].st2.text == editables[1].st2.text:
                 return True
     
     def draw(self, context):
-        editables = search.find_ctxyz_editables(context)
+        editables = search.find_st2_editables(context)
 
         if len(editables) == 2:
             row = self.layout.row()
-            row.prop(context.scene.ctxyz, "interpolator_count", text="")
-            row.prop(context.scene.ctxyz, "interpolator_easing", text="")
-            row.prop(context.scene.ctxyz, "interpolator_style", text=None, expand=True)
+            row.prop(context.scene.st2, "interpolator_count", text="")
+            row.prop(context.scene.st2, "interpolator_easing", text="")
+            row.prop(context.scene.st2, "interpolator_style", text=None, expand=True)
 
             row = self.layout.row()
-            row.operator("ctxyz.interpolate_strings", text="Interpolate")
+            row.operator("st2.interpolate_strings", text="Interpolate")
 
 
 classes = [
-    Coldtype_OT_InterpolateStrings,
+    ST2_OT_InterpolateStrings,
 ]
 
 panels = [
-    ColdtypeInterpolationPanel,
+    ST2InterpolationPanel,
 ]

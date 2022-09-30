@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-MESH_CACHE_COLLECTION = "Coldtype.MeshCache"
+MESH_CACHE_COLLECTION = "ST2.MeshCache"
 
 def read_mesh_glyphs_into_cache(font, p, mesh_table):
     if MESH_CACHE_COLLECTION not in bpy.data.collections:
@@ -37,8 +37,8 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             
             obj = bpy.context.object
             obj.name = key
-            obj.ctxyz.meshOffsetX = mg.originOffsetX
-            obj.ctxyz.meshOffsetY = mg.originOffsetY
+            obj.st2.meshOffsetX = mg.originOffsetX
+            obj.st2.meshOffsetY = mg.originOffsetY
 
             mcc.objects.link(obj)
 
@@ -46,7 +46,7 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
                 if c != mcc:
                     c.objects.unlink(obj)
                 
-            print(">>> imported mesh:", x.glyphName)
+            #print(">>> imported mesh:", x.glyphName)
 
 
 def set_type(data, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, collection=None, override_use_mesh=None):
@@ -130,7 +130,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
     for idx, (k, v) in enumerate(font.variations().items()):
         variations[k] = getattr(data, f"fvar_axis{idx+1}")
 
-    if not object or not object.ctxyz.has_keyframes(object):
+    if not object or not object.st2.has_keyframes(object):
         p = (ct.StSt(text, font
             , fontSize=3
             , leading=data.leading
@@ -215,16 +215,16 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 mesh_glyph.data = prototype.data.copy()
                 mesh_glyph.name = f"{empty.name}.glyph.{idx}"
                 mesh_glyph.parent = empty
-                mesh_glyph.ctxyz.parent = empty.name
+                mesh_glyph.st2.parent = empty.name
 
                 mesh_glyph.scale = (0.3, 0.3, 0.3)
 
                 amb = x.ambit(th=0, tv=0)
                 # 0.003 is b/c of the 3pt fontSize hardcoded above
                 mesh_glyph.location = (
-                    amb.x + prototype.ctxyz.meshOffsetX*0.003,
+                    amb.x + prototype.st2.meshOffsetX*0.003,
                     0, #mesh_glyph.location.y,
-                    prototype.ctxyz.meshOffsetY*0.003)
+                    prototype.st2.meshOffsetY*0.003)
 
                 if existing is None:
                     empty.users_collection[0].objects.link(mesh_glyph)
@@ -302,11 +302,11 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
 
                 frame = context.scene.frame_current
 
-                txtObj.obj.ctxyz.baked = True
-                txtObj.obj.ctxyz.baked_from = object.name
-                txtObj.obj.ctxyz.bake_frame = frame
+                txtObj.obj.st2.baked = True
+                txtObj.obj.st2.baked_from = object.name
+                txtObj.obj.st2.bake_frame = frame
 
-                txtObj.obj.ctxyz._baked_frame = object
+                txtObj.obj.st2._baked_frame = object
 
                 if framewise:
                     def hide(hidden):
@@ -339,9 +339,9 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
                 
                 if parent:
                     txtObj.obj.parent = parent
-                    #txtObj.obj.ctxyz.parent = parent.name
+                    #txtObj.obj.st2.parent = parent.name
                 
-                txtObj.obj.ctxyz.updatable = True
+                txtObj.obj.st2.updatable = True
                 txtObj.obj.visible_camera = object.visible_camera
 
                 if glyph and idx is not None:
@@ -365,7 +365,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         else:
             # interactive updating of live text
 
-            print(">>>", p)
+            #print(">>>", p)
 
             txtObj = cb.BpyObj()
             txtObj.obj = object
@@ -376,9 +376,9 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
 
                 if data.auto_rename:
                     if using_file:
-                        txtObj.obj.name = "Coldtype::File"
+                        txtObj.obj.name = "ST2::File"
                     else:
-                        txtObj.obj.name = "Coldtype:" + fulltext[:20]
+                        txtObj.obj.name = "ST2:" + fulltext[:20]
 
                 if len(p) == 1 or True:
                     txtObj.draw(p, set_origin=False, fill=False)
@@ -410,10 +410,10 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         # initial creation of live text
 
         if meshing:
-            txtObj = (cb.BpyObj.Empty("Coldtype:Text", collection))
+            txtObj = (cb.BpyObj.Empty("ST2:Text", collection))
             build_mesh(txtObj.obj)
         else:
-            txtObj = (cb.BpyObj.Curve("Coldtype:Text", collection))
+            txtObj = (cb.BpyObj.Curve("ST2:Text", collection))
             txtObj.draw(p, set_origin=False, fill=True)
             txtObj.extrude(0)
             #txtObj.rotate(x=90)

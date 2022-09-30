@@ -5,33 +5,33 @@ try:
 except ImportError:
     ct = None
 
-from Coldtype import search
+from ST2 import search
 
 
-class Coldtype_OT_LoadVarAxesDefaults(bpy.types.Operator):
+class ST2_OT_LoadVarAxesDefaults(bpy.types.Operator):
     """Set variable font axes to their font-specified default values"""
 
-    bl_label = "Coldtype Load Var Axes Defaults"
-    bl_idname = "ctxyz.load_var_axes_defaults"
+    bl_label = "ST2 Load Var Axes Defaults"
+    bl_idname = "st2.load_var_axes_defaults"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
-        for o in search.find_ctxyz_all_selected(context):
-            font = ct.Font.Cacheable(o.ctxyz.font_path)
+        for o in search.find_st2_all_selected(context):
+            font = ct.Font.Cacheable(o.st2.font_path)
             for idx, (axis, v) in enumerate(font.variations().items()):
                 diff = abs(v["maxValue"]-v["minValue"])
                 v = (v["defaultValue"]-v["minValue"])/diff
-                setattr(o.ctxyz, f"fvar_axis{idx+1}", v)
+                setattr(o.st2, f"fvar_axis{idx+1}", v)
 
         return {"FINISHED"}
 
 
-class ColdtypeText3DSettingsPanel(bpy.types.Panel):
+class ST2Text3DSettingsPanel(bpy.types.Panel):
     bl_label = "3D Settings"
-    bl_idname = "COLDTYPE_PT_30_TEXT3DPANEL"
+    bl_idname = "ST2_PT_30_TEXT3DPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
@@ -54,19 +54,19 @@ class ColdtypeText3DSettingsPanel(bpy.types.Panel):
         
 
 
-class ColdtypeFontVariationsPanel(bpy.types.Panel):
+class ST2FontVariationsPanel(bpy.types.Panel):
     bl_label = "Font Variations"
-    bl_idname = "COLDTYPE_PT_31_FONTVARSPANEL"
+    bl_idname = "ST2_PT_31_FONTVARSPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
         if ko:
-            font = ct.Font.Cacheable(ko.ctxyz.font_path)
+            font = ct.Font.Cacheable(ko.st2.font_path)
             if font.variations():
                 return True
         return False
@@ -75,7 +75,7 @@ class ColdtypeFontVariationsPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         
         layout = self.layout
-        data = ko.ctxyz
+        data = ko.st2
         font = ct.Font.Cacheable(data.font_path)
         fvars = font.variations()
     
@@ -97,29 +97,29 @@ class ColdtypeFontVariationsPanel(bpy.types.Panel):
             col.alignment = "RIGHT"
             col.label(text="{:d}".format(round(unnorm_v)))
     
-        if ko.ctxyz.has_keyframes(ko):
+        if ko.st2.has_keyframes(ko):
             #layout.row().label(text="Variation Offsets")
 
             for idx, (k, v) in enumerate(fvars.items()):
                 layout.row().prop(data, f"fvar_axis{idx+1}_offset", text=f"{k} offset")
         
         row = layout.row()
-        row.operator("ctxyz.load_var_axes_defaults", icon="EMPTY_AXIS", text="Set to Defaults")
+        row.operator("st2.load_var_axes_defaults", icon="EMPTY_AXIS", text="Set to Defaults")
 
 
-class ColdtypeFontStylisticSetsPanel(bpy.types.Panel):
+class ST2FontStylisticSetsPanel(bpy.types.Panel):
     bl_label = "Font Stylistic Sets"
-    bl_idname = "COLDTYPE_PT_32_FONTSTYLESPANEL"
+    bl_idname = "ST2_PT_32_FONTSTYLESPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
         if ko:
-            font = ct.Font.Cacheable(ko.ctxyz.font_path)
+            font = ct.Font.Cacheable(ko.st2.font_path)
             styles = [fea for fea in font.font.featuresGSUB if fea.startswith("ss")]
 
             if len(styles) > 0:
@@ -130,7 +130,7 @@ class ColdtypeFontStylisticSetsPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         
         layout = self.layout
-        data = ko.ctxyz
+        data = ko.st2
         font = ct.Font.Cacheable(data.font_path)
 
         fi = 0
@@ -151,12 +151,12 @@ class ColdtypeFontStylisticSetsPanel(bpy.types.Panel):
             fi += 1
 
 
-class ColdtypeFontFeaturesPanel(bpy.types.Panel):
+class ST2FontFeaturesPanel(bpy.types.Panel):
     bl_label = "Font Features"
-    bl_idname = "COLDTYPE_PT_33_FONTFEATURESPANEL"
+    bl_idname = "ST2_PT_33_FONTFEATURESPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Coldtype"
+    bl_category = "ST2"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
@@ -167,7 +167,7 @@ class ColdtypeFontFeaturesPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         
         layout = self.layout
-        data = ko.ctxyz
+        data = ko.st2
         font = ct.Font.Cacheable(data.font_path)
 
         fi = 0
@@ -198,12 +198,12 @@ class ColdtypeFontFeaturesPanel(bpy.types.Panel):
 
 
 classes = [
-    Coldtype_OT_LoadVarAxesDefaults,
+    ST2_OT_LoadVarAxesDefaults,
 ]
 
 panels = [
-    ColdtypeText3DSettingsPanel,
-    ColdtypeFontVariationsPanel,
-    ColdtypeFontStylisticSetsPanel,
-    ColdtypeFontFeaturesPanel,
+    ST2Text3DSettingsPanel,
+    ST2FontVariationsPanel,
+    ST2FontStylisticSetsPanel,
+    ST2FontFeaturesPanel,
 ]

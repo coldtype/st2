@@ -5,5 +5,5 @@ from scripts.blender import *
 
 if on_mac():
     if addon.exists(): addon.unlink()
-    subprocess.run(["ln", "-s", coldtype, addon])
+    subprocess.run(["ln", "-s", addon_source, addon])
     sys.stdout.write(str(blender_executable))
