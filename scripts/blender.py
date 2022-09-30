@@ -10,7 +10,7 @@ def on_linux(): return _os() == "Linux"
 
 root = Path(__file__).parent.parent
 
-coldtype = (root / "Coldtype").absolute()
+coldtype = (root / "ST2").absolute()
 config = run_path(root / "config.py")
 
 blender = config.get("BLENDER")
@@ -27,7 +27,7 @@ if on_mac():
         if p.is_dir() and re.match(r"3\.[0-9]{1,2}", p.name):
             version = p.name
         
-    addon = (Path("~/Library/Application Support/Blender") / version / "scripts/addons/Coldtype").expanduser().absolute()
+    addon = (Path("~/Library/Application Support/Blender") / version / "scripts/addons/ST2").expanduser().absolute()
     bpy = blender / f"Contents/Resources/{version}/python/bin/python3.10"
 
     blender_executable = blender / "Contents/MacOS/Blender"
