@@ -1,6 +1,4 @@
-import platform, subprocess, re, sys
-
-from pathlib import Path
+import platform, re, os
 from runpy import run_path
 
 def _os(): return platform.system()
@@ -8,26 +6,39 @@ def on_windows(): return _os() == "Windows"
 def on_mac(): return _os() == "Darwin"
 def on_linux(): return _os() == "Linux"
 
-root = Path(__file__).parent.parent
+root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-addon_source = (root / "ST2").absolute()
-config = run_path(root / "config.py")
+addon_source = os.path.join(root, "ST2")
+config = run_path(os.path.join(root, "config.py"))
 
 blender = config.get("BLENDER")
 if not blender:
     if on_mac():
         blender = "/Applications/Blender.app/"
 
-blender = Path(blender).expanduser().absolute()
+blender = os.path.abspath(os.path.expanduser(blender))
 
 if on_mac():
-    res = blender / "Contents/Resources"
+    res = os.path.join(blender, "Contents/Resources")
     version = None
-    for p in res.iterdir():
-        if p.is_dir() and re.match(r"3\.[0-9]{1,2}", p.name):
-            version = p.name
-        
-    addon = (Path("~/Library/Application Support/Blender") / version / "scripts/addons/ST2").expanduser().absolute()
-    bpy = blender / f"Contents/Resources/{version}/python/bin/python3.10"
+    for p in os.listdir(res):
+        if os.path.isdir(os.path.join(res, p)):
+            name = os.path.basename(p)
+            if re.match(r"[23]{1}\.[0-9]{1,2}", name):
+                version = name
+    
+    addon_path = "".join(["~/Library/Application Support/Blender/", version, "/scripts/addons"])
+    addon_path = os.path.abspath(os.path.expanduser(addon_path))
+    addon = os.path.join(addon_path, "ST2")
+    
+    python_folder = os.path.join(blender, "Contents/Resources", version, "python/bin")
+    python = None
 
-    blender_executable = blender / "Contents/MacOS/Blender"
+    for f in os.listdir(python_folder):
+        name = os.path.basename(f)
+        if name.startswith("python"):
+            python = os.path.join(python_folder, f)
+
+    bpy = python
+
+    blender_executable = os.path.join(blender, "Contents/MacOS/Blender")

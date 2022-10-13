@@ -1,4 +1,4 @@
-import sys
+import sys, subprocess
 sys.path.insert(0, ".")
 
 from scripts.blender import *

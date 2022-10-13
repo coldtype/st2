@@ -1,6 +1,6 @@
 # ST2
 
-![The ST2 UI](assets/uipreview.png)
+![The ST2 UI](assets/uipreview.jpg)
 
 ### Why?
 
