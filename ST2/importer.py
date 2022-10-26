@@ -47,7 +47,11 @@ def install_coldtype(context, global_vars, required_version):
     print("/imported successfully")
 
     import coldtype as C
+    import coldtype.text as ct
+    import coldtype.blender as cb
     importlib.reload(C)
+    importlib.reload(cb)
+    importlib.reload(ct)
     print(">>>", C.__version__)
 
 
