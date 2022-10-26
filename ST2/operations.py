@@ -155,10 +155,13 @@ class WM_OT_ST2ChooseFont(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         path = Path(self.filepath)
-        data, _ = search.find_st2(context)
+        ob = search.active_key_object(context)
+        if not ob:
+            ob = context.scene
         
         font = ct.Font.Cacheable(path)
-        data.font_path = str(font.path)
+        ob.st2.font_path = str(font.path)
+        
         return {'FINISHED'}
 
 
