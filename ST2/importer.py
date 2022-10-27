@@ -10,7 +10,7 @@ except ImportError:
 def vt(v):
     return tuple(map(int, (v.split("."))))
 
-REQUIRED_ST2 = "0.9.10"
+REQUIRED_ST2 = "0.9.11"
 coldtype_status = 1
 
 try:
