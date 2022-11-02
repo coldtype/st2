@@ -1,7 +1,8 @@
 from coldtype import *
 
-# make sure to select hobeaux borders
+# make sure to select hobeaux borders otf
 # in the ST2 font picker in Blender
+# (or else this script won’t work)
 
 styles = [
     "Aa ", "B  ", "Cc3", "Dd4", "Ee5",
