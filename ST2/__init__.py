@@ -121,6 +121,38 @@ class ST2MainPanel(bpy.types.Panel):
             self.layout.row().operator("st2.delete_parented_text", text="Delete All")
 
 
+class ST2ScriptPanel(bpy.types.Panel):
+    bl_label = "Script"
+    bl_idname = "ST2_PT_211_SCRIPTPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ST2"
+
+    @classmethod
+    def poll(cls, context):
+        ko = search.active_key_object(context)
+        return ko and not ko.st2.baked
+    
+    def draw(self, context):
+        ko = search.active_key_object(context)
+        data = ko.st2
+        
+        row = self.layout.row()
+        row.prop(data, "script_file", text="")
+        row.prop(data, "script_enabled", text="", icon="PLUGIN")
+
+        row = self.layout.row()
+        row.prop(data, "script_args", text="Args")
+
+        row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
+
+        if False:
+            if context.scene.st2.script_watch:
+                row.operator("st2.cancel_watch_source", text="", icon="CANCEL")
+            else:
+                row.operator("st2.watch_source", text="", icon="MONKEY")
+
+
 class ST2FontPanel(bpy.types.Panel):
     bl_label = "Font"
     bl_idname = "ST2_PT_22_FONTPANEL"
@@ -229,6 +261,7 @@ classes = [
 panels = [
     ST2DefaultPanel,
     ST2MainPanel,
+    ST2ScriptPanel,
     ST2FontPanel,
     ST2GlobalPanel,
 ]

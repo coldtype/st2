@@ -1,4 +1,4 @@
-import bpy, tempfile, math
+import bpy, tempfile, math, inspect
 from mathutils import Vector
 from pathlib import Path
 
@@ -419,6 +419,30 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
             #txtObj.rotate(x=90)
         
         output.append(txtObj)
+
+    if data.script_file and data.script_enabled:
+        from runpy import run_path
+        try:
+            res = run_path(data.script_file)
+            if "run" in res:
+                fn = res["run"]
+                arg_count = len(inspect.signature(fn).parameters)
+                
+                args = [data]
+                if arg_count > 1:
+                    parsed_args = eval(f"dict({data.script_args})")
+                    args.append(parsed_args)
+                if arg_count > 2:
+                    args.append(p)
+                if arg_count > 3:
+                    args.append(txtObj)
+                
+                output = res["run"](*args)
+                if output is not None:
+                    txtObj.draw(output, set_origin=False, fill=False)
+                    
+        except Exception as e:
+            print(e)
     
     return output
 

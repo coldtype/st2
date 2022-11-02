@@ -93,6 +93,14 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     text_indexed: bpy.props.BoolProperty(name="Text Indexed", default=False, update=lambda p, c: update_type_and_copy("text_indexed", p, c))
     
     text_index: bpy.props.IntProperty(name="Text Index", default=1, min=1, update=lambda p, c: update_type_and_copy("text_index", p, c))
+
+    script_file: bpy.props.StringProperty(name="Script File", default="", subtype="FILE_PATH", update=lambda p, c: update_type_and_copy("script_file", p, c))
+
+    script_enabled: bpy.props.BoolProperty(name="Script Enabled", default=True, update=lambda p, c: update_type_and_copy("script_enabled", p, c))
+
+    script_watch: bpy.props.BoolProperty(name="Script Watch", default=False)
+
+    script_args: bpy.props.StringProperty(name="Script Args", default="", update=lambda p, c: update_type_and_copy("script_args", p, c))
     
     font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
 

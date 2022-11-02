@@ -283,7 +283,84 @@ class ST2_OT_SetTypeWithObject(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_WatchSource(bpy.types.Operator):
+    bl_label = "Start Watching Source"
+    bl_idname = "st2.watch_source"
+    
+    def execute(self, context):
+        context.scene.st2.script_watch = True
+        bpy.ops.wm.st2_source_watcher()
+        return {"FINISHED"}
+
+
+class ST2_OT_CancelWatchSource(bpy.types.Operator):
+    bl_label = "Stop Watching Source"
+    bl_idname = "st2.cancel_watch_source"
+    
+    def execute(self, context):
+        context.scene.st2.script_watch = False
+        return {"FINISHED"}
+
+
+class ST2SourceWatcher(bpy.types.Operator):
+    bl_idname = "wm.st2_source_watcher"
+    bl_label = "ST2 Source Watcher"
+
+    _timer = None
+    _force = False
+
+    _sources = {}
+
+    def modal(self, context, event):
+        st2 = context.scene.st2
+
+        def cancel(force=False):
+            print("CANCELLING")
+            self._force = force
+            self.cancel(context)
+            return {"FINISHED"}
+        
+        if not st2.script_watch:
+            return cancel(force=True)
+
+        if event.type == 'ESC':
+            return cancel(force=True)
+
+        if event.type == 'TIMER':
+            for obj in search.find_st2_editables(context):
+                data = obj.st2
+                if data.script_file and data.script_enabled:
+                    if data.script_file not in self._sources:
+                        stat = Path(data.script_file).stat()
+                        self._sources[data.script_file] = stat.st_mtime
+            
+            for src, last_mtime in self._sources.items():
+                stat = Path(src).stat()
+                if stat.st_mtime > last_mtime:
+                    self._sources[src] = stat.st_mtime
+                    print("save detected:", src)
+                    bpy.ops.st2.refresh_settings()
+
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        wm = context.window_manager
+        self._timer = wm.event_timer_add(0.25, window=context.window)
+        wm.modal_handler_add(self)
+
+        return {'RUNNING_MODAL'}
+
+    def cancel(self, context):
+        wm = context.window_manager
+        wm.event_timer_remove(self._timer)
+        self._force = False
+        print('timer removed')
+
+
 classes = [
+    ST2SourceWatcher,
+    ST2_OT_WatchSource,
+    ST2_OT_CancelWatchSource,
     ST2_OT_LoadNextFont,
     ST2_OT_LoadPrevFont,
     ST2_OT_ShowFont,
