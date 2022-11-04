@@ -266,7 +266,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fvar_axis8_offset: axisprop_offset(8, 0)
     fvar_axis9_offset: axisprop_offset(9, 0)
 
-    kerning_pairs: bpy.props.StringProperty(name="Kerning Pairs", default="", update=lambda p, c: update_type_and_copy("kerning_pairs", p, c))
+    kerning_pairs: bpy.props.StringProperty(name="Kerning Pairs", default="", update=lambda p, c: update_type_and_copy("kerning_pairs", p, c), description="Provide a Python dictionary literal to control kerning of pairs, where the keys are two glyph names separated by slashes, and the values are integers specified in font-size upem values")
 
     kerning_pairs_enabled: bpy.props.BoolProperty(name="Kerning Pairs Enabled", default=True, update=lambda p, c: update_type_and_copy("kerning_pairs_enabled", p, c))
     
