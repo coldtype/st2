@@ -96,6 +96,12 @@ class ST2FontVariationsPanel(bpy.types.Panel):
             col = split.column()
             col.alignment = "RIGHT"
             col.label(text="{:d}".format(round(unnorm_v)))
+
+            if k == "wdth":
+                row = layout.row()
+                row.label(text="Fit Width")
+                row.prop(data, "fit", text="")
+                row.prop(data, "fit_enable", text="Enable")
     
         if ko.st2.has_keyframes(ko):
             #layout.row().label(text="Variation Offsets")

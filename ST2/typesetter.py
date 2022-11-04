@@ -136,6 +136,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
             , leading=data.leading
             , tu=data.tracking
             , multiline=True
+            , fit=data.fit if data.fit_enable else None
             , **features
             , **variations))
     else:

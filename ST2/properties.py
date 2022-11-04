@@ -190,6 +190,10 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     # font state
 
+    fit: bpy.props.FloatProperty(name="Fit Width", default=2, min=0.1, max=100, update=lambda p, c: update_type_and_copy("fit", p, c))
+
+    fit_enable: bpy.props.BoolProperty(name="Fit Enable", default=False, update=lambda p, c: update_type_and_copy("fit_enable", p, c))
+
     outline: bpy.props.BoolProperty(name="Outline", default=0, update=update_type)
     
     outline_weight: bpy.props.FloatProperty(name="Outline Weight", default=1, min=-20, max=100, update=update_type)
