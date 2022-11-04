@@ -104,6 +104,7 @@ class ST2MainPanel(bpy.types.Panel):
         row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
         row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
         row.operator("st2.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
+        row.prop(data, "script_enabled", text="", icon="PLUGIN")
         
         if data.text_mode == "FILE":
             row = self.layout.row()
@@ -131,7 +132,7 @@ class ST2ScriptPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        return ko and not ko.st2.baked
+        return ko and not ko.st2.baked and ko.st2.script_enabled
     
     def draw(self, context):
         ko = search.active_key_object(context)
@@ -139,7 +140,7 @@ class ST2ScriptPanel(bpy.types.Panel):
         
         row = self.layout.row()
         row.prop(data, "script_file", text="")
-        row.prop(data, "script_enabled", text="", icon="PLUGIN")
+        #row.prop(data, "script_enabled", text="", icon="PLUGIN")
 
         row = self.layout.row()
         row.prop(data, "script_args", text="Args")

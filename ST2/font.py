@@ -201,6 +201,10 @@ class ST2FontFeaturesPanel(bpy.types.Panel):
                     pass
                 else:
                     show_fea(fea)
+        
+        row = layout.row()
+        row.prop(data, "kerning_pairs", text="KP (dict)")
+        row.prop(data, "kerning_pairs_enabled", text="")
 
 
 classes = [

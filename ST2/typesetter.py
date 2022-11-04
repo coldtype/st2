@@ -131,11 +131,20 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         variations[k] = getattr(data, f"fvar_axis{idx+1}")
 
     if not object or not object.st2.has_keyframes(object):
+        kp = None
+        if data.kerning_pairs and data.kerning_pairs_enabled:
+            try:
+                kp = eval(data.kerning_pairs)
+            except Exception as e:
+                print(">>>", e)
+                pass
+
         p = (ct.StSt(text, font
             , fontSize=3
             , leading=data.leading
             , tu=data.tracking
             , multiline=True
+            , kp=kp
             , fit=data.fit if data.fit_enable else None
             , **features
             , **variations))
