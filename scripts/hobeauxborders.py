@@ -40,15 +40,15 @@ def hobeauxBorder(r, text, font, fs=2):
         .pen()
         .unframe())
 
-def run(st2:dict, args:dict):
+def modify(st2:dict, kwargs:dict):
     try:
         txt = styles[int(st2.text)]
     except:
         txt = st2.text
     
-    w = args.get("width", 4)
-    h = args.get("height", w)
-    fs = args.get("fontSize", 4)
+    w = kwargs.get("width", 4)
+    h = kwargs.get("height", w)
+    fs = kwargs.get("fontSize", 4)
     
     return (hobeauxBorder(Rect(w, h), txt, st2.font_path, fs)
         .centerZero())

@@ -139,11 +139,16 @@ class ST2ScriptPanel(bpy.types.Panel):
         data = ko.st2
         
         row = self.layout.row()
-        row.prop(data, "script_file", text="")
+        row.prop(data, "script_mode", text="", expand=True)
+        if data.script_mode == "FILE":
+            row.prop(data, "script_file", text="")
+        elif data.script_mode == "BLOCK":
+            row.prop(data, "script_block", text="")
+        
         #row.prop(data, "script_enabled", text="", icon="PLUGIN")
 
         row = self.layout.row()
-        row.prop(data, "script_args", text="Args")
+        row.prop(data, "script_kwargs", text="Kwargs")
 
         row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
 

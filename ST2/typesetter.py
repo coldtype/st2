@@ -49,7 +49,19 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
             #print(">>> imported mesh:", x.glyphName)
 
 
-def set_type(data, object=None, parent=None, baking=False, context=None, scene=None, framewise=True, glyphwise=False, shapewise=False, layerwise=False, collection=None, override_use_mesh=None):
+def set_type(data,
+    object=None,
+    parent=None,
+    baking=False,
+    context=None,
+    scene=None,
+    framewise=True,
+    glyphwise=False,
+    shapewise=False,
+    layerwise=False,
+    collection=None,
+    override_use_mesh=None
+    ):
     # if ufo, don't cache?
 
     font = ct.Font.Cacheable(data.font_path)
@@ -176,7 +188,7 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
         p = ct.Glyphwise(text, styler, multiline=True)
         if data.leading:
             p.lead(data.leading)
-    
+
     thtv = dict(th=not data.use_horizontal_font_metrics, tv=not data.use_vertical_font_metrics)
     
     amb = p.ambit(**thtv)
@@ -246,6 +258,61 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
     # need to check baking glyphwise?
 
     if not mesh:
+
+        if data.script_enabled:
+            from runpy import run_path
+            from tempfile import NamedTemporaryFile
+
+            res = None
+            if data.script_mode == "FILE" and data.script_file:
+                try:
+                    res = run_path(data.script_file)
+                except Exception as e:
+                    print("Could not run script", e)
+            elif data.script_mode == "BLOCK":
+                try:
+                    script_text = bpy.data.texts[data.script_block].as_string()
+                    if script_text:
+                        tmp_path = None
+                        with NamedTemporaryFile("w", suffix=".py", delete=False) as tf:
+                            tf.write(script_text)
+                            tmp_path = Path(tf.name)
+                        try:
+                            res = run_path(tmp_path)
+                        except Exception as e:
+                            print("Could not run block", e)
+                        finally:
+                            tmp_path.unlink()
+                except KeyError:
+                    print("No block with that name")
+            
+            if res:
+                if "modify" in res:
+                    fn = res["modify"]
+                    arg_count = len(inspect.signature(fn).parameters)
+                    
+                    args = [data]
+                    if arg_count > 1:
+                        try:
+                            args.append(eval(f"dict({data.script_kwargs})"))
+                        except Exception as e:
+                            print(e)
+                            print("failed to parse kwargs")
+                            args.append({})
+
+                    if arg_count > 2:
+                        args.append(p)
+                    
+                    #if arg_count > 3:
+                    #    args.append(txtObj)
+                    
+                    p = fn(*args)
+                    #if output is not None:
+                    #    txtObj.draw(output, set_origin=False, fill=False)
+                else:
+                    print(">>> SCRIPT ERROR: no `modify` function found")
+
+
         if data.combine_glyphs and not glyphwise:
             p = p.pen()
 
@@ -429,30 +496,6 @@ def set_type(data, object=None, parent=None, baking=False, context=None, scene=N
             #txtObj.rotate(x=90)
         
         output.append(txtObj)
-
-    if data.script_file and data.script_enabled:
-        from runpy import run_path
-        try:
-            res = run_path(data.script_file)
-            if "run" in res:
-                fn = res["run"]
-                arg_count = len(inspect.signature(fn).parameters)
-                
-                args = [data]
-                if arg_count > 1:
-                    parsed_args = eval(f"dict({data.script_args})")
-                    args.append(parsed_args)
-                if arg_count > 2:
-                    args.append(p)
-                if arg_count > 3:
-                    args.append(txtObj)
-                
-                output = res["run"](*args)
-                if output is not None:
-                    txtObj.draw(output, set_origin=False, fill=False)
-                    
-        except Exception as e:
-            print(e)
     
     return output
 
