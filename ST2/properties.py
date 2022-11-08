@@ -107,7 +107,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
 
     script_block: bpy.props.StringProperty(name="Script Block", default="", update=lambda p, c: update_type_and_copy("script_block", p, c))
 
-    script_enabled: bpy.props.BoolProperty(name="Script Enabled", default=True, update=lambda p, c: update_type_and_copy("script_enabled", p, c))
+    script_enabled: bpy.props.BoolProperty(name="Script Enabled", default=False, update=lambda p, c: update_type_and_copy("script_enabled", p, c))
 
     script_watch: bpy.props.BoolProperty(name="Script Watch", default=False)
 
@@ -243,7 +243,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         ("N", "", "", "ANCHOR_TOP", 0),
         ("CY", "", "", "ANCHOR_CENTER", 1),
         ("S", "", "", "ANCHOR_BOTTOM", 2),
-    ], default="S", update=update_type)
+    ], default="CY", update=update_type)
 
     use_horizontal_font_metrics: bpy.props.BoolProperty(name="Use Horizontal Font Metrics", default=True, update=update_type)
 
