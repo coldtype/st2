@@ -4,7 +4,7 @@ from coldtype import *
 # in the ST2 font picker in Blender
 # (or else this script won’t work)
 
-styles = [
+styles = [ # the number in the text box in ST2
     "Aa ", "B  ", "Cc3", "Dd4", "Ee5",
     "Ff6", "Gg ", "Hh8", "Ii9", "Jj0",
     "Kk!", "Ll@", "Mm#", "Nn$", "Oo%",
