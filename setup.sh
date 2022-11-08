@@ -1,3 +1,4 @@
-alias bpy=$(python3.10 scripts/bpy.py)
-alias blender=$(python3.10 scripts/install.py)
-python3.10 scripts/getmesh.py
+export BLENDER_PATH="~/Desktop/Blenders/Blender3.3.app"
+alias bpy=$(b3denv bpy)
+alias blender=$(b3denv blender)
+b3denv install ST2
