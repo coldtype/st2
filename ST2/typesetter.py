@@ -189,11 +189,11 @@ def set_type(data,
         if data.leading:
             p.lead(data.leading)
 
-    thtv = dict(th=not data.use_horizontal_font_metrics, tv=not data.use_vertical_font_metrics)
+    thtv = dict(tx=not data.use_horizontal_font_metrics, ty=not data.use_vertical_font_metrics)
     
     amb = p.ambit(**thtv)
 
-    p.xalign(rect=amb, x=data.align_lines_x, th=not data.use_horizontal_font_metrics)
+    p.xalign(rect=amb, x=data.align_lines_x, tx=not data.use_horizontal_font_metrics)
 
     ax, ay, aw, ah = p.ambit(**thtv)
 
@@ -210,7 +210,7 @@ def set_type(data,
         p.t(0, -ah)
 
     if meshing:
-        p.mapv(lambda g: g.record(C.P(g.ambit(th=1, tv=1))))
+        p.mapv(lambda g: g.record(C.P(g.ambit(tx=1, ty=1))))
     
     p.collapse()
 
@@ -241,7 +241,7 @@ def set_type(data,
 
                 mesh_glyph.scale = (0.3, 0.3, 0.3)
 
-                amb = x.ambit(th=0, tv=0)
+                amb = x.ambit(tx=0, ty=0)
                 # 0.003 is b/c of the 3pt fontSize hardcoded above
                 mesh_glyph.location = (
                     amb.x + prototype.st2.meshOffsetX*0.003,
@@ -339,8 +339,8 @@ def set_type(data,
         if data.block:
             def block(_p):
                 return (C.P(_p.ambit(
-                            th=not data.block_horizontal_metrics,
-                            tv=not data.block_vertical_metrics)
+                            tx=not data.block_horizontal_metrics,
+                            ty=not data.block_vertical_metrics)
                         .inset(data.block_inset_x, data.block_inset_y))
                     #.skew(0.5, 0)
                     #.translate(0.2, 0)

@@ -20,7 +20,7 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
         font = typesetter.ct.Font.Cacheable(a.st2.font_path)
         fvars = font.variations()
 
-        from coldtype.time.easing import ease
+        from coldtype.timing.easing import ease
         from coldtype.interpolation import norm
 
         created = []
