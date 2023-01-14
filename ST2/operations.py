@@ -14,19 +14,21 @@ def item_cb(self, context):
     return [(str(f), str(f), "") for i, f in enumerate(all_fonts)]
 
 
-class SimpleOperator(bpy.types.Operator):
-    """Tooltip"""
-    bl_idname = "object.simple_operator"
-    bl_label = "Simple Object Operator"
-    bl_property = "my_enum"
+class ST2_OT_SearchFont(bpy.types.Operator):
+    """Search for a font in the system library"""
+    bl_label = "ST2 Search Font"
+    bl_idname = "st2.search_font"
+    bl_property = "available_fonts"
 
-    my_enum: bpy.props.EnumProperty(items=item_cb)
+    available_fonts: bpy.props.EnumProperty(items=item_cb)
 
     def execute(self, context):
+        font_name = self.available_fonts
+        font = ct.Font.LibraryFind(font_name)
+
         st2, _ = search.find_st2(context)
         st2.enable_font_search = True
-        st2.font_search = self.my_enum
-        #self.report({'INFO'}, "Selected: %s" % self.my_enum)
+        st2.font_path = str(font.path)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -35,35 +37,35 @@ class SimpleOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ST2_OT_SearchFont(bpy.types.Operator):
-    """Search for a font in the system library"""
+# class ST2_OT_SearchFont(bpy.types.Operator):
+#     """Search for a font in the system library"""
 
-    bl_label = "ST2 Search Font"
-    bl_idname = "st2.search_font"
-    #bl_property = "my_enum"
+#     bl_label = "ST2 Search Font"
+#     bl_idname = "st2.search_font"
+#     #bl_property = "my_enum"
 
-    #my_enum: bpy.props.EnumProperty(items = items, name='New Name', default=None)
+#     #my_enum: bpy.props.EnumProperty(items = items, name='New Name', default=None)
 
-    def execute(self, context):
-        def draw(self, context):
-            self.layout.label(text="Hello World")
+#     def execute(self, context):
+#         def draw(self, context):
+#             self.layout.label(text="Hello World")
 
-        bpy.context.window_manager.popup_menu(draw, title="Greeting", icon='INFO')
-        return {'FINISHED'}
+#         bpy.context.window_manager.popup_menu(draw, title="Greeting", icon='INFO')
+#         return {'FINISHED'}
     
-    # @classmethod
-    # def poll(cls, context):
-    #     return context.scene.material  # This prevents executing the operator if we didn't select a material
+#     # @classmethod
+#     # def poll(cls, context):
+#     #     return context.scene.material  # This prevents executing the operator if we didn't select a material
 
-    # def execute(self, context):
-    #     material = context.scene.material
-    #     material.name = self.my_enum
-    #     return {'FINISHED'}
+#     # def execute(self, context):
+#     #     material = context.scene.material
+#     #     material.name = self.my_enum
+#     #     return {'FINISHED'}
 
-    # def invoke(self, context, event):
-    #     wm = context.window_manager
-    #     wm.invoke_search_popup(self)
-    #     return {'FINISHED'}
+#     # def invoke(self, context, event):
+#     #     wm = context.window_manager
+#     #     wm.invoke_search_popup(self)
+#     #     return {'FINISHED'}
 
 
 class ST2_OT_ShowFont(bpy.types.Operator):
@@ -133,6 +135,7 @@ class ST2_OT_ClearFont(bpy.types.Operator):
     
     def execute(self, context):
         ts = context.scene.st2
+        ts.enable_font_search = False
         ts.font_path = ""
 
         # TODO reset stuff?
@@ -221,6 +224,7 @@ class WM_OT_ST2ChooseFont(bpy.types.Operator, ImportHelper):
         
         font = ct.Font.Cacheable(path)
         ob.st2.font_path = str(font.path)
+        ob.st2.enable_font_search = False
         
         return {'FINISHED'}
 
@@ -423,7 +427,6 @@ classes = [
     ST2_OT_CancelWatchSource,
     ST2_OT_LoadNextFont,
     ST2_OT_LoadPrevFont,
-    SimpleOperator,
     ST2_OT_SearchFont,
     ST2_OT_ShowFont,
     ST2_OT_ClearFont,
