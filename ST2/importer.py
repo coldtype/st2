@@ -10,7 +10,7 @@ except ImportError:
 def vt(v):
     return tuple(map(int, (v.split("."))))
 
-REQUIRED_ST2 = "0.9.11"
+REQUIRED_COLDTYPE = "0.9.11"
 coldtype_status = 1
 
 try:
@@ -18,7 +18,7 @@ try:
     import coldtype.text as ct
     import coldtype.blender as cb
 
-    if vt(C.__version__) < vt(REQUIRED_ST2):
+    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
         C, ct, cb = None, None, None
         coldtype_status = 0
 
@@ -30,10 +30,10 @@ except ImportError:
 def install_coldtype(context, global_vars, required_version):
     from subprocess import run
 
-    args = [f"coldtype[blender]>={required_version}"]
+    args = [f"coldtype[blender]=={required_version}"]
     
     print("---"*20)
-    print("> INSTALLING ST2")
+    print("> INSTALLING COLDTYPE")
     print(args)
     print("---"*20)
     time.sleep(1)
@@ -93,7 +93,7 @@ class ST2_OT_InstallST2(bpy.types.Operator):
     bl_idname = "st2.install_coldtype"
     
     def execute(self, context):
-        install_coldtype(context, globals(), REQUIRED_ST2)
+        install_coldtype(context, globals(), REQUIRED_COLDTYPE)
         bpy.ops.script.reload()
         return {"FINISHED"}
 

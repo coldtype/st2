@@ -59,11 +59,13 @@ class ST2DefaultPanel(bpy.types.Panel):
             row.label(text="Browse for a font file")
 
             row = layout.row()
-            row.operator("st2.search_font", text="", icon="VIEWZOOM")
+            if util.on_mac():
+                row.operator("st2.search_font", text="", icon="VIEWZOOM")
             row.label(text="Search for an installed font")
         
         else:
-            row.operator("st2.search_font", text="", icon="VIEWZOOM")
+            if util.on_mac():
+                row.operator("st2.search_font", text="", icon="VIEWZOOM")
             row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
             
             row.label(text=f"{font.names()[0]}")
@@ -194,7 +196,8 @@ class ST2FontPanel(bpy.types.Panel):
         row = self.layout.row()
         
         row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
-        row.operator("st2.search_font", text="", icon="VIEWZOOM")
+        if util.on_mac():
+            row.operator("st2.search_font", text="", icon="VIEWZOOM")
         
         row.label(text=f"{font.names()[0]}")
         
