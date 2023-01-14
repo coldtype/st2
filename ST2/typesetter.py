@@ -64,7 +64,7 @@ def set_type(data,
     ):
     # if ufo, don't cache?
 
-    font = ct.Font.Cacheable(data.font_path)
+    font = data.font()
 
     try:
         mesh = font.font.ttFont["MESH"]

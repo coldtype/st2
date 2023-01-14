@@ -9,6 +9,63 @@ except ImportError:
     pass
 
 
+def item_cb(self, context):
+    all_fonts = [f for f in ct.Font.LibraryList(".*") if not f.startswith(".")]
+    return [(str(f), str(f), "") for i, f in enumerate(all_fonts)]
+
+
+class SimpleOperator(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "object.simple_operator"
+    bl_label = "Simple Object Operator"
+    bl_property = "my_enum"
+
+    my_enum: bpy.props.EnumProperty(items=item_cb)
+
+    def execute(self, context):
+        st2, _ = search.find_st2(context)
+        st2.enable_font_search = True
+        st2.font_search = self.my_enum
+        #self.report({'INFO'}, "Selected: %s" % self.my_enum)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        wm.invoke_search_popup(self)
+        return {'FINISHED'}
+
+
+class ST2_OT_SearchFont(bpy.types.Operator):
+    """Search for a font in the system library"""
+
+    bl_label = "ST2 Search Font"
+    bl_idname = "st2.search_font"
+    #bl_property = "my_enum"
+
+    #my_enum: bpy.props.EnumProperty(items = items, name='New Name', default=None)
+
+    def execute(self, context):
+        def draw(self, context):
+            self.layout.label(text="Hello World")
+
+        bpy.context.window_manager.popup_menu(draw, title="Greeting", icon='INFO')
+        return {'FINISHED'}
+    
+    # @classmethod
+    # def poll(cls, context):
+    #     return context.scene.material  # This prevents executing the operator if we didn't select a material
+
+    # def execute(self, context):
+    #     material = context.scene.material
+    #     material.name = self.my_enum
+    #     return {'FINISHED'}
+
+    # def invoke(self, context, event):
+    #     wm = context.window_manager
+    #     wm.invoke_search_popup(self)
+    #     return {'FINISHED'}
+
+
 class ST2_OT_ShowFont(bpy.types.Operator):
     """Show the selected font in your OS file system browser"""
 
@@ -18,7 +75,10 @@ class ST2_OT_ShowFont(bpy.types.Operator):
     def execute(self, context):
         st2, _ = search.find_st2(context)
         import os
-        os.system(f"open {str(Path(st2.font_path).parent)}")
+        font = st2.font()
+        folder = font.path.parent
+        print(">>>>>>>>>>>", folder)
+        os.system(f"open '{str(folder)}'")
         return {"FINISHED"}
 
 
@@ -174,7 +234,7 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.st2
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
 
         for idx, (_, v) in enumerate(font.variations().items()):
             diff = abs(v["maxValue"]-v["minValue"])
@@ -363,6 +423,8 @@ classes = [
     ST2_OT_CancelWatchSource,
     ST2_OT_LoadNextFont,
     ST2_OT_LoadPrevFont,
+    SimpleOperator,
+    ST2_OT_SearchFont,
     ST2_OT_ShowFont,
     ST2_OT_ClearFont,
     ST2_OT_RefreshSettings,

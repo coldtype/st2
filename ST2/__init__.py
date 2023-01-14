@@ -47,23 +47,38 @@ class ST2DefaultPanel(bpy.types.Panel):
 
         layout = self.layout
         data = context.scene.st2
+        
+        font_path = data.font_path
+        font_search = data.font_search
+        font_search_enabled = data.enable_font_search
 
         row = layout.row()
-        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
-        font_path = data.font_path
+        #row.operator("st2.search_font", text="Search Font")
+        row.operator("object.simple_operator", text="Test")
 
-        if not font_path:
-            for x in ["< Choose a font to get started"]:
-                row.label(text=x)
-            return
+        row = layout.row()
 
-        font = importer.ct.Font.Cacheable(font_path)
-        row.label(text=f"“{font.path.stem}”")
+        def font_search_btn():
+            row.prop(data, "enable_font_search", text="", icon="VIEWZOOM")
 
-        row.operator("st2.clear_font", text="", icon="X")
-        row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
-        row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("st2.show_font", text="", icon="FILEBROWSER")
+        if font_search_enabled:
+            row.prop(data, "font_search", text="Search")
+            font_search_btn()
+        else:
+            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
+
+            if not font_path:
+                row.label(text="< Choose a font to get started")
+                font_search_btn()
+                return
+
+            font = data.font()
+            row.label(text=f"“{font.path.stem}”")
+
+        if not data.enable_font_search:
+            row.operator("st2.clear_font", text="", icon="X")
+            row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
+            row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
 
         row = layout.row()
         row.label(text="Defaults")
@@ -175,25 +190,28 @@ class ST2FontPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         data = ko.st2
 
-        font = importer.ct.Font.Cacheable(data.font_path)
+        font = data.font()
         
         row = self.layout.row()
-        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
         font_path = data.font_path
 
-        font = importer.ct.Font.Cacheable(font_path)
         mesh = None
         try:
             mesh = font.font.ttFont["MESH"]
         except KeyError:
             pass
         
-        row.label(text=f"“{font.path.stem}”")
+        if data.enable_font_search:
+            row.prop(data, "font_search", text="Search")
+        else:
+            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
+            row.label(text=f"“{font.path.stem}”")
         
         row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
         row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("st2.show_font", text="", icon="FILEBROWSER")
+        #row.operator("st2.show_font", text="", icon="FILEBROWSER")
+        row.prop(data, "enable_font_search", text="", icon="VIEWZOOM")
         
         row = self.layout.row()
         row.label(text="Position")

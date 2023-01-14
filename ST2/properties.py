@@ -2,6 +2,11 @@ import bpy
 
 from ST2 import typesetter
 
+try:
+    import coldtype.text as ct
+except ImportError:
+    ct = None
+
 
 def _update_type(props, context):
 #    data, active = find_st2(context)
@@ -114,6 +119,10 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     script_kwargs: bpy.props.StringProperty(name="Script Args", default="", update=lambda p, c: update_type_and_copy("script_kwargs", p, c))
     
     font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
+    
+    font_search: bpy.props.StringProperty(name="Font Search", default="Times", update=lambda p, c: update_type_and_copy("font_search", p, c))
+
+    enable_font_search: bpy.props.BoolProperty(name="Enable Font Search", default=False, update=lambda p, c: update_type_and_copy("enable_font_search", p, c))
 
     default_upright: bpy.props.BoolProperty(name="Default to Upright", default=False)
 
@@ -338,6 +347,23 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     def get_parent(self, obj):
         pass
+
+    def font(self):
+        font = None
+        try:
+            if self.enable_font_search:
+                font = ct.Font.LibraryFind(self.font_search or "Times")
+            elif self.font_path:
+                font = ct.Font.Cacheable(self.font_path)
+        except Exception as e:
+            print(">>>", e)
+        
+        if font:
+            return font
+        else:
+            return ct.Font.RecursiveMono()
+
+
 
 
 classes = [ST2PropertiesGroup]

@@ -274,7 +274,7 @@ class ST2ExportPanel(bpy.types.Panel):
         row.prop(data, "export_rotate_y", text="Y")
         row.prop(data, "export_rotate_z", text="Z")
 
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
     
         layout.row().operator("st2.export_slug", text="Export Slug")
         layout.row().operator("st2.export_glyphs", text="Export Glyphs")
