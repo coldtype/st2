@@ -146,7 +146,7 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
     bl_idname = "st2.refresh_settings"
     
     def execute(self, context):
-        from coldtype.text.reader import FontCache
+        from coldtype.text.font import FontCache
 
         if typesetter.MESH_CACHE_COLLECTION in bpy.data.collections:
             mcc = bpy.data.collections[typesetter.MESH_CACHE_COLLECTION]
