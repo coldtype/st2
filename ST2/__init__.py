@@ -52,16 +52,17 @@ class ST2DefaultPanel(bpy.types.Panel):
         row = layout.row()
         
         if font is None:
-            layout.row().label(text="Two ways to choose a font:")
+            if util.on_mac():
+                layout.row().label(text="Two ways to choose a font:")
 
             row = layout.row()
             row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
             row.label(text="Browse for a font file")
 
-            row = layout.row()
             if util.on_mac():
+                row = layout.row()
                 row.operator("st2.search_font", text="", icon="VIEWZOOM")
-            row.label(text="Search for an installed font")
+                row.label(text="Search for an installed font")
         
         else:
             if util.on_mac():
