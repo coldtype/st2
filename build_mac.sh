@@ -3,7 +3,7 @@ alias bpy=$(b3denv bpy)
 alias blender=$(b3denv blender)
 
 rm -rf venv
-bpy -m venv venv
+python3.10-intel64 -m venv venv
 source venv/bin/activate
 echo $(python --version)
 pip install "coldtype[blender]==0.10.1"
@@ -16,7 +16,7 @@ b3denv release ST2 suffix=mac_m1
 
 
 rm -rf venv
-python3.10-intel64 -m venv venv
+bpy -m venv venv
 source venv/bin/activate
 echo $(python --version)
 pip install "coldtype[blender]==0.10.1"

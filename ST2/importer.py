@@ -32,6 +32,10 @@ except ImportError:
     coldtype_status = -1
 
 
+if inlines.exists():
+    sys.path.pop(0)
+
+
 def install_coldtype(context, global_vars, required_version):
     from subprocess import run
 
