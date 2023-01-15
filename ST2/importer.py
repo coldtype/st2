@@ -1,4 +1,9 @@
 import importlib, bpy, time, os, sys
+from pathlib import Path
+
+inlines = Path(__file__).parent / "inline-packages"
+if inlines.exists():
+    sys.path.insert(0, str(inlines))
 
 # apparently if you require this twice, it'll work the second time (??)
 try:

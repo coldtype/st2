@@ -1,10 +1,6 @@
 import bpy
 
-try:
-    import coldtype.text as ct
-except ImportError:
-    ct = None
-
+from ST2.importer import ct
 from ST2 import search
 
 

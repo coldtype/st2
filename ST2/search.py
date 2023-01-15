@@ -1,9 +1,6 @@
 import bpy
 
-try:
-    import coldtype.text as ct
-except ImportError:
-    ct = None
+from ST2.importer import ct
 
 
 def find_st2(context):

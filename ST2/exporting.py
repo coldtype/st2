@@ -1,12 +1,6 @@
 import bpy
 
-try:
-    import coldtype.text as ct
-    import coldtype.blender as cb
-except ImportError:
-    ct, cb = None, None
-
-
+from ST2.importer import C, ct, cb
 from ST2 import typesetter
 from ST2 import search
 

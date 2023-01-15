@@ -1,11 +1,7 @@
 import bpy
 
 from ST2 import typesetter
-
-try:
-    import coldtype.text as ct
-except ImportError:
-    ct = None
+from ST2.importer import ct
 
 
 def _update_type(props, context):
@@ -233,6 +229,8 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     tracking: bpy.props.IntProperty(name="Tracking", default=0, min=-1000, max=1000, update=lambda p, c: update_type_and_copy("tracking", p, c))
     
     leading: bpy.props.FloatProperty(name="Leading", default=0.5, min=-10, max=10, update=lambda p, c: update_type_and_copy("leading", p, c))
+
+    scale: bpy.props.FloatProperty(name="Scale", default=1, min=0.1, max=2, update=lambda p, c: update_type_and_copy("scale", p, c))
 
     align_lines_x: bpy.props.EnumProperty(name="Align Lines X", items=[
         ("W", "", "", "ALIGN_LEFT", 0),

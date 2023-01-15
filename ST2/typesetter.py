@@ -2,14 +2,11 @@ import bpy, tempfile, math, inspect
 from mathutils import Vector
 from pathlib import Path
 
-try:
-    import coldtype.text as ct
-    import coldtype.blender as cb
-    import coldtype as C
-except ImportError:
-    pass
+from ST2.importer import C, ct, cb
+
 
 MESH_CACHE_COLLECTION = "ST2.MeshCache"
+
 
 def read_mesh_glyphs_into_cache(font, p, mesh_table):
     if MESH_CACHE_COLLECTION not in bpy.data.collections:
@@ -152,7 +149,7 @@ def set_type(data,
                 pass
 
         p = (ct.StSt(text, font
-            , fontSize=3
+            , fontSize=3*data.scale
             , leading=data.leading
             , tu=data.tracking
             , multiline=True
@@ -180,7 +177,8 @@ def set_type(data,
                 if not found:
                     _vars[k] = getattr(data, dp)
 
-            return ct.Style(font, 3,
+            return ct.Style(font,
+                fontSize=3*data.scale,
                 tu=data.tracking,
                 **features,
                 **_vars)
@@ -239,14 +237,14 @@ def set_type(data,
                 mesh_glyph.parent = empty
                 mesh_glyph.st2.parent = empty.name
 
-                mesh_glyph.scale = (0.3, 0.3, 0.3)
+                mesh_glyph.scale = (0.3*data.scale, 0.3*data.scale, 0.3*data.scale)
 
                 amb = x.ambit(tx=0, ty=0)
                 # 0.003 is b/c of the 3pt fontSize hardcoded above
                 mesh_glyph.location = (
-                    amb.x + prototype.st2.meshOffsetX*0.003,
+                    amb.x + prototype.st2.meshOffsetX*0.003*data.scale,
                     0, #mesh_glyph.location.y,
-                    prototype.st2.meshOffsetY*0.003)
+                    prototype.st2.meshOffsetY*0.003*data.scale)
 
                 if existing is None:
                     empty.users_collection[0].objects.link(mesh_glyph)

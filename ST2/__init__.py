@@ -233,6 +233,7 @@ class ST2FontPanel(bpy.types.Panel):
         row.prop(data, "outline_miter_limit")
 
         row = self.layout.row()
+        row.prop(data, "scale")
         row.prop(data, "tracking")
         row.prop(data, "leading")
 

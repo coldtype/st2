@@ -1,12 +1,9 @@
 import bpy
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
-from ST2 import search, typesetter
 
-try:
-    import coldtype.text as ct
-except ImportError:
-    pass
+from ST2 import search, typesetter
+from ST2.importer import ct
 
 
 def item_cb(self, context):

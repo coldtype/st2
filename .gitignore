@@ -6,3 +6,4 @@ config.py
 aliases.txt
 scratch
 venv
+inline-packages
