@@ -17,10 +17,10 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
         b = editables[1]
         collection = a.users_collection[0]
 
-        font = typesetter.ct.Font.Cacheable(a.st2.font_path)
+        font = a.st2.font()
         fvars = font.variations()
 
-        from coldtype.time.easing import ease
+        from coldtype.timing.easing import ease
         from coldtype.interpolation import norm
 
         created = []

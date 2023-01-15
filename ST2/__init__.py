@@ -47,34 +47,46 @@ class ST2DefaultPanel(bpy.types.Panel):
 
         layout = self.layout
         data = context.scene.st2
+        font = data.font(none_ok=True)
 
         row = layout.row()
-        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
-        font_path = data.font_path
+        
+        if font is None:
+            if util.on_mac():
+                layout.row().label(text="Two ways to choose a font:")
 
-        if not font_path:
-            for x in ["< Choose a font to get started"]:
-                row.label(text=x)
-            return
+            row = layout.row()
+            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
+            row.label(text="Browse for a font file")
 
-        font = importer.ct.Font.Cacheable(font_path)
-        row.label(text=f"“{font.path.stem}”")
+            if util.on_mac():
+                row = layout.row()
+                row.operator("st2.search_font", text="", icon="VIEWZOOM")
+                row.label(text="Search for an installed font")
+        
+        else:
+            if util.on_mac():
+                row.operator("st2.search_font", text="", icon="VIEWZOOM")
+            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
+            
+            row.label(text=f"{font.names()[0]}")
 
-        row.operator("st2.clear_font", text="", icon="X")
-        row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
-        row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("st2.show_font", text="", icon="FILEBROWSER")
+            if not data.enable_font_search:
+                row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
+                row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
 
-        row = layout.row()
-        row.label(text="Defaults")
+            row.operator("st2.clear_font", text="", icon="X")
 
-        row.prop(data, "align_x", text="X", expand=True)
-        row.prop(data, "align_y", text="Y", expand=True)
+            row = layout.row()
+            row.label(text="Defaults")
 
-        row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
-        row.prop(data, "default_extrude")
+            row.prop(data, "align_x", text="X", expand=True)
+            row.prop(data, "align_y", text="Y", expand=True)
 
-        layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+            row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
+            row.prop(data, "default_extrude")
+
+            layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
 
 
 class ST2MainPanel(bpy.types.Panel):
@@ -174,26 +186,27 @@ class ST2FontPanel(bpy.types.Panel):
     def draw(self, context):
         ko = search.active_key_object(context)
         data = ko.st2
+        font = data.font()
 
-        font = importer.ct.Font.Cacheable(data.font_path)
-        
-        row = self.layout.row()
-        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
-        font_path = data.font_path
-
-        font = importer.ct.Font.Cacheable(font_path)
         mesh = None
         try:
             mesh = font.font.ttFont["MESH"]
         except KeyError:
             pass
+    
+        row = self.layout.row()
         
-        row.label(text=f"“{font.path.stem}”")
+        row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
+        if util.on_mac():
+            row.operator("st2.search_font", text="", icon="VIEWZOOM")
+        
+        row.label(text=f"{font.names()[0]}")
         
         row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
-        row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
-        row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
-        row.operator("st2.show_font", text="", icon="FILEBROWSER")
+        if not data.enable_font_search:
+            row.operator("st2.load_prev_font", text="", icon="TRIA_LEFT")
+            row.operator("st2.load_next_font", text="", icon="TRIA_RIGHT")
+        #row.operator("st2.show_font", text="", icon="FILEBROWSER")
         
         row = self.layout.row()
         row.label(text="Position")
@@ -221,6 +234,7 @@ class ST2FontPanel(bpy.types.Panel):
         row.prop(data, "outline_miter_limit")
 
         row = self.layout.row()
+        row.prop(data, "scale")
         row.prop(data, "tracking")
         row.prop(data, "leading")
 

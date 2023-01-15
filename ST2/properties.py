@@ -1,6 +1,7 @@
 import bpy
 
 from ST2 import typesetter
+from ST2.importer import ct
 
 
 def _update_type(props, context):
@@ -115,6 +116,8 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
 
+    enable_font_search: bpy.props.BoolProperty(name="Enable Font Search", default=False, update=lambda p, c: update_type_and_copy("enable_font_search", p, c))
+
     default_upright: bpy.props.BoolProperty(name="Default to Upright", default=False)
 
     default_extrude: bpy.props.FloatProperty(name="Default Extrude Depth", default=0.1)
@@ -227,6 +230,8 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     leading: bpy.props.FloatProperty(name="Leading", default=0.5, min=-10, max=10, update=lambda p, c: update_type_and_copy("leading", p, c))
 
+    scale: bpy.props.FloatProperty(name="Scale", default=1, min=0.1, max=2, update=lambda p, c: update_type_and_copy("scale", p, c))
+
     align_lines_x: bpy.props.EnumProperty(name="Align Lines X", items=[
         ("W", "", "", "ALIGN_LEFT", 0),
         ("CX", "", "", "ALIGN_CENTER", 1),
@@ -338,6 +343,24 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     def get_parent(self, obj):
         pass
+
+    def font(self, none_ok=False):
+        font = None
+        if self.font_path:
+            try:
+                font = ct.Font.Cacheable(self.font_path)
+            except Exception as e:
+                print(">>>", e)
+        
+        if font:
+            return font
+        else:
+            if none_ok:
+                return None
+            else:
+                return ct.Font.RecursiveMono()
+
+
 
 
 classes = [ST2PropertiesGroup]

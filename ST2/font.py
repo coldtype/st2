@@ -1,10 +1,6 @@
 import bpy
 
-try:
-    import coldtype.text as ct
-except ImportError:
-    ct = None
-
+from ST2.importer import ct
 from ST2 import search
 
 
@@ -17,7 +13,7 @@ class ST2_OT_LoadVarAxesDefaults(bpy.types.Operator):
     
     def execute(self, context):
         for o in search.find_st2_all_selected(context):
-            font = ct.Font.Cacheable(o.st2.font_path)
+            font = o.st2.font()
             for idx, (axis, v) in enumerate(font.variations().items()):
                 diff = abs(v["maxValue"]-v["minValue"])
                 v = (v["defaultValue"]-v["minValue"])/diff
@@ -66,7 +62,7 @@ class ST2FontVariationsPanel(bpy.types.Panel):
     def poll(cls, context):
         ko = search.active_key_object(context)
         if ko:
-            font = ct.Font.Cacheable(ko.st2.font_path)
+            font = ko.st2.font()
             if font.variations():
                 return True
         return False
@@ -76,7 +72,7 @@ class ST2FontVariationsPanel(bpy.types.Panel):
         
         layout = self.layout
         data = ko.st2
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
         fvars = font.variations()
     
         for idx, (k, v) in enumerate(fvars.items()):
@@ -125,7 +121,7 @@ class ST2FontStylisticSetsPanel(bpy.types.Panel):
     def poll(cls, context):
         ko = search.active_key_object(context)
         if ko:
-            font = ct.Font.Cacheable(ko.st2.font_path)
+            font = ko.st2.font()
             styles = [fea for fea in font.font.featuresGSUB if fea.startswith("ss")]
 
             if len(styles) > 0:
@@ -137,7 +133,7 @@ class ST2FontStylisticSetsPanel(bpy.types.Panel):
         
         layout = self.layout
         data = ko.st2
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
 
         fi = 0
         row = None
@@ -174,7 +170,7 @@ class ST2FontFeaturesPanel(bpy.types.Panel):
         
         layout = self.layout
         data = ko.st2
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
 
         fi = 0
         row = None
