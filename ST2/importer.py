@@ -15,7 +15,7 @@ except ImportError:
 def vt(v):
     return tuple(map(int, (v.split("."))))
 
-REQUIRED_COLDTYPE = "0.9.11"
+REQUIRED_COLDTYPE = "0.10.1"
 coldtype_status = 1
 
 try:
