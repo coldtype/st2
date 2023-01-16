@@ -2,14 +2,11 @@ import bpy, tempfile, math, inspect
 from mathutils import Vector
 from pathlib import Path
 
-try:
-    import coldtype.text as ct
-    import coldtype.blender as cb
-    import coldtype as C
-except ImportError:
-    pass
+from ST2.importer import C, ct, cb
+
 
 MESH_CACHE_COLLECTION = "ST2.MeshCache"
+
 
 def read_mesh_glyphs_into_cache(font, p, mesh_table):
     if MESH_CACHE_COLLECTION not in bpy.data.collections:
@@ -64,7 +61,7 @@ def set_type(data,
     ):
     # if ufo, don't cache?
 
-    font = ct.Font.Cacheable(data.font_path)
+    font = data.font()
 
     try:
         mesh = font.font.ttFont["MESH"]
@@ -152,7 +149,7 @@ def set_type(data,
                 pass
 
         p = (ct.StSt(text, font
-            , fontSize=3
+            , fontSize=3*data.scale
             , leading=data.leading
             , tu=data.tracking
             , multiline=True
@@ -180,7 +177,8 @@ def set_type(data,
                 if not found:
                     _vars[k] = getattr(data, dp)
 
-            return ct.Style(font, 3,
+            return ct.Style(font,
+                fontSize=3*data.scale,
                 tu=data.tracking,
                 **features,
                 **_vars)
@@ -189,11 +187,11 @@ def set_type(data,
         if data.leading:
             p.lead(data.leading)
 
-    thtv = dict(th=not data.use_horizontal_font_metrics, tv=not data.use_vertical_font_metrics)
+    thtv = dict(tx=not data.use_horizontal_font_metrics, ty=not data.use_vertical_font_metrics)
     
     amb = p.ambit(**thtv)
 
-    p.xalign(rect=amb, x=data.align_lines_x, th=not data.use_horizontal_font_metrics)
+    p.xalign(rect=amb, x=data.align_lines_x, tx=not data.use_horizontal_font_metrics)
 
     ax, ay, aw, ah = p.ambit(**thtv)
 
@@ -210,7 +208,7 @@ def set_type(data,
         p.t(0, -ah)
 
     if meshing:
-        p.mapv(lambda g: g.record(C.P(g.ambit(th=1, tv=1))))
+        p.mapv(lambda g: g.record(C.P(g.ambit(tx=1, ty=1))))
     
     p.collapse()
 
@@ -239,14 +237,14 @@ def set_type(data,
                 mesh_glyph.parent = empty
                 mesh_glyph.st2.parent = empty.name
 
-                mesh_glyph.scale = (0.3, 0.3, 0.3)
+                mesh_glyph.scale = (0.3*data.scale, 0.3*data.scale, 0.3*data.scale)
 
-                amb = x.ambit(th=0, tv=0)
+                amb = x.ambit(tx=0, ty=0)
                 # 0.003 is b/c of the 3pt fontSize hardcoded above
                 mesh_glyph.location = (
-                    amb.x + prototype.st2.meshOffsetX*0.003,
+                    amb.x + prototype.st2.meshOffsetX*0.003*data.scale,
                     0, #mesh_glyph.location.y,
-                    prototype.st2.meshOffsetY*0.003)
+                    prototype.st2.meshOffsetY*0.003*data.scale)
 
                 if existing is None:
                     empty.users_collection[0].objects.link(mesh_glyph)
@@ -339,8 +337,8 @@ def set_type(data,
         if data.block:
             def block(_p):
                 return (C.P(_p.ambit(
-                            th=not data.block_horizontal_metrics,
-                            tv=not data.block_vertical_metrics)
+                            tx=not data.block_horizontal_metrics,
+                            ty=not data.block_vertical_metrics)
                         .inset(data.block_inset_x, data.block_inset_y))
                     #.skew(0.5, 0)
                     #.translate(0.2, 0)

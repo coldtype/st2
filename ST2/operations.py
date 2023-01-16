@@ -1,12 +1,69 @@
 import bpy
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
-from ST2 import search, typesetter
 
-try:
-    import coldtype.text as ct
-except ImportError:
-    pass
+from ST2 import search, typesetter
+from ST2.importer import ct
+
+
+def item_cb(self, context):
+    all_fonts = [f for f in ct.Font.LibraryList(".*") if not f.startswith(".")]
+    all_fonts = sorted(all_fonts, key=lambda x: x)
+    return [(str(f), str(f), "") for i, f in enumerate(all_fonts)]
+
+
+class ST2_OT_SearchFont(bpy.types.Operator):
+    """Search for a font in the system library"""
+    bl_label = "ST2 Search Font"
+    bl_idname = "st2.search_font"
+    bl_property = "available_fonts"
+
+    available_fonts: bpy.props.EnumProperty(items=item_cb)
+
+    def execute(self, context):
+        font_name = self.available_fonts
+        font = ct.Font.LibraryFind(font_name)
+
+        st2, _ = search.find_st2(context)
+        st2.enable_font_search = True
+        st2.font_path = str(font.path)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        wm.invoke_search_popup(self)
+        return {'FINISHED'}
+
+
+# class ST2_OT_SearchFont(bpy.types.Operator):
+#     """Search for a font in the system library"""
+
+#     bl_label = "ST2 Search Font"
+#     bl_idname = "st2.search_font"
+#     #bl_property = "my_enum"
+
+#     #my_enum: bpy.props.EnumProperty(items = items, name='New Name', default=None)
+
+#     def execute(self, context):
+#         def draw(self, context):
+#             self.layout.label(text="Hello World")
+
+#         bpy.context.window_manager.popup_menu(draw, title="Greeting", icon='INFO')
+#         return {'FINISHED'}
+    
+#     # @classmethod
+#     # def poll(cls, context):
+#     #     return context.scene.material  # This prevents executing the operator if we didn't select a material
+
+#     # def execute(self, context):
+#     #     material = context.scene.material
+#     #     material.name = self.my_enum
+#     #     return {'FINISHED'}
+
+#     # def invoke(self, context, event):
+#     #     wm = context.window_manager
+#     #     wm.invoke_search_popup(self)
+#     #     return {'FINISHED'}
 
 
 class ST2_OT_ShowFont(bpy.types.Operator):
@@ -18,7 +75,10 @@ class ST2_OT_ShowFont(bpy.types.Operator):
     def execute(self, context):
         st2, _ = search.find_st2(context)
         import os
-        os.system(f"open {str(Path(st2.font_path).parent)}")
+        font = st2.font()
+        folder = font.path.parent
+        print(">>>>>>>>>>>", folder)
+        os.system(f"open '{str(folder)}'")
         return {"FINISHED"}
 
 
@@ -73,6 +133,7 @@ class ST2_OT_ClearFont(bpy.types.Operator):
     
     def execute(self, context):
         ts = context.scene.st2
+        ts.enable_font_search = False
         ts.font_path = ""
 
         # TODO reset stuff?
@@ -86,7 +147,7 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
     bl_idname = "st2.refresh_settings"
     
     def execute(self, context):
-        from coldtype.text.reader import FontCache
+        from coldtype.text.font import FontCache
 
         if typesetter.MESH_CACHE_COLLECTION in bpy.data.collections:
             mcc = bpy.data.collections[typesetter.MESH_CACHE_COLLECTION]
@@ -161,6 +222,7 @@ class WM_OT_ST2ChooseFont(bpy.types.Operator, ImportHelper):
         
         font = ct.Font.Cacheable(path)
         ob.st2.font_path = str(font.path)
+        ob.st2.enable_font_search = False
         
         return {'FINISHED'}
 
@@ -174,7 +236,7 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.st2
-        font = ct.Font.Cacheable(data.font_path)
+        font = data.font()
 
         for idx, (_, v) in enumerate(font.variations().items()):
             diff = abs(v["maxValue"]-v["minValue"])
@@ -363,6 +425,7 @@ classes = [
     ST2_OT_CancelWatchSource,
     ST2_OT_LoadNextFont,
     ST2_OT_LoadPrevFont,
+    ST2_OT_SearchFont,
     ST2_OT_ShowFont,
     ST2_OT_ClearFont,
     ST2_OT_RefreshSettings,
