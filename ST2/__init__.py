@@ -48,8 +48,6 @@ class ST2DefaultPanel(bpy.types.Panel):
         layout = self.layout
         data = context.scene.st2
         font = data.font(none_ok=True)
-
-        row = layout.row()
         
         if font is None:
             if util.on_mac():
@@ -65,6 +63,7 @@ class ST2DefaultPanel(bpy.types.Panel):
                 row.label(text="Search for an installed font")
         
         else:
+            row = layout.row()
             row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
             if util.on_mac():
                 row.operator("st2.search_font", text="", icon="VIEWZOOM")
@@ -255,7 +254,7 @@ class ST2FontPanel(bpy.types.Panel):
 
 class ST2GlobalPanel(bpy.types.Panel):
     bl_label = "Render Settings"
-    bl_idname = "ST2_PT_999_GLOBALPANEL"
+    bl_idname = "ST2_PT_998_GLOBALPANEL"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ST2"
@@ -274,6 +273,25 @@ class ST2GlobalPanel(bpy.types.Panel):
         self.layout.row().prop(context.scene.st2, "export_style", text="Export")
 
 
+class ST2AboutPanel(bpy.types.Panel):
+    bl_label = "About"
+    bl_idname = "ST2_PT_999_ABOUTPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ST2"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+    
+    def draw(self, context):
+        row = self.layout.row()
+        version = bl_info.get("version")
+        row.label(text=f"ST2 v{version[0]}.{version[1]}")
+        # TODO buttons for help?
+
+
 classes = [
     #ST2PropertiesGroup,
 ]
@@ -284,6 +302,7 @@ panels = [
     ST2ScriptPanel,
     ST2FontPanel,
     ST2GlobalPanel,
+    ST2AboutPanel,
 ]
 
 all_classes = [*classes]
