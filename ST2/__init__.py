@@ -65,9 +65,9 @@ class ST2DefaultPanel(bpy.types.Panel):
                 row.label(text="Search for an installed font")
         
         else:
+            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
             if util.on_mac():
                 row.operator("st2.search_font", text="", icon="VIEWZOOM")
-            row.operator("wm.st2_choose_font", text="", icon="FONTPREVIEW")
             
             row.label(text=f"{font.names()[0]}")
 

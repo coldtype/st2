@@ -8,6 +8,7 @@ from ST2.importer import ct
 
 def item_cb(self, context):
     all_fonts = [f for f in ct.Font.LibraryList(".*") if not f.startswith(".")]
+    all_fonts = sorted(all_fonts, key=lambda x: x)
     return [(str(f), str(f), "") for i, f in enumerate(all_fonts)]
 
 
