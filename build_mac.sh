@@ -7,7 +7,7 @@ alias blender=$(b3denv blender)
 rm -rf ST2/inline-packages
 rm -rf venv
 
-# TODO use an actual intel Blender build for this?
+# TODO use an actual intel Blender build for this env?
 python3.10-intel64 -m venv venv
 source venv/bin/activate
 pip install -r requirements_mac.txt
@@ -27,4 +27,7 @@ pip install -r requirements_mac.txt
 deactivate
 
 b3denv inline ST2
-b3denv release ST2 suffix=mac_amd64
+b3denv release ST2 suffix=mac_silicon
+
+mkdir -p ~/Coldtype/coldtype.xyz/site/st2/downloads
+ditto _releases ~/Coldtype/coldtype.xyz/site/st2/downloads

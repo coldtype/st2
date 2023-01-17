@@ -8,3 +8,4 @@ scratch
 venv
 inline-packages
 setup.sh
+upload.sh
