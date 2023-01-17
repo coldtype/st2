@@ -1,0 +1,3 @@
+coldtype[blender]==0.10.1
+pyobjc-framework-Cocoa
+pyobjc-framework-CoreText
