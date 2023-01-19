@@ -283,6 +283,9 @@ class ST2AboutPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
+        if importer.coldtype_status == -2:
+            importer.do_import()
+            #print("hello")
         return True
     
     def draw(self, context):

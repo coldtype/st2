@@ -3,10 +3,9 @@ from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
 
 from ST2 import search, typesetter
-from ST2.importer import ct
-
 
 def item_cb(self, context):
+    from ST2.importer import ct
     all_fonts = [f for f in ct.Font.LibraryList(".*") if not f.startswith(".")]
     all_fonts = sorted(all_fonts, key=lambda x: x)
     return [(str(f), str(f), "") for i, f in enumerate(all_fonts)]
@@ -21,6 +20,8 @@ class ST2_OT_SearchFont(bpy.types.Operator):
     available_fonts: bpy.props.EnumProperty(items=item_cb)
 
     def execute(self, context):
+        from ST2.importer import ct
+
         font_name = self.available_fonts
         font = ct.Font.LibraryFind(font_name)
 
@@ -215,6 +216,8 @@ class WM_OT_ST2ChooseFont(bpy.types.Operator, ImportHelper):
         return {'RUNNING_MODAL'}
 
     def execute(self, context):
+        from ST2.importer import ct
+
         path = Path(self.filepath)
         ob = search.active_key_object(context)
         if not ob:

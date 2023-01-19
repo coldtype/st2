@@ -1,6 +1,5 @@
 import bpy
 
-from ST2.importer import ct
 from ST2 import search
 
 

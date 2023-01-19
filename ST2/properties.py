@@ -1,7 +1,6 @@
 import bpy
 
 from ST2 import typesetter
-from ST2.importer import ct
 
 
 def _update_type(props, context):
@@ -345,6 +344,8 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         pass
 
     def font(self, none_ok=False):
+        from ST2.importer import ct
+
         font = None
         if self.font_path:
             try:

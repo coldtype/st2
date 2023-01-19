@@ -2,8 +2,6 @@ import bpy, tempfile, math, inspect
 from mathutils import Vector
 from pathlib import Path
 
-from ST2.importer import C, ct, cb
-
 
 MESH_CACHE_COLLECTION = "ST2.MeshCache"
 
@@ -60,6 +58,7 @@ def set_type(data,
     override_use_mesh=None
     ):
     # if ufo, don't cache?
+    from ST2.importer import C, ct, cb
 
     font = data.font()
 
