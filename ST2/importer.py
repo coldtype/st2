@@ -4,6 +4,8 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
+REQUIRED_COLDTYPE = "0.10.1"
+
 def do_import():
     global coldtype_status, C, ct, cb
 
@@ -24,7 +26,6 @@ def do_import():
     def vt(v):
         return tuple(map(int, (v.split("."))))
 
-    REQUIRED_COLDTYPE = "0.10.1"
     #coldtype_status = 1
 
     try:
