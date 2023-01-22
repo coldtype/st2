@@ -85,7 +85,7 @@ class ST2DefaultPanel(bpy.types.Panel):
             row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
             row.prop(data, "default_extrude")
 
-            layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+            layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text Object", icon="SORTALPHA")
 
 
 class ST2MainPanel(bpy.types.Panel):
