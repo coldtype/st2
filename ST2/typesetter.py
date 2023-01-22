@@ -43,6 +43,63 @@ def read_mesh_glyphs_into_cache(font, p, mesh_table):
                 
             #print(">>> imported mesh:", x.glyphName)
 
+def build_stst(text, font, data, scene):
+    from ST2.importer import ct
+
+    kp = None
+    if data.kerning_pairs and data.kerning_pairs_enabled:
+        try:
+            kp = eval(data.kerning_pairs)
+        except Exception as e:
+            print(">>>", e)
+            pass
+
+    return (ct.StSt(text, font
+        , fontSize=3*data.scale
+        , leading=data.leading
+        , tu=data.tracking
+        , multiline=True
+        , kp=kp
+        , fit=data.fit if data.fit_enable else None
+        , **data.features(font)
+        , **data.variations(font)))
+
+
+def build_glyphwise(text, font, data, scene, object):
+    from ST2.importer import ct
+
+    def styler(x):
+        _vars = {}
+        for idx, (k, v) in enumerate(font.variations().items()):
+            dp = f"fvar_axis{idx+1}"
+            fvar_offset = getattr(data, f"{dp}_offset")
+            found = False
+            
+            try:
+                for fcu in object.animation_data.action.fcurves:
+                    #print(fcu.data_path, dp)
+                    if fcu.data_path.split(".")[-1] == dp:
+                        found = True
+                        _vars[k] = fcu.evaluate((scene.frame_current - x.i*fvar_offset)%(scene.frame_end+1 - scene.frame_start))
+            except AttributeError as e:
+                print(e)
+                pass
+            
+            if not found:
+                _vars[k] = getattr(data, dp)
+
+        return ct.Style(font,
+            fontSize=3*data.scale,
+            tu=data.tracking,
+            **data.features(font),
+            **_vars)
+
+    p = ct.Glyphwise(text, styler, multiline=True)
+    if data.leading:
+        p.lead(data.leading)
+    
+    return p
+
 
 def set_type(data,
     object=None,
@@ -73,118 +130,13 @@ def set_type(data,
         meshing = mesh and data.use_mesh
 
     collection = collection or "Global"
-    using_file = False
-
-    if data.text_mode == "FILE":
-        using_file = True
-        if data.text_file:
-            text_path = Path(data.text_file).expanduser().absolute()
-            text = text_path.read_text()
-            if data.text_indexed:
-                lines = text.split("\n\n")
-                try:
-                    text = lines[data.text_index-1]
-                except IndexError:
-                    text = lines[-1]
-        else:
-            text = "Select file"
-        fulltext = text
-    elif data.text_mode == "BLOCK":
-        using_file = True
-        if data.text_block:
-            try:
-                text = bpy.data.texts[data.text_block].as_string()
-                if data.text_indexed:
-                    lines = text.split("\n\n")
-                    try:
-                        text = lines[data.text_index-1]
-                    except IndexError:
-                        text = lines[-1]
-            except KeyError:
-                text = "Invalid"
-        else:
-            text = "Enter block name"
-        fulltext = text
-    else:
-        if data.text == "":
-            text = "Text"
-        else:
-            text = data.text
-
-        lines = text.split("¶")
-        fulltext = "\n".join(lines)
-        if data.text_indexed:
-            try:
-                text = lines[data.text_index-1]
-            except IndexError:
-                text = lines[-1]
-        else:
-            text = fulltext
-
-
-    if data.case == "TYPED":
-        pass
-    elif data.case == "UPPER":
-        text = text.upper()
-    elif data.case == "LOWER":
-        text = text.lower()
-    
-    features = {}
-    for k, v in data.__annotations__.items():
-        if k.startswith("fea_"):
-            features[k[4:]] = getattr(data, k)
-
-    variations = {}
-    for idx, (k, v) in enumerate(font.variations().items()):
-        variations[k] = getattr(data, f"fvar_axis{idx+1}")
+    using_file = data.text_mode != "UI"
+    text, fulltext = data.to_texts()
 
     if not object or not object.st2.has_keyframes(object):
-        kp = None
-        if data.kerning_pairs and data.kerning_pairs_enabled:
-            try:
-                kp = eval(data.kerning_pairs)
-            except Exception as e:
-                print(">>>", e)
-                pass
-
-        p = (ct.StSt(text, font
-            , fontSize=3*data.scale
-            , leading=data.leading
-            , tu=data.tracking
-            , multiline=True
-            , kp=kp
-            , fit=data.fit if data.fit_enable else None
-            , **features
-            , **variations))
+        p = build_stst(text, font, data, scene)
     else:
-        def styler(x):
-            _vars = {}
-            for idx, (k, v) in enumerate(font.variations().items()):
-                dp = f"fvar_axis{idx+1}"
-                fvar_offset = getattr(data, f"{dp}_offset")
-                found = False
-                
-                try:
-                    for fcu in object.animation_data.action.fcurves:
-                        #print(fcu.data_path, dp)
-                        if fcu.data_path.split(".")[-1] == dp:
-                            found = True
-                            _vars[k] = fcu.evaluate((scene.frame_current - x.i*fvar_offset)%(scene.frame_end+1 - scene.frame_start))
-                except AttributeError:
-                    pass
-                
-                if not found:
-                    _vars[k] = getattr(data, dp)
-
-            return ct.Style(font,
-                fontSize=3*data.scale,
-                tu=data.tracking,
-                **features,
-                **_vars)
-
-        p = ct.Glyphwise(text, styler, multiline=True)
-        if data.leading:
-            p.lead(data.leading)
+        p = build_glyphwise(text, font, data, scene, object)
 
     thtv = dict(tx=not data.use_horizontal_font_metrics, ty=not data.use_vertical_font_metrics)
     

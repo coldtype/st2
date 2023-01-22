@@ -1,4 +1,5 @@
 import bpy
+from pathlib import Path
 
 from ST2 import typesetter
 
@@ -361,6 +362,74 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
             else:
                 return ct.Font.RecursiveMono()
 
+    def variations(self, font):
+        variations = {}
+        for idx, (k, v) in enumerate(font.variations().items()):
+            variations[k] = getattr(self, f"fvar_axis{idx+1}")
+        return variations
+
+    def features(self, font):
+        features = {}
+        for k, v in self.__annotations__.items():
+            if k.startswith("fea_"):
+                features[k[4:]] = getattr(self, k)
+        return features
+    
+    def to_texts(self):
+        text = ""
+
+        if self.text_mode == "FILE":
+            if self.text_file:
+                text_path = Path(self.text_file).expanduser().absolute()
+                text = text_path.read_text()
+                if self.text_indexed:
+                    lines = text.split("\n\n")
+                    try:
+                        text = lines[self.text_index-1]
+                    except IndexError:
+                        text = lines[-1]
+            else:
+                text = "Select file"
+            fulltext = text
+        elif self.text_mode == "BLOCK":
+            if self.text_block:
+                try:
+                    text = bpy.data.texts[self.text_block].as_string()
+                    if self.text_indexed:
+                        lines = text.split("\n\n")
+                        try:
+                            text = lines[self.text_index-1]
+                        except IndexError:
+                            text = lines[-1]
+                except KeyError:
+                    text = "Invalid"
+            else:
+                text = "Enter block name"
+            fulltext = text
+        else:
+            if self.text == "":
+                text = "Text"
+            else:
+                text = self.text
+
+            lines = text.split("¶")
+            fulltext = "\n".join(lines)
+            if self.text_indexed:
+                try:
+                    text = lines[self.text_index-1]
+                except IndexError:
+                    text = lines[-1]
+            else:
+                text = fulltext
+
+        if self.case == "TYPED":
+            pass
+        elif self.case == "UPPER":
+            text = text.upper()
+        elif self.case == "LOWER":
+            text = text.lower()
+        
+        return text, fulltext
 
 
 
