@@ -54,16 +54,11 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
         
         sc.frame_set(frame)
         print("> baking:", frame)
-        results.append(typesetter.set_type(data, obj
-            , baking=True
-            , parent=parent.obj if parent else None
-            , collection=coll if coll else None
-            , context=context
-            , scene=context.scene
-            , framewise=framewise
-            , glyphwise=glyphwise
-            , shapewise=shapewise
-            , layerwise=layerwise))
+
+        t = typesetter.T(data, obj, context.scene, coll)
+        p = t.two_dimensional(glyphwise, framewise)
+        
+        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, parent.obj if parent else None))
         
         #bpy.context.view_layer.update()
     

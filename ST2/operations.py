@@ -161,7 +161,8 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
                 if k in FontCache:
                     del FontCache[k]
             
-            typesetter.set_type(e.st2, e, context=context)
+            t = typesetter.T(e.st2, e, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
         return {"FINISHED"}
 
 
@@ -239,112 +240,25 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.st2
-        font = data.font()
+        data.update_to_variation_defaults()
 
-        for idx, (_, v) in enumerate(font.variations().items()):
-            diff = abs(v["maxValue"]-v["minValue"])
-            v = (v["defaultValue"]-v["minValue"])/diff
-            setattr(data, f"fvar_axis{idx+1}", v)
-
-        txtObj = typesetter.set_type(data)[0]
+        t = typesetter.T(data, None, context.scene)
+        txt_obj = t.create_live_text_obj(t.two_dimensional())
         
         for k in data.__annotations__.keys():
             v = getattr(data, k)
-            setattr(txtObj.obj.st2, k, v)
+            setattr(txt_obj.obj.st2, k, v)
         
         if data.default_upright:
-            txtObj.rotate(x=90)
+            txt_obj.rotate(x=90)
         
-        if txtObj.obj.data:
-            txtObj.extrude(data.default_extrude)
+        if txt_obj.obj.data:
+            txt_obj.extrude(data.default_extrude)
 
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-        txtObj.obj.select_set(True)
+        txt_obj.obj.st2.updatable = True
+        txt_obj.obj.st2.frozen = False
+        txt_obj.obj.select_set(True)
         
-        return {"FINISHED"}
-    
-
-class ST2_OT_ConvertMeshToFlat(bpy.types.Operator):
-    """Convert a mesh-based text setting to an outline-based text-setting"""
-
-    bl_label = "ST2 Convert Mesh to Flat"
-    bl_idname = "st2.convert_mesh_to_flat"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        ko = search.active_key_object(context)
-        data = ko.st2
-
-        txtObj = typesetter.set_type(data, override_use_mesh=False)[0]
-
-        txtObj.obj.st2.frozen = True
-        txtObj.obj.st2.use_mesh = False
-        
-        for k in data.__annotations__.keys():
-            if k not in ["frozen", "use_mesh"]:
-                v = getattr(data, k)
-                setattr(txtObj.obj.st2, k, v)
-        
-        if data.default_upright:
-            txtObj.rotate(x=90)
-        
-        if txtObj.obj.data:
-            txtObj.extrude(data.default_extrude)
-
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-
-        for o in bpy.data.objects:
-            if o.parent == ko:
-                bpy.data.objects.remove(o, do_unlink=True)
-        
-        bpy.data.objects.remove(ko, do_unlink=True)
-
-        txtObj.obj.select_set(True)
-        
-        return {"FINISHED"}
-
-
-class ST2_OT_ConvertFlatToMesh(bpy.types.Operator):
-    """Convert an outline-based text setting to a mesh-based text-setting"""
-
-    bl_label = "ST2 Convert Flat to Mesh"
-    bl_idname = "st2.convert_flat_to_mesh"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        ko = search.active_key_object(context)
-        data = ko.st2
-
-        txtObj = typesetter.set_type(data, override_use_mesh=True)[0]
-
-        txtObj.obj.st2.frozen = True
-        txtObj.obj.st2.use_mesh = True
-        
-        for k in data.__annotations__.keys():
-            if k not in ["frozen", "use_mesh"]:
-                v = getattr(data, k)
-                setattr(txtObj.obj.st2, k, v)
-
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-
-        bpy.data.objects.remove(ko, do_unlink=True)
-
-        txtObj.obj.select_set(True)
-        
-        return {"FINISHED"}
-
-
-class ST2_OT_SetTypeWithObject(bpy.types.Operator):
-    bl_label = "ST2 SetType Object"
-    bl_idname = "st2.settype_with_object"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        obj = context.active_object
-        typesetter.set_type(obj.st2)
         return {"FINISHED"}
 
 
@@ -435,9 +349,6 @@ classes = [
     ST2_OT_DeleteParentedText,
     ST2_OT_InsertNewlineSymbol,
     ST2_OT_SetTypeWithSceneDefaults,
-    ST2_OT_SetTypeWithObject,
-    ST2_OT_ConvertMeshToFlat,
-    ST2_OT_ConvertFlatToMesh,
     WM_OT_ST2ChooseFont,
 ]
 

@@ -5,17 +5,11 @@ from ST2 import typesetter
 
 
 def _update_type(props, context):
-#    data, active = find_st2(context)
-#    if props != data:
-
     for obj in context.scene.objects:
         if obj.st2 == props and obj.st2.frozen != True:
-            typesetter.set_type(obj.st2, obj, scene=context.scene)
+            t = typesetter.T(obj.st2, obj, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
             return obj
-    
-    # if data.updatable and not data.baked:
-    #     set_type(data, active, scene=context.scene)
-    #return data, active
 
 def update_type(props, context):
     _update_type(props, context)
@@ -57,7 +51,8 @@ def update_type_frame_change(scene, depsgraph):
     for obj in scene.objects:
         data = obj.st2
         if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
-            typesetter.set_type(data, obj, scene=scene)
+            t = typesetter.T(data, obj, scene)
+            t.update_live_text_obj(t.two_dimensional())
 
 
 def feaprop(prop, default=False):
@@ -367,6 +362,14 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         for idx, (k, v) in enumerate(font.variations().items()):
             variations[k] = getattr(self, f"fvar_axis{idx+1}")
         return variations
+    
+    def update_to_variation_defaults(self):
+        font = self.font()
+
+        for idx, (_, v) in enumerate(font.variations().items()):
+            diff = abs(v["maxValue"]-v["minValue"])
+            v = (v["defaultValue"]-v["minValue"])/diff
+            setattr(self, f"fvar_axis{idx+1}", v)
 
     def features(self, font):
         features = {}
@@ -375,7 +378,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                 features[k[4:]] = getattr(self, k)
         return features
     
-    def to_texts(self):
+    def build_text(self):
         text = ""
 
         if self.text_mode == "FILE":
@@ -429,7 +432,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         elif self.case == "LOWER":
             text = text.lower()
         
-        return text, fulltext
+        return text
 
     def mesh(self, override=False):
         font = self.font()

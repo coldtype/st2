@@ -43,7 +43,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
             context.window_manager.progress_update(e)
 
-            c = typesetter.set_type(data, collection=coll)[0]
+            t = typesetter.T(data, None, context.scene, collection=coll)
+            c = t.create_live_text_obj(t.two_dimensional())
             c = c.obj
 
             created.append(c)
@@ -72,7 +73,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
             c.st2.interpolated = True
 
-            typesetter.set_type(c.st2, c, context=context)
+            t = typesetter.T(c.st2, c, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
 
             if parent:
                 c.parent = parent.obj
