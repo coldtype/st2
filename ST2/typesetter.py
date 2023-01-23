@@ -277,21 +277,21 @@ class T():
         p.mapv(block)
         return p
 
-    def apply_outline(p, data, shapewise):
+    def apply_outline(self, p, shapewise):
         if shapewise:
             p.mapv(lambda _p: _p.explode())
             p.collapse()
 
-        ow = data.outline_weight/100
-        if data.outline_outer or ow < 0:
+        ow = self.data.outline_weight/100
+        if self.data.outline_outer or ow < 0:
             p_inner = p.copy()
         
-        p.outline(data.outline_weight/100, miterLimit=data.outline_miter_limit)
+        p.outline(self.data.outline_weight/100, miterLimit=self.data.outline_miter_limit)
         
         if ow < 0:
             p_inner.difference(p)
             p = p_inner
-        elif data.outline_outer:
+        elif self.data.outline_outer:
             p.difference(p_inner)
         
         return p
