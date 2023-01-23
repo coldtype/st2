@@ -1,11 +1,12 @@
 import bpy
 
-from ST2.importer import C, ct, cb
 from ST2 import typesetter
 from ST2 import search
 
 
 def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
+    from ST2.importer import cb
+
     obj = context.active_object
     data = obj.st2
     data.frozen = True

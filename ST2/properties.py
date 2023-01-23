@@ -431,6 +431,22 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         
         return text, fulltext
 
+    def mesh(self, override=False):
+        font = self.font()
+        try:
+            mesh = font.font.ttFont["MESH"]
+        except KeyError:
+            mesh = None
+        
+        if mesh and self.use_mesh:
+            return mesh
+        else:
+            return None
+
+        # if override is not None:
+        #     meshing = mesh and override
+        # else:
+        #     meshing = mesh and self.use_mesh
 
 
 classes = [ST2PropertiesGroup]
