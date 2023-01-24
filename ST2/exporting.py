@@ -28,10 +28,8 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
 
     if parent:
         anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
-    
-        for k in data.__annotations__.keys():
-            v = getattr(data, k)
-            setattr(anchor.obj.st2, k, v)
+
+        data.copy_to(anchor.obj.st2)
         
         anchor.obj.st2.baked = True
         anchor.obj.st2.baked_from = obj.name

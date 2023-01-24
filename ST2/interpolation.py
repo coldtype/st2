@@ -44,7 +44,7 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
             context.window_manager.progress_update(e)
 
             t = typesetter.T(data, None, context.scene, collection=coll)
-            c = t.create_live_text_obj(t.two_dimensional())
+            c = t.create_live_text(t.two_dimensional())
             c = c.obj
 
             created.append(c)
@@ -61,9 +61,7 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
             
             c.data.extrude = norm(e, a.data.extrude, b.data.extrude)
 
-            for k in a.st2.__annotations__.keys():
-                v = getattr(a.st2, k)
-                setattr(c.st2, k, v)
+            a.st2.copy_to(c.st2)
             
             c.st2.frozen = True
             for idx, (k, v) in enumerate(fvars.items()):

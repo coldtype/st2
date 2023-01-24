@@ -1,6 +1,8 @@
-import bpy, tempfile, math, inspect
+import bpy, tempfile, math, inspect, time
 from mathutils import Vector
 from pathlib import Path
+
+from ST2 import util
 
 
 MESH_CACHE_COLLECTION = "ST2.MeshCache"
@@ -86,20 +88,20 @@ def build_mesh(empty, p, data):
 
 class T():
     def __init__(self
-        , data
+        , st2
         , obj
         , scene
         , collection="Global"
         ):
-        self.data = data
+        self.st2 = st2
         self.scene = scene
         self.obj = obj
         self.collection = collection
 
-        self.font = data.font()
-        self.text = data.build_text()
+        self.font = self.st2.font()
+        self.text = self.st2.build_text()
         
-        self.base_name = "ST2::File" if data.text_mode != "UI" else "ST2:" + self.text[:20]
+        self.base_name = "ST2::File" if self.st2.text_mode != "UI" else "ST2:" + self.text[:20]
     
     def base_vectors(self):
         # not actually a good flag, keyframes should be checked for fvar mods
@@ -117,43 +119,44 @@ class T():
     def two_dimensional(self, glyphwise=False, shapewise=False):
         p = self.base_vectors()
 
-        if self.data.script_enabled:
+        if self.st2.script_enabled:
             p = self.apply_script(p)
-        if self.data.combine_glyphs and not glyphwise:
+        if self.st2.combine_glyphs and not glyphwise:
             p = p.pen()
-        if self.data.remove_overlap:
+        if self.st2.remove_overlap:
             p.remove_overlap()
-        if self.data.outline:
+        if self.st2.outline:
             p = self.apply_outline(p, shapewise)
-        if self.data.block:
-            p = self.add_blocks(p)
+        
+        #if self.st2.block:
+        #    p = self.add_blocks(p)
         
         return p
     
     def base_style_kwargs(self):
         kp = None
-        if self.data.kerning_pairs and self.data.kerning_pairs_enabled:
+        if self.st2.kerning_pairs and self.st2.kerning_pairs_enabled:
             try:
-                kp = eval(self.data.kerning_pairs)
+                kp = eval(self.st2.kerning_pairs)
             except Exception as e:
                 print(">>>", e)
                 pass
 
         return dict(font=self.font
-            , fontSize=3*self.data.scale
-            , tu=self.data.tracking
+            , fontSize=3*self.st2.scale
+            , tu=self.st2.tracking
             , kp=kp
-            , fit=self.data.fit if self.data.fit_enable else None
-            , **self.data.features(self.font))
+            , fit=self.st2.fit if self.st2.fit_enable else None
+            , **self.st2.features(self.font))
     
     def build_single_style(self):
         from ST2.importer import ct
 
         return ct.StSt(self.text
             , **self.base_style_kwargs()
-            , **self.data.variations(self.font)
+            , **self.st2.variations(self.font)
             , multiline=True
-            , leading=self.data.leading)
+            , leading=self.st2.leading)
 
     def build_multi_style(self):
         from ST2.importer import ct
@@ -162,7 +165,7 @@ class T():
             _vars = {}
             for idx, (k, _) in enumerate(self.font.variations().items()):
                 dp = f"fvar_axis{idx+1}"
-                fvar_offset = getattr(self.data, f"{dp}_offset")
+                fvar_offset = getattr(self.st2, f"{dp}_offset")
                 found = False
                 
                 try:
@@ -176,34 +179,34 @@ class T():
                     pass
                 
                 if not found:
-                    _vars[k] = getattr(self.data, dp)
+                    _vars[k] = getattr(self.st2, dp)
 
             return ct.Style(**self.base_style_kwargs(), **_vars)
 
         p = ct.Glyphwise(self.text, styler, multiline=True)
-        if self.data.leading:
-            p.lead(self.data.leading)
+        if self.st2.leading:
+            p.lead(self.st2.leading)
         return p
     
     def align(self, p):
-        txty = dict(tx=not self.data.use_horizontal_font_metrics, ty=not self.data.use_vertical_font_metrics)
+        txty = dict(tx=not self.st2.use_horizontal_font_metrics, ty=not self.st2.use_vertical_font_metrics)
         
         amb = p.ambit(**txty)
 
-        p.xalign(rect=amb, x=self.data.align_lines_x, tx=not self.data.use_horizontal_font_metrics)
+        p.xalign(rect=amb, x=self.st2.align_lines_x, tx=not self.st2.use_horizontal_font_metrics)
 
         ax, ay, aw, ah = p.ambit(**txty)
 
         p.t(-ax, -ay)
 
-        if self.data.align_x == "CX":
+        if self.st2.align_x == "CX":
             p.t(-aw/2, 0)
-        elif self.data.align_x == "E":
+        elif self.st2.align_x == "E":
             p.t(-aw, 0)
         
-        if self.data.align_y == "CY":
+        if self.st2.align_y == "CY":
             p.t(0, -ah/2)
-        elif self.data.align_y == "N":
+        elif self.st2.align_y == "N":
             p.t(0, -ah)
 
     def apply_script(self, p):
@@ -211,14 +214,14 @@ class T():
         from tempfile import NamedTemporaryFile
 
         res = None
-        if self.data.script_mode == "FILE" and self.data.script_file:
+        if self.st2.script_mode == "FILE" and self.st2.script_file:
             try:
-                res = run_path(self.data.script_file)
+                res = run_path(self.st2.script_file)
             except Exception as e:
                 print("Could not run script", e)
-        elif self.data.script_mode == "BLOCK":
+        elif self.st2.script_mode == "BLOCK":
             try:
-                script_text = bpy.data.texts[self.data.script_block].as_string()
+                script_text = bpy.data.texts[self.st2.script_block].as_string()
                 if script_text:
                     tmp_path = None
                     with NamedTemporaryFile("w", suffix=".py", delete=False) as tf:
@@ -238,10 +241,10 @@ class T():
                 fn = res["modify"]
                 arg_count = len(inspect.signature(fn).parameters)
                 
-                args = [self.data]
+                args = [self.st2]
                 if arg_count > 1:
                     try:
-                        args.append(eval(f"dict({self.data.script_kwargs})"))
+                        args.append(eval(f"dict({self.st2.script_kwargs})"))
                     except Exception as e:
                         print(e)
                         print("failed to parse kwargs")
@@ -264,14 +267,14 @@ class T():
 
         def block(_p):
             return (C.P(_p.ambit(
-                        tx=not self.data.block_horizontal_metrics,
-                        ty=not self.data.block_vertical_metrics)
-                    .inset(self.data.block_inset_x, self.data.block_inset_y))
+                        tx=not self.st2.block_horizontal_metrics,
+                        ty=not self.st2.block_vertical_metrics)
+                    .inset(self.st2.block_inset_x, self.st2.block_inset_y))
                 #.skew(0.5, 0)
                 #.translate(0.2, 0)
                 .difference(_p.copy()))
 
-        if self.data.combine_glyphs:
+        if self.st2.combine_glyphs:
             p = block(p)
         
         p.mapv(block)
@@ -282,39 +285,123 @@ class T():
             p.mapv(lambda _p: _p.explode())
             p.collapse()
 
-        ow = self.data.outline_weight/100
-        if self.data.outline_outer or ow < 0:
+        ow = self.st2.outline_weight/100
+        if self.st2.outline_outer or ow < 0:
             p_inner = p.copy()
         
-        p.outline(self.data.outline_weight/100, miterLimit=self.data.outline_miter_limit)
+        p.outline(self.st2.outline_weight/100, miterLimit=self.st2.outline_miter_limit)
         
         if ow < 0:
             p_inner.difference(p)
             p = p_inner
-        elif self.data.outline_outer:
+        elif self.st2.outline_outer:
             p.difference(p_inner)
         
         return p
     
-    def create_live_text_obj(self, p):
+    def create_live_text(self, p):
+        if p.depth() == 0:
+            return self.create_live_single(p)
+        else:
+            return self.create_live_parented(p)
+        
+    def swap_metadata(self, other, selected):
+        other.obj.location = self.obj.location
+        other.obj.rotation_euler = self.obj.rotation_euler
+
+        self.st2.copy_to(other.obj.st2)
+
+        was_name = self.obj.name
+        util.delete_parent_recursively(self.obj)
+        other.obj.name = was_name
+        self.obj = other.obj
+
+        if selected:
+            other.obj.select_set(True)
+            bpy.context.view_layer.objects.active = other.obj
+
+        return other
+    
+    def create_live_single(self, p):
         from ST2.importer import cb
 
-        txtObj = (cb.BpyObj.Curve("ST2:Text", self.collection))
-        txtObj.draw(p, set_origin=False, fill=True)
-        txtObj.extrude(0)
-        return txtObj
+        to = cb.BpyObj.Curve("ST2:Text", self.collection)
+        to.extrude(0)
+
+        if self.obj: # converting
+            data = self.obj.data
+            if self.obj.type == "EMPTY":
+                data = util.get_children(self.obj)[0].data
+
+            to.obj.data = data.copy()
+            to.obj.animation_data_clear()
+            self.st2.copy_to(to.obj.st2)
+        
+        to.draw(p, set_origin=False, fill=True)
+        return to
+    
+    def add_parented_glyph(self, idx, p, parent, data):
+        from ST2.importer import cb
+
+        name = "ST2:Glyphs:" + "::" + str(idx)
+        to = cb.BpyObj.Curve(name, self.collection)
+        if data: # converting
+            to.obj.data = data.copy()
+            to.obj.animation_data_clear() # necessary?
+        to.obj.parent = parent
+        #self.st2.copy_to(to.obj.st2) # necessary?
+        to.draw(p, set_origin=False, fill=False)
+        return to.obj
+    
+    def create_live_parented(self, p, empty=None):
+        from ST2.importer import cb
+
+        if empty is None:
+            empty = cb.BpyObj.Empty("ST2:temporary_empty", "Global")
+
+        def glyph_obj(i, gp):
+            self.add_parented_glyph(i, gp, empty.obj, self.obj.data.copy() if self.obj else None)
+        
+        p.mapv(glyph_obj)
+        return empty
     
     def update_live_text_obj(self, p):
         from ST2.importer import cb
 
-        txtObj = cb.BpyObj()
-        txtObj.obj = self.obj
+        selected = self.obj.select_get()
 
-        if self.data.auto_rename:
-            txtObj.obj.name = self.base_name
+        if p.depth() == 0:
+            if self.obj.type == "EMPTY":
+                return self.swap_metadata(self.create_live_single(p), selected)
 
-        txtObj.draw(p, set_origin=False, fill=False)
-        return txtObj
+            to = cb.BpyObj()
+            to.obj = self.obj
+
+            if self.st2.auto_rename:
+                to.obj.name = self.base_name
+
+            to.draw(p, set_origin=False, fill=False)
+        else:
+            if self.obj.type == "CURVE":
+                return self.swap_metadata(self.create_live_parented(p), selected)
+
+            children = util.get_children(self.obj)
+            children_reused = []
+
+            def glyph_obj(i, gp):
+                try:
+                    c = children[i]
+                    cb.BpyObj.Find(c).draw(gp, set_origin=False, fill=False)
+                    children_reused.append(i)
+                    #leftover.pop(0)
+                except IndexError:
+                    c = self.add_parented_glyph(i, gp, self.obj, children[1].data)
+            
+            p.map(glyph_obj)
+
+            for i, c in enumerate(children):
+                if i not in children_reused:
+                    bpy.data.objects.remove(c, do_unlink=True)
     
     def convert_live_to_baked(self, p, framewise, glyphwise, shapewise, parent):
         from ST2.importer import cb
@@ -329,10 +416,10 @@ class T():
             txtObj.obj.rotation_euler = self.obj.rotation_euler
 
             if glyph and idx is not None:
-                if self.data.export_stagger_y:
-                    txtObj.locate_relative(y=idx*self.data.export_stagger_y)
-                if self.data.export_stagger_z:
-                    txtObj.locate_relative(z=idx*self.data.export_stagger_z)
+                if self.st2.export_stagger_y:
+                    txtObj.locate_relative(y=idx*self.st2.export_stagger_y)
+                if self.st2.export_stagger_z:
+                    txtObj.locate_relative(z=idx*self.st2.export_stagger_z)
 
             if glyph:
                 txtObj.draw(glyph, set_origin=False, fill=False)
@@ -357,23 +444,23 @@ class T():
                 hide(True)
                 self.scene.frame_set(frame)
                 hide(False)
-                self.scene.frame_set(frame+self.data.export_every_x_frame-1)
+                self.scene.frame_set(frame+self.st2.export_every_x_frame-1)
                 hide(False)
-                self.scene.frame_set(frame+self.data.export_every_x_frame)
+                self.scene.frame_set(frame+self.st2.export_every_x_frame)
                 hide(True)
                 self.scene.frame_set(frame)
             
             txtObj.obj.select_set(True)
-            if self.data.export_meshes:
+            if self.st2.export_meshes:
                 bpy.ops.object.convert(target="MESH")
-                if self.data.export_apply_transforms:
+                if self.st2.export_apply_transforms:
                     bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
-                if self.data.export_rigidbody_active:
+                if self.st2.export_rigidbody_active:
                     bpy.ops.rigidbody.object_add()
                     txtObj.obj.rigid_body.type = "ACTIVE"
                     #bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
                     pass
-            if self.data.export_geometric_origins:
+            if self.st2.export_geometric_origins:
                 bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
             txtObj.obj.select_set(False)
             
@@ -385,14 +472,14 @@ class T():
             txtObj.obj.visible_camera = self.obj.visible_camera
 
             if glyph and idx is not None:
-                if self.data.export_rotate_y:
-                    txtObj.rotate(y=math.degrees(self.data.export_rotate_y))
+                if self.st2.export_rotate_y:
+                    txtObj.rotate(y=math.degrees(self.st2.export_rotate_y))
 
             return txtObj
         
         if glyphwise:
             if shapewise:
-                if not self.data.outline:
+                if not self.st2.outline:
                     p.mapv(lambda _p: _p.explode())
                     p.collapse()
             #if layerwise:

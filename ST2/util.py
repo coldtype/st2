@@ -34,5 +34,20 @@ def ensure_frame_changer(frame_changers, fn, src=None):
         frame_changers.append(fn)
 
 
+def get_children(ko):
+    children = []
+    for o in bpy.data.objects:
+        if o.parent == ko:
+            children.append(o)
+    return sorted(children, key=lambda c: c.name)
+
+
+def delete_parent_recursively(ko):
+    for c in get_children(ko):
+        bpy.data.objects.remove(c, do_unlink=True)
+    
+    bpy.data.objects.remove(ko, do_unlink=True)
+
+
 classes = []
 panels = []

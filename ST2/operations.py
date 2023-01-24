@@ -2,7 +2,7 @@ import bpy
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
 
-from ST2 import search, typesetter
+from ST2 import search, typesetter, util
 
 def item_cb(self, context):
     from ST2.importer import ct
@@ -166,14 +166,6 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def delete_parent_recursively(ko):
-    for o in bpy.data.objects:
-        if o.parent == ko:
-            bpy.data.objects.remove(o, do_unlink=True)
-    
-    bpy.data.objects.remove(ko, do_unlink=True)
-
-
 class ST2_OT_DeleteParentedText(bpy.types.Operator):
     bl_label = "ST2 Delete Parented Text"
     bl_idname = "st2.delete_parented_text"
@@ -181,7 +173,7 @@ class ST2_OT_DeleteParentedText(bpy.types.Operator):
     
     def execute(self, context):
         ko = search.active_key_object(context)
-        delete_parent_recursively(ko)
+        util.delete_parent_recursively(ko)
         return {"FINISHED"}
 
 
@@ -243,21 +235,19 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
         data.update_to_variation_defaults()
 
         t = typesetter.T(data, None, context.scene)
-        txt_obj = t.create_live_text_obj(t.two_dimensional())
+        to = t.create_live_text(t.two_dimensional())
         
-        for k in data.__annotations__.keys():
-            v = getattr(data, k)
-            setattr(txt_obj.obj.st2, k, v)
+        data.copy_to(to.obj.st2)
         
         if data.default_upright:
-            txt_obj.rotate(x=90)
+            to.rotate(x=90)
         
-        if txt_obj.obj.data:
-            txt_obj.extrude(data.default_extrude)
+        if to.obj.data: # huh?
+            to.extrude(data.default_extrude)
 
-        txt_obj.obj.st2.updatable = True
-        txt_obj.obj.st2.frozen = False
-        txt_obj.obj.select_set(True)
+        to.obj.st2.updatable = True
+        to.obj.st2.frozen = False
+        to.obj.select_set(True)
         
         return {"FINISHED"}
 

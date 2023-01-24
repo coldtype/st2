@@ -339,6 +339,17 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     def get_parent(self, obj):
         pass
 
+    def copy_to(self, other):
+        self.frozen = True
+        other.frozen = True
+
+        for k in self.__annotations__.keys():
+            v = getattr(self, k)
+            setattr(other, k, v)
+        
+        self.frozen = False
+        other.frozen = False
+
     def font(self, none_ok=False):
         from ST2.importer import ct
 
