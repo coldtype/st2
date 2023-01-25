@@ -104,7 +104,6 @@ class T():
         self.base_name = "ST2::File" if self.st2.text_mode != "UI" else "ST2:" + self.text[:20]
     
     def base_vectors(self):
-        # not actually a good flag, keyframes should be checked for fvar mods
         if not self.obj or not self.obj.st2.has_keyframes(self.obj):
             p = self.build_single_style()
         else:
@@ -167,6 +166,7 @@ class T():
                 dp = f"fvar_axis{idx+1}"
                 fvar_offset = getattr(self.st2, f"{dp}_offset")
                 found = False
+                var_val = getattr(self.st2, dp)
                 
                 try:
                     for fcu in self.obj.animation_data.action.fcurves:
@@ -175,11 +175,12 @@ class T():
                             found = True
                             _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
                 except AttributeError as e:
-                    print(e)
-                    pass
+                    print(x.e, var_val, var_val%1)
+                    _vars[k] = (var_val + (fvar_offset * x.e))%1.001
+                    found = True
                 
                 if not found:
-                    _vars[k] = getattr(self.st2, dp)
+                    _vars[k] = var_val
 
             return ct.Style(**self.base_style_kwargs(), **_vars)
 
