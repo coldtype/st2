@@ -2,7 +2,7 @@ import bpy
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
 
-from ST2 import search, typesetter, util
+from ST2 import search, typesetter, util, importer
 
 def item_cb(self, context):
     from ST2.importer import ct
@@ -271,6 +271,15 @@ class ST2_OT_CancelWatchSource(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_ImportDependencies(bpy.types.Operator):
+    bl_label = "Import Dependencies"
+    bl_idname = "st2.import_dependencies"
+
+    def execute(self, context):
+        importer.do_import()
+        return {"FINISHED"}
+
+
 class ST2SourceWatcher(bpy.types.Operator):
     bl_idname = "wm.st2_source_watcher"
     bl_label = "ST2 Source Watcher"
@@ -339,6 +348,7 @@ classes = [
     ST2_OT_DeleteParentedText,
     ST2_OT_InsertNewlineSymbol,
     ST2_OT_SetTypeWithSceneDefaults,
+    ST2_OT_ImportDependencies,
     WM_OT_ST2ChooseFont,
 ]
 
