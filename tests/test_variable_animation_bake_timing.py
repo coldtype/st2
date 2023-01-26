@@ -45,3 +45,5 @@ def test_bake_timing(bw:BpyWorld):
     bw.scene.frame_set(0)
     assert baked_frames[0].scale == vec(1,1,1)
     assert baked_frames[15].scale == vec(0,0,0)
+
+    assert baked_frames[0].users_collection[0].name == "Collection"

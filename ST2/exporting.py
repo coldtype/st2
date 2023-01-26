@@ -39,8 +39,12 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     
     if coll:
         coll = f"ST2:Export_{obj.name}"
+    else:
+        coll = "Global"
 
     results = []
+
+    print("baking...")
 
     for frame in frames:
         if progress_fn:
@@ -51,7 +55,7 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
             continue
         
         sc.frame_set(frame)
-        print("> baking:", frame)
+        print(frame, end=" ", flush=True)
 
         t = typesetter.T(data, obj, context.scene, coll)
         p = t.two_dimensional(glyphwise, framewise)
@@ -59,6 +63,8 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
         results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, parent.obj if parent else None))
         
         #bpy.context.view_layer.update()
+    
+    print("\n/baked")
     
     sc.frame_set(current)
 
