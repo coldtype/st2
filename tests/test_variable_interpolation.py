@@ -1,11 +1,9 @@
 from .common import * #INLINE
 
-bake_tag = "ST2:Text_BakedFrames_Anchor"
-
 @b3d_runnable()
 def test_variable_interpolation(bw:BpyWorld):
     def extrema(e1=0.1, e2=1):
-        to1 = common(bw, bake_tag)
+        to1 = common(bw)
         to1.locate(-2, 2, 2)
         to1.obj.data.extrude = e1
         to1.obj.st2.fvar_axis1 = 0
@@ -72,4 +70,4 @@ def test_variable_interpolation(bw:BpyWorld):
     assert len(bpy.context.selected_objects) == 10, "count"
     example = bpy.context.selected_objects[1]
     
-    assert example.users_collection[0].name == "ST2:Interpolation", "non-top collection"
+    assert example.users_collection[0].name == "ST2:Interpolations", "non-top collection"

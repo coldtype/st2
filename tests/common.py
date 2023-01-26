@@ -16,7 +16,7 @@ def new_text(text):
     return to
 
 
-def common(bw:BpyWorld, bake_tag=None):
+def common(bw:BpyWorld):
     BpyObj.Find("Cube").delete()
     bw.cycles(32, False, Rect(1080, 1080))
     bw.timeline(Timeline(30))

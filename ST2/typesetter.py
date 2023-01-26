@@ -101,7 +101,7 @@ class T():
         self.font = self.st2.font()
         self.text = self.st2.build_text()
         
-        self.base_name = "ST2::File" if self.st2.text_mode != "UI" else "ST2:" + self.text[:20]
+        self.base_name = "ST2::File" if self.st2.text_mode != "UI" else "ST2:" + self.text[:20].replace("\n", "")
     
     def base_vectors(self):
         if not self.obj or not self.obj.st2.has_keyframes(self.obj):
