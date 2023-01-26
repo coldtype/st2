@@ -72,4 +72,4 @@ def test_variable_interpolation(bw:BpyWorld):
     assert len(bpy.context.selected_objects) == 10, "count"
     example = bpy.context.selected_objects[1]
     
-    assert example.users_collection[0].name == "ST2:Interpolations", "non-top collection"
+    assert example.users_collection[0].name == "ST2:Interpolation", "non-top collection"
