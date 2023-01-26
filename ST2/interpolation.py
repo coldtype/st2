@@ -11,6 +11,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
+        from ST2.importer import cb
+
         data = context.scene.st2
         editables = search.find_st2_editables(context)
         a = editables[0]
@@ -27,14 +29,14 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
         context.window_manager.progress_begin(0, 1)
 
-        coll, parent = None, None
+        coll, parent = "Global", None
         if data.interpolator_style == "PARENT":
             parent = True
         elif data.interpolator_style == "COLLECTION":
             coll = f"ST2:Interpolations"
 
         if parent:
-            parent = typesetter.cb.BpyObj.Empty(f"ST2:InterpolationAnchor", collection="Global")
+            parent = cb.BpyObj.Empty(f"ST2:InterpolationAnchor", collection="Global")
 
         for x in range(0, data.interpolator_count):
             xi = x + 1

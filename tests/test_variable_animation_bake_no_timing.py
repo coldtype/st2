@@ -1,9 +1,5 @@
 from .common import * #INLINE
 
-from coldtype import *
-from coldtype.blender import *
-import pytest
-
 bake_tag = "ST2:Text_BakedFrames_Anchor"
 
 @b3d_runnable()
