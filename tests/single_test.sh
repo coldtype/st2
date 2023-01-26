@@ -1,1 +1,1 @@
-coldtype -p b3dlo -bcli="--factory-startup" $1
+coldtype -p b3dlo -bcli ">--factory-startup" $1
