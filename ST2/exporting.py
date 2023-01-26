@@ -1,11 +1,12 @@
 import bpy
 
-from ST2.importer import C, ct, cb
 from ST2 import typesetter
 from ST2 import search
 
 
 def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
+    from ST2.importer import cb
+
     obj = context.active_object
     data = obj.st2
     data.frozen = True
@@ -27,10 +28,8 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
 
     if parent:
         anchor = cb.BpyObj.Empty(f"{obj.name}_BakedFrames_Anchor", collection="Global")
-    
-        for k in data.__annotations__.keys():
-            v = getattr(data, k)
-            setattr(anchor.obj.st2, k, v)
+
+        data.copy_to(anchor.obj.st2)
         
         anchor.obj.st2.baked = True
         anchor.obj.st2.baked_from = obj.name
@@ -40,8 +39,12 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     
     if coll:
         coll = f"ST2:Export_{obj.name}"
+    else:
+        coll = "Global"
 
     results = []
+
+    print("baking...")
 
     for frame in frames:
         if progress_fn:
@@ -52,19 +55,16 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
             continue
         
         sc.frame_set(frame)
-        print("> baking:", frame)
-        results.append(typesetter.set_type(data, obj
-            , baking=True
-            , parent=parent.obj if parent else None
-            , collection=coll if coll else None
-            , context=context
-            , scene=context.scene
-            , framewise=framewise
-            , glyphwise=glyphwise
-            , shapewise=shapewise
-            , layerwise=layerwise))
+        print(frame, end=" ", flush=True)
+
+        t = typesetter.T(data, obj, context.scene, coll)
+        p = t.two_dimensional(glyphwise, framewise)
+        
+        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, parent.obj if parent else None))
         
         #bpy.context.view_layer.update()
+    
+    print("\n/baked")
     
     sc.frame_set(current)
 

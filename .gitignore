@@ -9,3 +9,4 @@ venv
 inline-packages
 setup.sh
 upload.sh
+tests/fonts

@@ -2,7 +2,7 @@ import bpy
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
 
-from ST2 import search, typesetter
+from ST2 import search, typesetter, util, importer
 
 def item_cb(self, context):
     from ST2.importer import ct
@@ -161,16 +161,9 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
                 if k in FontCache:
                     del FontCache[k]
             
-            typesetter.set_type(e.st2, e, context=context)
+            t = typesetter.T(e.st2, e, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
         return {"FINISHED"}
-
-
-def delete_parent_recursively(ko):
-    for o in bpy.data.objects:
-        if o.parent == ko:
-            bpy.data.objects.remove(o, do_unlink=True)
-    
-    bpy.data.objects.remove(ko, do_unlink=True)
 
 
 class ST2_OT_DeleteParentedText(bpy.types.Operator):
@@ -180,7 +173,7 @@ class ST2_OT_DeleteParentedText(bpy.types.Operator):
     
     def execute(self, context):
         ko = search.active_key_object(context)
-        delete_parent_recursively(ko)
+        util.delete_parent_recursively(ko)
         return {"FINISHED"}
 
 
@@ -239,112 +232,23 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
     
     def execute(self, context):
         data = context.scene.st2
-        font = data.font()
+        data.update_to_variation_defaults()
 
-        for idx, (_, v) in enumerate(font.variations().items()):
-            diff = abs(v["maxValue"]-v["minValue"])
-            v = (v["defaultValue"]-v["minValue"])/diff
-            setattr(data, f"fvar_axis{idx+1}", v)
-
-        txtObj = typesetter.set_type(data)[0]
+        t = typesetter.T(data, None, context.scene)
+        to = t.create_live_text(t.two_dimensional())
         
-        for k in data.__annotations__.keys():
-            v = getattr(data, k)
-            setattr(txtObj.obj.st2, k, v)
+        data.copy_to(to.obj.st2)
         
         if data.default_upright:
-            txtObj.rotate(x=90)
+            to.rotate(x=90)
         
-        if txtObj.obj.data:
-            txtObj.extrude(data.default_extrude)
+        if to.obj.data: # huh?
+            to.extrude(data.default_extrude)
 
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-        txtObj.obj.select_set(True)
+        to.obj.st2.updatable = True
+        to.obj.st2.frozen = False
+        to.obj.select_set(True)
         
-        return {"FINISHED"}
-    
-
-class ST2_OT_ConvertMeshToFlat(bpy.types.Operator):
-    """Convert a mesh-based text setting to an outline-based text-setting"""
-
-    bl_label = "ST2 Convert Mesh to Flat"
-    bl_idname = "st2.convert_mesh_to_flat"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        ko = search.active_key_object(context)
-        data = ko.st2
-
-        txtObj = typesetter.set_type(data, override_use_mesh=False)[0]
-
-        txtObj.obj.st2.frozen = True
-        txtObj.obj.st2.use_mesh = False
-        
-        for k in data.__annotations__.keys():
-            if k not in ["frozen", "use_mesh"]:
-                v = getattr(data, k)
-                setattr(txtObj.obj.st2, k, v)
-        
-        if data.default_upright:
-            txtObj.rotate(x=90)
-        
-        if txtObj.obj.data:
-            txtObj.extrude(data.default_extrude)
-
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-
-        for o in bpy.data.objects:
-            if o.parent == ko:
-                bpy.data.objects.remove(o, do_unlink=True)
-        
-        bpy.data.objects.remove(ko, do_unlink=True)
-
-        txtObj.obj.select_set(True)
-        
-        return {"FINISHED"}
-
-
-class ST2_OT_ConvertFlatToMesh(bpy.types.Operator):
-    """Convert an outline-based text setting to a mesh-based text-setting"""
-
-    bl_label = "ST2 Convert Flat to Mesh"
-    bl_idname = "st2.convert_flat_to_mesh"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        ko = search.active_key_object(context)
-        data = ko.st2
-
-        txtObj = typesetter.set_type(data, override_use_mesh=True)[0]
-
-        txtObj.obj.st2.frozen = True
-        txtObj.obj.st2.use_mesh = True
-        
-        for k in data.__annotations__.keys():
-            if k not in ["frozen", "use_mesh"]:
-                v = getattr(data, k)
-                setattr(txtObj.obj.st2, k, v)
-
-        txtObj.obj.st2.updatable = True
-        txtObj.obj.st2.frozen = False
-
-        bpy.data.objects.remove(ko, do_unlink=True)
-
-        txtObj.obj.select_set(True)
-        
-        return {"FINISHED"}
-
-
-class ST2_OT_SetTypeWithObject(bpy.types.Operator):
-    bl_label = "ST2 SetType Object"
-    bl_idname = "st2.settype_with_object"
-    bl_options = {"REGISTER","UNDO"}
-    
-    def execute(self, context):
-        obj = context.active_object
-        typesetter.set_type(obj.st2)
         return {"FINISHED"}
 
 
@@ -364,6 +268,15 @@ class ST2_OT_CancelWatchSource(bpy.types.Operator):
     
     def execute(self, context):
         context.scene.st2.script_watch = False
+        return {"FINISHED"}
+
+
+class ST2_OT_ImportDependencies(bpy.types.Operator):
+    bl_label = "Import Dependencies"
+    bl_idname = "st2.import_dependencies"
+
+    def execute(self, context):
+        importer.do_import()
         return {"FINISHED"}
 
 
@@ -435,9 +348,7 @@ classes = [
     ST2_OT_DeleteParentedText,
     ST2_OT_InsertNewlineSymbol,
     ST2_OT_SetTypeWithSceneDefaults,
-    ST2_OT_SetTypeWithObject,
-    ST2_OT_ConvertMeshToFlat,
-    ST2_OT_ConvertFlatToMesh,
+    ST2_OT_ImportDependencies,
     WM_OT_ST2ChooseFont,
 ]
 

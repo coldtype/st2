@@ -11,6 +11,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
+        from ST2.importer import cb
+
         data = context.scene.st2
         editables = search.find_st2_editables(context)
         a = editables[0]
@@ -27,14 +29,14 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
         context.window_manager.progress_begin(0, 1)
 
-        coll, parent = None, None
+        coll, parent = "Global", None
         if data.interpolator_style == "PARENT":
             parent = True
         elif data.interpolator_style == "COLLECTION":
             coll = f"ST2:Interpolations"
 
         if parent:
-            parent = typesetter.cb.BpyObj.Empty(f"ST2:InterpolationAnchor", collection="Global")
+            parent = cb.BpyObj.Empty(f"ST2:InterpolationAnchor", collection="Global")
 
         for x in range(0, data.interpolator_count):
             xi = x + 1
@@ -43,7 +45,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
             context.window_manager.progress_update(e)
 
-            c = typesetter.set_type(data, collection=coll)[0]
+            t = typesetter.T(data, None, context.scene, collection=coll)
+            c = t.create_live_text(t.two_dimensional())
             c = c.obj
 
             created.append(c)
@@ -60,9 +63,7 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
             
             c.data.extrude = norm(e, a.data.extrude, b.data.extrude)
 
-            for k in a.st2.__annotations__.keys():
-                v = getattr(a.st2, k)
-                setattr(c.st2, k, v)
+            a.st2.copy_to(c.st2)
             
             c.st2.frozen = True
             for idx, (k, v) in enumerate(fvars.items()):
@@ -72,7 +73,8 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
 
             c.st2.interpolated = True
 
-            typesetter.set_type(c.st2, c, context=context)
+            t = typesetter.T(c.st2, c, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
 
             if parent:
                 c.parent = parent.obj
