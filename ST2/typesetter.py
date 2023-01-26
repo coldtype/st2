@@ -301,7 +301,7 @@ class T():
         return p
     
     def create_live_text(self, p):
-        if p.depth() == 0:
+        if p.depth() == 0 or True:
             return self.create_live_single(p)
         else:
             return self.create_live_parented(p)
@@ -371,7 +371,7 @@ class T():
 
         selected = self.obj.select_get()
 
-        if p.depth() == 0:
+        if p.depth() == 0 or True:
             if self.obj.type == "EMPTY":
                 return self.swap_metadata(self.create_live_single(p), selected)
 
