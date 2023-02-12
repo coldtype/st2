@@ -155,7 +155,8 @@ class T():
             , **self.base_style_kwargs()
             , **self.st2.variations(self.font)
             , multiline=True
-            , leading=self.st2.leading)
+            , leading=self.st2.leading
+            , strip=False)
 
     def build_multi_style(self):
         from ST2.importer import ct
