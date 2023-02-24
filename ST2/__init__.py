@@ -1,7 +1,7 @@
 bl_info = {
     "name": "ST2",
     "author": "Rob Stenson",
-    "version": (0, 9),
+    "version": (0, 10),
     "blender": (3, 0, 0),
     "location": "View3D > Toolshelf",
     "description": "Well-shaped 3D typography",
