@@ -163,7 +163,7 @@ class T():
 
         def styler(x):
             _vars = {}
-            for idx, (k, _) in enumerate(self.font.variations().items()):
+            for idx, (k, _) in enumerate(self.st2.visible_variation_axes(self.font).items()):
                 dp = f"fvar_axis{idx+1}"
                 fvar_offset = getattr(self.st2, f"{dp}_offset")
                 found = False

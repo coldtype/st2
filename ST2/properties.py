@@ -266,6 +266,16 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fvar_axis7: axisprop(7, 0)
     fvar_axis8: axisprop(8, 0)
     fvar_axis9: axisprop(9, 0)
+    fvar_axis10: axisprop(10, 0)
+    fvar_axis11: axisprop(11, 0)
+    fvar_axis12: axisprop(12, 0)
+    fvar_axis13: axisprop(13, 0)
+    fvar_axis14: axisprop(14, 0)
+    fvar_axis15: axisprop(15, 0)
+    fvar_axis16: axisprop(16, 0)
+    fvar_axis17: axisprop(17, 0)
+    fvar_axis18: axisprop(18, 0)
+    fvar_axis19: axisprop(19, 0)
 
     fvar_axis1_offset: axisprop_offset(1, 0)
     fvar_axis2_offset: axisprop_offset(2, 0)
@@ -276,6 +286,16 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fvar_axis7_offset: axisprop_offset(7, 0)
     fvar_axis8_offset: axisprop_offset(8, 0)
     fvar_axis9_offset: axisprop_offset(9, 0)
+    fvar_axis10_offset: axisprop_offset(10, 0)
+    fvar_axis11_offset: axisprop_offset(11, 0)
+    fvar_axis12_offset: axisprop_offset(12, 0)
+    fvar_axis13_offset: axisprop_offset(13, 0)
+    fvar_axis14_offset: axisprop_offset(14, 0)
+    fvar_axis15_offset: axisprop_offset(15, 0)
+    fvar_axis16_offset: axisprop_offset(16, 0)
+    fvar_axis17_offset: axisprop_offset(17, 0)
+    fvar_axis18_offset: axisprop_offset(18, 0)
+    fvar_axis19_offset: axisprop_offset(19, 0)
 
     kerning_pairs: bpy.props.StringProperty(name="Kerning Pairs", default="", update=lambda p, c: update_type_and_copy("kerning_pairs", p, c), description="Provide a Python dictionary literal to control kerning of pairs, where the keys are two glyph names separated by slashes, and the values are integers specified in font-size upem values")
 
@@ -367,17 +387,25 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                 return None
             else:
                 return ct.Font.RecursiveMono()
+    
+    def visible_variation_axes(self, font):
+        variations = {}
+        for idx, (k, v) in enumerate(font.variations().items()):
+            hidden = bool(v["flags"] & 0x0001)
+            if not hidden:
+                variations[k] = v
+        return variations
 
     def variations(self, font):
         variations = {}
-        for idx, (k, v) in enumerate(font.variations().items()):
+        for idx, (k, _) in enumerate(self.visible_variation_axes(font).items()):
             variations[k] = getattr(self, f"fvar_axis{idx+1}")
         return variations
     
     def update_to_variation_defaults(self):
         font = self.font()
 
-        for idx, (_, v) in enumerate(font.variations().items()):
+        for idx, (_, v) in enumerate(self.visible_variation_axes(font).items()):
             diff = abs(v["maxValue"]-v["minValue"])
             v = (v["defaultValue"]-v["minValue"])/diff
             setattr(self, f"fvar_axis{idx+1}", v)
