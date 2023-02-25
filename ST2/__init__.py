@@ -1,7 +1,7 @@
 bl_info = {
     "name": "ST2",
     "author": "Rob Stenson",
-    "version": (0, 9),
+    "version": (0, 10),
     "blender": (3, 0, 0),
     "location": "View3D > Toolshelf",
     "description": "Well-shaped 3D typography",
@@ -85,7 +85,7 @@ class ST2DefaultPanel(bpy.types.Panel):
             row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
             row.prop(data, "default_extrude")
 
-            layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text", icon="SORTALPHA")
+            layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text Object", icon="SORTALPHA")
 
 
 class ST2MainPanel(bpy.types.Panel):
@@ -102,32 +102,32 @@ class ST2MainPanel(bpy.types.Panel):
     
     def draw(self, context):
         ko = search.active_key_object(context)
-        data = ko.st2
+        st2 = ko.st2
         
         row = self.layout.row()
         col = row.column()
-        col.enabled = data.text_mode == "UI"
-        col.prop(data, "text", text="")
+        col.enabled = st2.text_mode == "UI"
+        col.prop(st2, "text", text="")
 
         row = self.layout.row()
-        row.prop(data, "text_mode", text="", expand=True)
+        row.prop(st2, "text_mode", text="", expand=True)
 
-        row.prop(data, "text_indexed", icon="PRESET_NEW", text="Keyframing")
-        row.prop(data, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
+        row.prop(st2, "text_indexed", icon="PRESET_NEW", text="Keyframing")
+        row.prop(st2, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
         row.operator("st2.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
-        row.prop(data, "script_enabled", text="", icon="PLUGIN")
+        row.prop(st2, "script_enabled", text="", icon="PLUGIN")
         
-        if data.text_mode == "FILE":
+        if st2.text_mode == "FILE":
             row = self.layout.row()
-            row.prop(data, "text_file", text="File")
+            row.prop(st2, "text_file", text="File")
             row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
-        elif data.text_mode == "BLOCK":
+        elif st2.text_mode == "BLOCK":
             row = self.layout.row()
-            row.prop(data, "text_block", text="Block")
+            row.prop(st2, "text_block", text="Block")
             row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         
-        if data.text_indexed:
-            self.layout.row().prop(data, "text_index")
+        if st2.text_indexed:
+            self.layout.row().prop(st2, "text_index")
         
         if not ko.data:
             self.layout.row().operator("st2.delete_parented_text", text="Delete All")
@@ -237,13 +237,13 @@ class ST2FontPanel(bpy.types.Panel):
         row.prop(data, "tracking")
         row.prop(data, "leading")
 
-        row = self.layout.row()
-        row.label(text="Blocks")
-        row.prop(data, "block", text="", icon="MESH_CUBE")
-        row.prop(data, "block_inset_x", text="X")
-        row.prop(data, "block_inset_y", text="Y")
-        row.prop(data, "block_horizontal_metrics", text="", icon="EVENT_X")
-        row.prop(data, "block_vertical_metrics", text="", icon="EVENT_Y")
+        # row = self.layout.row()
+        # row.label(text="Blocks")
+        # row.prop(data, "block", text="", icon="MESH_CUBE")
+        # row.prop(data, "block_inset_x", text="X")
+        # row.prop(data, "block_inset_y", text="Y")
+        # row.prop(data, "block_horizontal_metrics", text="", icon="EVENT_X")
+        # row.prop(data, "block_vertical_metrics", text="", icon="EVENT_Y")
         
         row = self.layout.row()
         row.label(text="Case")
@@ -283,6 +283,9 @@ class ST2AboutPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
+        if importer.coldtype_status == -2:
+            importer.do_import()
+            #print("hello")
         return True
     
     def draw(self, context):

@@ -1,39 +1,55 @@
 import importlib, bpy, time, os, sys
 from pathlib import Path
 
-inlines = Path(__file__).parent / "inline-packages"
-if inlines.exists():
-    sys.path.insert(0, str(inlines))
-
-# apparently if you require this twice, it'll work the second time (??)
-try:
-    from ufo2ft.featureCompiler import FeatureCompiler
-except ImportError:
-    print("-- failed FeatureCompiler --")
-    pass
-
-def vt(v):
-    return tuple(map(int, (v.split("."))))
+coldtype_status = -2
+C, ct, cb = None, None, None
 
 REQUIRED_COLDTYPE = "0.10.1"
-coldtype_status = 1
 
-try:
-    import coldtype as C
-    import coldtype.text as ct
-    import coldtype.blender as cb
+def do_import():
+    global coldtype_status, C, ct, cb
 
-    if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
+    modified_path = False
+    inlines = Path(__file__).parent / "inline-packages"
+
+    if inlines.exists() and "coldtype" not in sys.modules:
+        modified_path = True
+        sys.path.insert(0, str(inlines))
+
+    # apparently if you require this twice, it'll work the second time (??)
+    try:
+        from ufo2ft.featureCompiler import FeatureCompiler
+    except ImportError:
+        print("-- failed FeatureCompiler --")
+        pass
+
+    def vt(v):
+        return tuple(map(int, (v.split("."))))
+
+    #coldtype_status = 1
+
+    try:
+        import coldtype as C
+        import coldtype.text as ct
+        import coldtype.blender as cb
+
+        if vt(C.__version__) < vt(REQUIRED_COLDTYPE):
+            C, ct, cb = None, None, None
+            coldtype_status = 0
+        else:
+            coldtype_status = 1
+
+    except ImportError:
         C, ct, cb = None, None, None
-        coldtype_status = 0
+        coldtype_status = -1
 
-except ImportError:
-    C, ct, cb = None, None, None
-    coldtype_status = -1
+    if C:
+        print("import:COLDTYPE", C.__version__, C.__file__)
+    else:
+        print("import:COLDTYPE:fail")
 
-
-if inlines.exists():
-    sys.path.pop(0)
+    if modified_path:
+        sys.path.pop(0)
 
 
 def install_coldtype(context, global_vars, required_version):

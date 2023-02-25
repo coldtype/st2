@@ -1,6 +1,5 @@
 import bpy
 
-from ST2.importer import ct
 from ST2 import search
 
 
@@ -14,7 +13,7 @@ class ST2_OT_LoadVarAxesDefaults(bpy.types.Operator):
     def execute(self, context):
         for o in search.find_st2_all_selected(context):
             font = o.st2.font()
-            for idx, (axis, v) in enumerate(font.variations().items()):
+            for idx, (axis, v) in enumerate(o.st2.visible_variation_axes(font).items()):
                 diff = abs(v["maxValue"]-v["minValue"])
                 v = (v["defaultValue"]-v["minValue"])/diff
                 setattr(o.st2, f"fvar_axis{idx+1}", v)
@@ -63,7 +62,7 @@ class ST2FontVariationsPanel(bpy.types.Panel):
         ko = search.active_key_object(context)
         if ko:
             font = ko.st2.font()
-            if font.variations():
+            if ko.st2.visible_variation_axes(font):
                 return True
         return False
     
@@ -73,7 +72,7 @@ class ST2FontVariationsPanel(bpy.types.Panel):
         layout = self.layout
         data = ko.st2
         font = data.font()
-        fvars = font.variations()
+        fvars = ko.st2.visible_variation_axes(font)
     
         for idx, (k, v) in enumerate(fvars.items()):
             prop = f"fvar_axis{idx+1}"

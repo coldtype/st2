@@ -1,21 +1,15 @@
 import bpy
+from pathlib import Path
 
 from ST2 import typesetter
-from ST2.importer import ct
 
 
 def _update_type(props, context):
-#    data, active = find_st2(context)
-#    if props != data:
-
     for obj in context.scene.objects:
         if obj.st2 == props and obj.st2.frozen != True:
-            typesetter.set_type(obj.st2, obj, scene=context.scene)
+            t = typesetter.T(obj.st2, obj, context.scene)
+            t.update_live_text_obj(t.two_dimensional())
             return obj
-    
-    # if data.updatable and not data.baked:
-    #     set_type(data, active, scene=context.scene)
-    #return data, active
 
 def update_type(props, context):
     _update_type(props, context)
@@ -57,7 +51,8 @@ def update_type_frame_change(scene, depsgraph):
     for obj in scene.objects:
         data = obj.st2
         if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
-            typesetter.set_type(data, obj, scene=scene)
+            t = typesetter.T(data, obj, scene)
+            t.update_live_text_obj(t.two_dimensional())
 
 
 def feaprop(prop, default=False):
@@ -271,6 +266,16 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fvar_axis7: axisprop(7, 0)
     fvar_axis8: axisprop(8, 0)
     fvar_axis9: axisprop(9, 0)
+    fvar_axis10: axisprop(10, 0)
+    fvar_axis11: axisprop(11, 0)
+    fvar_axis12: axisprop(12, 0)
+    fvar_axis13: axisprop(13, 0)
+    fvar_axis14: axisprop(14, 0)
+    fvar_axis15: axisprop(15, 0)
+    fvar_axis16: axisprop(16, 0)
+    fvar_axis17: axisprop(17, 0)
+    fvar_axis18: axisprop(18, 0)
+    fvar_axis19: axisprop(19, 0)
 
     fvar_axis1_offset: axisprop_offset(1, 0)
     fvar_axis2_offset: axisprop_offset(2, 0)
@@ -281,6 +286,16 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fvar_axis7_offset: axisprop_offset(7, 0)
     fvar_axis8_offset: axisprop_offset(8, 0)
     fvar_axis9_offset: axisprop_offset(9, 0)
+    fvar_axis10_offset: axisprop_offset(10, 0)
+    fvar_axis11_offset: axisprop_offset(11, 0)
+    fvar_axis12_offset: axisprop_offset(12, 0)
+    fvar_axis13_offset: axisprop_offset(13, 0)
+    fvar_axis14_offset: axisprop_offset(14, 0)
+    fvar_axis15_offset: axisprop_offset(15, 0)
+    fvar_axis16_offset: axisprop_offset(16, 0)
+    fvar_axis17_offset: axisprop_offset(17, 0)
+    fvar_axis18_offset: axisprop_offset(18, 0)
+    fvar_axis19_offset: axisprop_offset(19, 0)
 
     kerning_pairs: bpy.props.StringProperty(name="Kerning Pairs", default="", update=lambda p, c: update_type_and_copy("kerning_pairs", p, c), description="Provide a Python dictionary literal to control kerning of pairs, where the keys are two glyph names separated by slashes, and the values are integers specified in font-size upem values")
 
@@ -344,7 +359,20 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     def get_parent(self, obj):
         pass
 
+    def copy_to(self, other):
+        self.frozen = True
+        other.frozen = True
+
+        for k in self.__annotations__.keys():
+            v = getattr(self, k)
+            setattr(other, k, v)
+        
+        self.frozen = False
+        other.frozen = False
+
     def font(self, none_ok=False):
+        from ST2.importer import ct
+
         font = None
         if self.font_path:
             try:
@@ -359,8 +387,108 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                 return None
             else:
                 return ct.Font.RecursiveMono()
+    
+    def visible_variation_axes(self, font):
+        variations = {}
+        for idx, (k, v) in enumerate(font.variations().items()):
+            hidden = bool(v["flags"] & 0x0001)
+            if not hidden:
+                variations[k] = v
+        return variations
 
+    def variations(self, font):
+        variations = {}
+        for idx, (k, _) in enumerate(self.visible_variation_axes(font).items()):
+            variations[k] = getattr(self, f"fvar_axis{idx+1}")
+        return variations
+    
+    def update_to_variation_defaults(self):
+        font = self.font()
 
+        for idx, (_, v) in enumerate(self.visible_variation_axes(font).items()):
+            diff = abs(v["maxValue"]-v["minValue"])
+            v = (v["defaultValue"]-v["minValue"])/diff
+            setattr(self, f"fvar_axis{idx+1}", v)
+
+    def features(self, font):
+        features = {}
+        for k, v in self.__annotations__.items():
+            if k.startswith("fea_"):
+                features[k[4:]] = getattr(self, k)
+        return features
+    
+    def build_text(self):
+        text = ""
+
+        if self.text_mode == "FILE":
+            if self.text_file:
+                text_path = Path(self.text_file).expanduser().absolute()
+                text = text_path.read_text()
+                if self.text_indexed:
+                    lines = text.split("\n\n")
+                    try:
+                        text = lines[self.text_index-1]
+                    except IndexError:
+                        text = lines[-1]
+            else:
+                text = "Select file"
+            fulltext = text
+        elif self.text_mode == "BLOCK":
+            if self.text_block:
+                try:
+                    text = bpy.data.texts[self.text_block].as_string()
+                    if self.text_indexed:
+                        lines = text.split("\n\n")
+                        try:
+                            text = lines[self.text_index-1]
+                        except IndexError:
+                            text = lines[-1]
+                except KeyError:
+                    text = "Invalid"
+            else:
+                text = "Enter block name"
+            fulltext = text
+        else:
+            if self.text == "":
+                text = "Text"
+            else:
+                text = self.text
+
+            lines = text.split("¶")
+            fulltext = "\n".join(lines)
+            if self.text_indexed:
+                try:
+                    text = lines[self.text_index-1]
+                except IndexError:
+                    text = lines[-1]
+            else:
+                text = fulltext
+
+        if self.case == "TYPED":
+            pass
+        elif self.case == "UPPER":
+            text = text.upper()
+        elif self.case == "LOWER":
+            text = text.lower()
+        
+        return text
+
+    def mesh(self, override=False):
+        font = self.font()
+        try:
+            mesh = font.font.ttFont["MESH"]
+        except KeyError:
+            mesh = None
+        
+        if mesh and self.use_mesh:
+            return mesh
+        else:
+            return None
+
+        # if override is not None:
+        #     meshing = mesh and override
+        # else:
+        #     meshing = mesh and self.use_mesh
 
 
 classes = [ST2PropertiesGroup]

@@ -1,7 +1,5 @@
 import bpy
 
-from ST2.importer import ct
-
 
 def find_st2(context):
     ob = context.active_object
@@ -32,6 +30,7 @@ def find_st2_editables(context):
 
 
 def active_key_object(context, disallow_baked=True):
+    from ST2.importer import ct
     if not ct:
         return None
     
@@ -47,6 +46,7 @@ def active_key_object(context, disallow_baked=True):
 
 
 def active_baked_object(context, prefer_parent=False):
+    from ST2.importer import ct
     if not ct:
         return None
     
