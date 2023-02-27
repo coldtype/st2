@@ -2,6 +2,10 @@
 
 ![The ST2 UI](assets/uipreview2.jpg)
 
+### Download
+
+Grab the latest zip from [coldtype.xyz/st2](https://coldtype.xyz/st2)
+
 ### Why?
 
 Blender is a very cool program that does a ton of things very well. One of the things it does _not_ do very well is typography (for example, even basic typographical features like kerning are not supported).
@@ -12,9 +16,7 @@ Also Blender does not have support for variable fonts; this add-on adds support 
 
 ### Installing
 
-Using a Blender version 3.0 or later, grab the latest release from [the releases page](https://github.com/coldtype/st2/releases), download the zip, then open Blender, open the Blender preferences, head to "Add-ons," then hit "Install..." in the top-bar and navigate to the ST2 zip you download and hit "Install Add-on" — this should bring up ST2 in the Add-ons view (if it doesn't, try searching for "ST2"); once you see it listed with a checkbox, enable the extension by hitting the checkbox.
-
-__N.B.__ On Windows, the first time you use the ST2 addon, you’ll need to run Blender as administrator (i.e. right-click and Run as Administrator).
+Using a Blender version 3.0 or later, grab the latest release from [the home page](https://coldtype.xyz/st2), download the zip, then open Blender, open the Blender preferences, head to "Add-ons," then hit "Install..." in the top-bar and navigate to the ST2 zip you downloaded and hit "Install Add-on" — this should bring up ST2 in the Add-ons view (if it doesn't, try searching for "ST2"); once you see it listed with a checkbox, enable the extension by hitting the checkbox.
 
 ### Development
 
