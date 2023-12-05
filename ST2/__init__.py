@@ -85,6 +85,8 @@ class ST2DefaultPanel(bpy.types.Panel):
             row.prop(data, "default_upright", icon="ORIENTATION_VIEW", icon_only=True)
             row.prop(data, "default_extrude")
 
+            row.prop(data, "newline_character", icon="TRACKING_BACKWARDS", text="")
+
             layout.row().operator("st2.settype_with_scene_defaults", text="Add New Text Object", icon="SORTALPHA")
 
 
@@ -114,7 +116,8 @@ class ST2MainPanel(bpy.types.Panel):
 
         row.prop(st2, "text_indexed", icon="PRESET_NEW", text="Keyframing")
         row.prop(st2, "auto_rename", icon="INDIRECT_ONLY_ON", text="Auto Rename")
-        row.operator("st2.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
+        #row.operator("st2.insert_newline_symbol", icon="TRACKING_BACKWARDS", text="")
+        row.prop(st2, "newline_character", icon="TRACKING_BACKWARDS", text="")
         row.prop(st2, "script_enabled", text="", icon="PLUGIN")
         
         if st2.text_mode == "FILE":

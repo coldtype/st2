@@ -178,7 +178,7 @@ class ST2_OT_DeleteParentedText(bpy.types.Operator):
 
 
 class ST2_OT_InsertNewlineSymbol(bpy.types.Operator):
-    """Insert a ¶ symbol to mark a newline in the single-line text editor"""
+    """Insert a newline symbol to mark a newline in the single-line text editor (newline character is configurable)"""
 
     bl_label = "Insert Newline Symbol"
     bl_idname = "st2.insert_newline_symbol"
@@ -186,7 +186,7 @@ class ST2_OT_InsertNewlineSymbol(bpy.types.Operator):
     
     def execute(self, context):
         ko = search.active_key_object(context)
-        ko.st2.text = ko.st2.text + "¶"
+        ko.st2.text = ko.st2.text + ko.st2.newline_character
         return {"FINISHED"}
 
 

@@ -71,6 +71,9 @@ def axisprop_offset(num, default=0):
 class ST2PropertiesGroup(bpy.types.PropertyGroup):
     text: bpy.props.StringProperty(name="Text", default="Text",
         update=lambda p, c: update_type_and_copy("text", p, c))
+
+    newline_character: bpy.props.StringProperty(name="Newline Character", default="¶",
+        update=lambda p, c: update_type_and_copy("newline_character", p, c))
     
     text_mode: bpy.props.EnumProperty(name="Text Mode",
         description="Where to source the text",
@@ -454,7 +457,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
             else:
                 text = self.text
 
-            lines = text.split("¶")
+            lines = text.split(self.newline_character)
             fulltext = "\n".join(lines)
             if self.text_indexed:
                 try:
