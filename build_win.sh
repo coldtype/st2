@@ -1,6 +1,6 @@
-export BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 3.3\blender.exe"
-alias bpy=$(b3denv bpy)
-alias blender=$(b3denv blender)
+export BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 3.6\blender.exe"
+alias bpy=$(py.exe -m b3denv print python)
+alias blender=$(py.exe -m b3denv print blender)
 
 rm -rf ST2/inline-packages
 rm -rf venv
@@ -10,5 +10,5 @@ source venv/Scripts/activate
 pip install -r requirements_win.txt
 deactivate
 
-b3denv inline ST2
-b3denv release ST2 suffix=win
+py.exe -m b3denv inline ST2
+py.exe -m b3denv release ST2 suffix=win
