@@ -1,4 +1,4 @@
-export BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 3.6\blender.exe"
+#export BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 3.6\blender.exe"
 
 rm -rf ST2/inline-packages
 rm -rf venv
