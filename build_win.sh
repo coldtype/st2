@@ -1,6 +1,6 @@
 #export BLENDER_PATH="C:\Program Files\Blender Foundation\Blender 3.6\blender.exe"
 
-rm -rf ST2/inline-packages
+b3denv clean ST2
 rm -rf venv
 
 b3denv python -m venv venv
