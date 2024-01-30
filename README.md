@@ -35,4 +35,4 @@ First, make sure to install [`b3denv`](https://github.com/coldtype/b3denv)
 - Install the extension via symlink:
     - `b3denv install ST2`
 - Launch Blender from the command-line:
-    - `b3denv blender`
+    - `b3denv`
