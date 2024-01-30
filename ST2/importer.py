@@ -81,15 +81,10 @@ def install_coldtype(context, global_vars, required_version):
 
 
 def editor_needs_coldtype(layout, status):
-    if status < 0:
-        download = "Download & Install Coldtype"
-        warning = """This addon requires coldtype
-            (coldtype.xyz) as a Python package.
-            -
-            Clicking the button below will
-            download and install coldtype.
-            It should only take a few moments
-            to install."""
+    if status < 0 or True:
+        download = "Installation problem"
+        warning = """This addon was unable to install correctly
+        Please contact rob@goodhertz.com for assistance"""
     else:
         download = "Update coldtype"
         warning = """This version requires an update
@@ -107,8 +102,8 @@ def editor_needs_coldtype(layout, status):
             row.scale_y = 0.6
             row.label(text=line.strip())
     
-    layout.row().separator()
-    layout.row().operator("st2.install_coldtype", icon="WORLD_DATA", text=download)
+    #layout.row().separator()
+    #layout.row().operator("st2.install_coldtype", icon="WORLD_DATA", text=download)
 
 
 class ST2_OT_InstallST2(bpy.types.Operator):
