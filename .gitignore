@@ -6,6 +6,7 @@ config.py
 aliases.txt
 scratch
 venv
+benv
 inline-packages
 setup.sh
 upload.sh
