@@ -9,5 +9,4 @@ venv
 benv
 inline-packages
 setup.sh
-upload.sh
 tests/fonts

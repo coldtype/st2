@@ -1,0 +1,1 @@
+aws s3 --region us-west-1 sync _releases s3://coldtype.xyz/st2/releases --profile personal
