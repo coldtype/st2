@@ -20,4 +20,15 @@ Using a Blender version 3.0 or later, grab the latest release from [the home pag
 
 ### Development
 
-TODO new instructions using `b3denv`
+- Install [b3denv](https://github.com/coldtype/b3denv)
+
+- `b3denv python -m venv venv`
+- macOS:
+    - `source venv/bin/activate`
+    - `pip install -r requirements_mac.txt`
+- win:
+    - `source venv/Scripts/activate`
+    - `pip install -r requirements_win.txt`
+- `b3denv inline ST2`
+- `b3denv install ST2`
+- `b3denv` (to launch blender)
