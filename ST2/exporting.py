@@ -256,6 +256,8 @@ class ST2ExportPanel(bpy.types.Panel):
         row = layout.row()
         #row.label("Origin")
         row.prop(data, "export_origin", text="Origin")
+        row.prop(data, "export_typographic_origin_x", text="", icon="EVENT_X")
+        row.prop(data, "export_typographic_origin_y", text="", icon="EVENT_Y")
 
         # row.label(text="New Objects")
         # row.prop(data, "export_style", text="", expand=True)
