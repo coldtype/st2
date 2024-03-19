@@ -168,7 +168,29 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     # exporting
 
     export_meshes: bpy.props.BoolProperty(name="Export as Meshes", default=True)
-    export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
+    
+    #export_geometric_origins: bpy.props.BoolProperty(name="Export with Geometric Origins", default=True)
+
+    export_origin: bpy.props.EnumProperty(name="Export Origin",
+        description="Where should origin be relative to bounding box?",
+        items=[
+            ("EXISTING", "Existing", ""),
+            ("GEOMETRIC", "Geometric", ""),
+            ("N", "North", ""),
+            ("NE", "Northeast", ""),
+            ("E", "East", ""),
+            ("SE", "Southeast", ""),
+            ("S", "South", ""),
+            ("SW", "Southwest", ""),
+            ("W", "West", ""),
+            ("NW", "Northwest", ""),
+            
+        ],
+        default="EXISTING")
+    
+    export_typographic_origin_x: bpy.props.BoolProperty(name="Export Typographic Origin X", default=True)
+    export_typographic_origin_y: bpy.props.BoolProperty(name="Export Typographic Origin Y", default=True)
+
     export_apply_transforms: bpy.props.BoolProperty(name="Export with Applied Transforms", default=True)
     export_rigidbody_active: bpy.props.BoolProperty(name="Export with Active Rigid Body", default=False)
     export_every_x_frame: bpy.props.IntProperty(name="Export Every X Frame", default=1, min=1, max=50)

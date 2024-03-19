@@ -242,7 +242,7 @@ class ST2ExportPanel(bpy.types.Panel):
         row = layout.row()
 
         row.label(text="Options")
-        row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
+        #row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
         row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)
 
         #row = layout.row()
@@ -253,7 +253,10 @@ class ST2ExportPanel(bpy.types.Panel):
         col.enabled = data.export_meshes
         col.prop(data, "export_rigidbody_active", icon="RIGID_BODY", icon_only=True)
 
-        # row = layout.row()
+        row = layout.row()
+        #row.label("Origin")
+        row.prop(data, "export_origin", text="Origin")
+
         # row.label(text="New Objects")
         # row.prop(data, "export_style", text="", expand=True)
 
@@ -301,7 +304,6 @@ class ST2BakeAnimationPanel(bpy.types.Panel):
         row = layout.row()
 
         row.label(text="Options")
-        #row.prop(data, "export_geometric_origins", icon="TRANSFORM_ORIGINS", icon_only=True)
 
         row.prop(data, "export_every_x_frame", text="Frame Interval")
         row.prop(data, "export_meshes", icon="OUTLINER_OB_MESH", icon_only=True)

@@ -417,6 +417,11 @@ class T():
             txtObj.obj.location = self.obj.location
             txtObj.obj.rotation_euler = self.obj.rotation_euler
 
+            origin_pt = None
+            origin = self.st2.export_origin
+            typo_origin_x = self.st2.export_typographic_origin_x
+            typo_origin_y = self.st2.export_typographic_origin_y
+
             if glyph and idx is not None:
                 if self.st2.export_stagger_y:
                     txtObj.locate_relative(y=idx*self.st2.export_stagger_y)
@@ -424,8 +429,10 @@ class T():
                     txtObj.locate_relative(z=idx*self.st2.export_stagger_z)
 
             if glyph:
+                amb = glyph.ambit(tx=not typo_origin_x, ty=not typo_origin_y)
+                if origin not in ["EXISTING", "GEOMETRIC"]:
+                    origin_pt = amb.point(origin)
                 txtObj.draw(glyph, set_origin=False, fill=False)
-                # TODO option to set typographic origins
             else:
                 txtObj.draw(p, set_origin=False, fill=False)
 
@@ -453,6 +460,7 @@ class T():
                 self.scene.frame_set(frame)
             
             txtObj.obj.select_set(True)
+            
             if self.st2.export_meshes:
                 bpy.ops.object.convert(target="MESH")
                 if self.st2.export_apply_transforms:
@@ -462,8 +470,10 @@ class T():
                     txtObj.obj.rigid_body.type = "ACTIVE"
                     #bpy.ops.object.transform_apply(location=0, rotation=1, scale=1, properties=0)
                     pass
-            if self.st2.export_geometric_origins:
+            
+            if origin == "GEOMETRIC":
                 bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+            
             txtObj.obj.select_set(False)
             
             if parent:
@@ -477,7 +487,7 @@ class T():
                 if self.st2.export_rotate_y:
                     txtObj.rotate(y=math.degrees(self.st2.export_rotate_y))
 
-            return txtObj
+            return txtObj, origin_pt
         
         if glyphwise:
             if shapewise:
@@ -488,9 +498,13 @@ class T():
             #    p.mapv(lambda _p: _p.explode())
             
             for idx, glyph in enumerate(p):
-                output.append(export(glyph, idx=idx))
+                res, origin_pt = export(glyph, idx=idx)
+                output.append(res)
+                if origin_pt is not None:
+                    res.set_origin(*origin_pt, 0)
         else:
-            output.append(export())
+            res, origin_pt = export()
+            output.append(res)
         
         return output
 
