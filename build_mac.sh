@@ -1,4 +1,4 @@
-#export BLENDER_PATH="~/Desktop/Blenders/Blender3.4.app"
+export BLENDER_PATH="~/Desktop/BLENDERS/Blender4.1.0.app/"
 
 # Intel Build
 
