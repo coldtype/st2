@@ -1,0 +1,1 @@
+export PATH=~/Coldtype/b3denv/venv/bin:${PATH}
