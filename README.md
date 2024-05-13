@@ -25,5 +25,6 @@ Also Blender does not have support for variable fonts; this add-on adds support 
 5. Now you can launch blender with b3denv and ST2 should be installed:
     - `b3denv`
     - (launching this way ensures the debug output of Blender is visible, so if there are problems with ST2, you should see them in your terminal)
+6. Now you can enable the ST2 addon in the Blender preferences
 
 N.B. Though there used to be bundled zip versions of this extension to install, because there are so many versions of Blender and they each embed a different version of Python (and because ST2 relies on version-specific precompiled C binaries), I’ve discontinued the prebuilt zip versions of this extension.
