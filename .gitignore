@@ -10,3 +10,4 @@ benv
 inline-packages
 setup.sh
 tests/fonts
+b3denv_venv

@@ -16,23 +16,15 @@ Also Blender does not have support for variable fonts; this add-on adds support 
 
 ### Installing
 
-Using a Blender version 3.0 or later, grab the latest release from [the home page](https://coldtype.xyz/st2), download the zip, then open Blender, open the Blender preferences, head to "Add-ons," then hit "Install..." in the top-bar and navigate to the ST2 zip you downloaded and hit "Install Add-on" — this should bring up ST2 in the Add-ons view (if it doesn't, try searching for "ST2"); once you see it listed with a checkbox, enable the extension by hitting the checkbox.
-
-### Development
-
-First, make sure to install [`b3denv`](https://github.com/coldtype/b3denv)
-
-- macOS
-    - `b3denv python -m venv venv`
-    - `source venv/bin/activate`
-    - `pip install -r requirements_mac.txt`
-- Windows
-    - `b3denv python -m venv venv`
-    - `source venv/Scripts/activate`
-    - `pip install -r requirements_win.txt`
-- Inline venv dependencies so addon can be bundled:
-    - `b3denv inline ST2`
-- Install the extension via symlink:
-    - `b3denv install ST2`
-- Launch Blender from the command-line:
+1. Download this repo to your computer
+2. `cd` into the repo directory in a terminal (very important)
+3. Using your system python (any version), install [`b3denv`](https://github.com/coldtype/b3denv):
+    - `pip install b3denv`
+4. Now that you have b3denv installed, you can just call:
+    - `b3denv setup`
+5. Now you can launch blender with b3denv and ST2 should be installed:
     - `b3denv`
+    - (launching this way ensures the debug output of Blender is visible, so if there are problems with ST2, you should see them in your terminal)
+6. Now you can enable the ST2 addon in the Blender preferences
+
+N.B. Though there used to be bundled zip versions of this extension to install, because there are so many versions of Blender and they each embed a different version of Python (and because ST2 relies on version-specific precompiled C binaries), I’ve discontinued the prebuilt zip versions of this extension.
