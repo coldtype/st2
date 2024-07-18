@@ -1,6 +1,7 @@
 .DS_Store
 __pycache__
 _releases
+assets/releases
 export
 config.py
 aliases.txt
@@ -11,3 +12,4 @@ inline-packages
 setup.sh
 tests/fonts
 b3denv_venv
+_site
