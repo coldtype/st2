@@ -23,6 +23,7 @@ index: jinja_html = """
 <p>Because Blender varies the embedded Python version quite freely, you need to download and install a zip file targeted for your specific version of Blender. Currently only Blender 4.1 and 4.2 are supported.</p>
 <h3>macOS</h3>
 <ul>
+    <li><a href="assets/releases/ST2-v0-15_Blender4.0_mac_silicon.zip">ST2-v0-15_Blender4.0_mac_silicon.zip</a></li>
     <li><a href="assets/releases/ST2-v0-15_Blender4.1_mac_silicon.zip">ST2-v0-15_Blender4.1_mac_silicon.zip</a></li>
     <li><a href="assets/releases/ST2-v0-15_Blender4.2_mac_silicon.zip">ST2-v0-15_Blender4.2_mac_silicon.zip</a></li>
 </ul>

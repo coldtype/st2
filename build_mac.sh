@@ -1,5 +1,7 @@
-BLENDER_PATH="~/Desktop/BLENDERS/Blender4.1.1.app/" b3denv release suffix=mac_silicon
-BLENDER_PATH="~/Desktop/BLENDERS/Blender4.2.app/" b3denv release suffix=mac_silicon
+BLENDER_PATH="~/Desktop/BLENDERS/Blender4.0.app/" b3denv release suffix=mac_silicon
+#BLENDER_PATH="~/Desktop/BLENDERS/Blender4.1.1.app/" b3denv release suffix=mac_silicon
+#BLENDER_PATH="~/Desktop/BLENDERS/Blender4.1.1.app/" b3denv release suffix=mac_silicon
+#BLENDER_PATH="~/Desktop/BLENDERS/Blender4.2.app/" b3denv release suffix=mac_silicon
 
 # # Intel Build
 
