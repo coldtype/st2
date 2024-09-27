@@ -27,6 +27,10 @@ index: jinja_html = """
     <li><a href="assets/releases/ST2-v0-15_Blender4.1_mac_silicon.zip">ST2-v0-15_Blender4.1_mac_silicon.zip</a></li>
     <li><a href="assets/releases/ST2-v0-15_Blender4.2_mac_silicon.zip">ST2-v0-15_Blender4.2_mac_silicon.zip</a></li>
 </ul>
+<h3 style="margin-top:20px">Linux</h3>
+<ul>
+    <li><a href="releases/ST2-v0-15_Blender4.2_linux.zip">ST2-v0-15_Blender4.2_linux.zip</a></li>
+</ul>
 <h3 style="margin-top:20px">Windows</h3>
 <ul>
     <li><a href="releases/ST2-v0-15_blender41_win.zip">ST2-v0-15_blender41_win.zip</a></li>

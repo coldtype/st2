@@ -39,7 +39,8 @@ def do_import():
         else:
             coldtype_status = 1
 
-    except ImportError:
+    except ImportError as e:
+        print("COLDTYPE IMPORT ERROR", e)
         C, ct, cb = None, None, None
         coldtype_status = -1
 

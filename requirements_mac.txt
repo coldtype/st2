@@ -1,3 +1,4 @@
-coldtype[blender]==0.10.1
+#coldtype[blender]==0.10.1
+coldtype[blender] @ git+https://github.com/coldtype/coldtype
 pyobjc-framework-Cocoa
 pyobjc-framework-CoreText

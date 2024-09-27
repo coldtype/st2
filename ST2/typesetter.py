@@ -123,7 +123,7 @@ class T():
         if self.st2.combine_glyphs and not glyphwise:
             p = p.pen()
         if self.st2.remove_overlap:
-            p.remove_overlap()
+            p.removeOverlap(use_skia_pathops_draw=False)
         if self.st2.outline:
             p = self.apply_outline(p, shapewise)
         
