@@ -4,17 +4,26 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.10.1"
+REQUIRED_COLDTYPE = "0.10.21"
 
 def do_import():
     global coldtype_status, C, ct, cb
 
     modified_path = False
+    
     inlines = Path(__file__).parent / "inline-packages"
+
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    st2_venv_lib = Path(__file__).parent / f"st2_venv/lib/python{python_version}/site-packages"
 
     if inlines.exists() and "coldtype" not in sys.modules:
         modified_path = True
         sys.path.insert(0, str(inlines))
+    
+    if st2_venv_lib.exists() and "coldtype" not in sys.modules:
+        print("attempting st2_venv...")
+        modified_path = True
+        sys.path.insert(0, str(st2_venv_lib))
 
     # apparently if you require this twice, it'll work the second time (??)
     try:
@@ -65,7 +74,23 @@ def install_coldtype(context, global_vars, required_version):
     time.sleep(1)
     environ_copy = dict(os.environ)
     environ_copy["PYTHONNOUSERSITE"] = "1"
-    run([sys.executable, "-m", "pip", "install", *args], check=1, env=environ_copy)
+
+    #run([sys.executable, "-m", "pip", "install", *args], check=1, env=environ_copy)
+    venv_location = Path(__file__).parent / "st2_venv"
+    if venv_location.exists():
+        from shutil import rmtree
+        rmtree(venv_location)
+        print("deleted", venv_location)
+    run([sys.executable, "-m", "venv", venv_location])
+    print("made", venv_location)
+    venv_python = venv_location / "bin/python"
+    if not venv_python.exists():
+        venv_python = venv_location / "Scripts/python.exe"
+    print(venv_python, venv_python.exists())
+    run([venv_python, "-m", "pip", "install", "coldtype[blender]"])
+    time.sleep(1)
+
+    return
     print("---"*20)
     print("/installed coldtype")
 
@@ -82,10 +107,12 @@ def install_coldtype(context, global_vars, required_version):
 
 
 def editor_needs_coldtype(layout, status):
-    if status < 0 or True:
-        download = "Installation problem"
-        warning = """This addon was unable to install correctly
-        Please contact rob@goodhertz.com for assistance"""
+    if status < 0:
+        download = "Install Coldtype"
+        warning = """
+        This addon could not load Coldtype.
+        Please install it below or contact
+        rob@goodhertz.com for assistance""".strip()
     else:
         download = "Update coldtype"
         warning = """This version requires an update
@@ -103,12 +130,12 @@ def editor_needs_coldtype(layout, status):
             row.scale_y = 0.6
             row.label(text=line.strip())
     
-    #layout.row().separator()
-    #layout.row().operator("st2.install_coldtype", icon="WORLD_DATA", text=download)
+    layout.row().separator()
+    layout.row().operator("st2.install_coldtype", icon="WORLD_DATA", text=download)
 
 
 class ST2_OT_InstallST2(bpy.types.Operator):
-    """In order to work properly, ST2 needs to download and install the coldtype python package. You can install that package by clicking this button."""
+    """In order to work properly, ST2 needs to download and install the coldtype python package. You can install that package by clicking this button"""
 
     bl_label = "ST2 Install coldtype"
     bl_idname = "st2.install_coldtype"

@@ -12,4 +12,5 @@ inline-packages
 setup.sh
 tests/fonts
 b3denv_venv
+st2_venv
 _site
