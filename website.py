@@ -19,9 +19,14 @@ index: jinja_html = """
     <li>⚠️ ST2 is still in beta, so there might be (plenty of) bugs. If you find one, please file an issue on our Github page.</li>
 </ul>
 <hr/>
+<div class="downloads">
 <h2>Downloads</h2>
-<p>Because Blender varies the embedded Python version quite freely, you need to download and install a zip file targeted for your specific version of Blender. Currently only Blender 4.1 and 4.2 are supported.</p>
-<h3>macOS</h3>
+<!--<h3>Platform-agnostic</h3>-->
+<p>Install via the Blender Addons preferences screen (not the extensions screen if you’re on Blender >= 4.2)</p>
+<ul>
+    <li><a href="releases/ST2-v0-17b.zip">ST2-v0-17.zip</a></li>
+</ul>
+<!--<h3>macOS</h3>
 <ul>
     <li><a href="assets/releases/ST2-v0-16_Blender4.0_mac_silicon.zip">ST2-v0-16_Blender4.0_mac_silicon.zip</a></li>
     <li><a href="assets/releases/ST2-v0-16_Blender4.1_mac_silicon.zip">ST2-v0-16_Blender4.1_mac_silicon.zip</a></li>
@@ -34,7 +39,8 @@ index: jinja_html = """
 <h3 style="margin-top:20px">Windows</h3>
 <ul>
     <li><a href="releases/ST2-v0-16_blender41_win.zip">ST2-v0-16_blender41_win.zip</a></li>
-</ul>
+</ul>-->
+</div>
 <hr/>
 <p>Here’s a talk about ST2:</p>
 <ul>
@@ -104,6 +110,13 @@ main hr {
 main ul { margin-left: 20px; }
 main li { margin-bottom: 10px; }
 main li a { --text-font: fvs(wght=0.75); }
+
+.downloads h3 {
+    margin-top: 40px;
+}
+.downloads ul {
+    margin-bottom: 30px;
+}
 """
 
 script: js = """
