@@ -15,6 +15,8 @@ def do_import():
 
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     st2_venv_lib = Path(__file__).parent / f"st2_venv/lib/python{python_version}/site-packages"
+    if not st2_venv_lib.exists():
+        st2_venv_lib = Path(__file__).parent / f"st2_venv/Lib/site-packages"
 
     if inlines.exists() and "coldtype" not in sys.modules:
         modified_path = True
