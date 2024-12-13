@@ -4,7 +4,7 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.10.21"
+REQUIRED_COLDTYPE = "0.11.0"
 
 def do_import():
     global coldtype_status, C, ct, cb
