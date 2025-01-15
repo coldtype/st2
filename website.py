@@ -24,7 +24,7 @@ index: jinja_html = """
 <!--<h3>Platform-agnostic</h3>-->
 <p>Install via the Blender Addons preferences screen (not the extensions screen if you’re on Blender >= 4.2)</p>
 <ul>
-    <li><a href="releases/ST2-v0-17b.zip">ST2-v0-17.zip</a></li>
+    <li><a href="releases/ST2-v0-18b.zip">ST2-v0-18b.zip</a></li>
 </ul>
 <!--<h3>macOS</h3>
 <ul>

@@ -347,6 +347,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     fea_salt: feaprop("salt", False)
     fea_calt: feaprop("calt", False)
     fea_locl: feaprop("locl", False)
+    fea_dlig: feaprop("dlig", False)
     
     fea_ss01: feaprop("ss01")
     fea_ss02: feaprop("ss02")
