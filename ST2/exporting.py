@@ -4,7 +4,7 @@ from ST2 import typesetter
 from ST2 import search
 
 
-def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, layerwise=False, progress_fn=None):
+def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, wordwise=False, layerwise=False, progress_fn=None):
     from ST2.importer import cb
 
     obj = context.active_object
@@ -58,9 +58,9 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
         print(frame, end=" ", flush=True)
 
         t = typesetter.T(data, obj, context.scene, coll)
-        p = t.two_dimensional(glyphwise, framewise)
+        p = t.two_dimensional(glyphwise, framewise, wordwise)
         
-        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, parent.obj if parent else None))
+        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, wordwise, parent.obj if parent else None))
         
         #bpy.context.view_layer.update()
     
@@ -99,6 +99,18 @@ class ST2_OT_ExportSlug(bpy.types.Operator):
     
     def execute(self, context):
         bake_frames(context, framewise=False, glyphwise=False, frames=[context.scene.frame_current])
+        return {"FINISHED"}
+
+
+class ST2_OT_ExportWords(bpy.types.Operator):
+    """Export words as individual shapes"""
+
+    bl_label = "ST2 Export Word"
+    bl_idname = "st2.export_words"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        bake_frames(context, framewise=False, wordwise=True, glyphwise=False, frames=[context.scene.frame_current])
         return {"FINISHED"}
 
 
@@ -276,6 +288,7 @@ class ST2ExportPanel(bpy.types.Panel):
         font = data.font()
     
         layout.row().operator("st2.export_slug", text="Export Slug")
+        layout.row().operator("st2.export_words", text="Export Words")
         layout.row().operator("st2.export_glyphs", text="Export Glyphs")
         layout.row().operator("st2.export_shapes", text="Export Shapes")
 
@@ -336,6 +349,7 @@ class ST2BakedPanel(bpy.types.Panel):
 
 classes = [
     ST2_OT_ExportSlug,
+    ST2_OT_ExportWords,
     ST2_OT_ExportGlyphs,
     ST2_OT_ExportShapes,
     ST2_OT_ExportLayers,

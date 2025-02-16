@@ -112,18 +112,27 @@ class T():
         self.align(p)
         
         # not good if we want to do stagger line-wise, need to preserve this info
-        p.collapse()
+        #p.collapse()
         return p
     
-    def two_dimensional(self, glyphwise=False, shapewise=False):
+    def two_dimensional(self, glyphwise=False, shapewise=False, wordwise=False):
         p = self.base_vectors()
 
         if self.st2.script_enabled:
             p = self.apply_script(p)
-        if self.st2.combine_glyphs and not glyphwise:
+        
+        if wordwise:
+            p = p.wordPens(consolidate=True)
+            p.collapse()
+        else:
+            p.collapse()
+        
+        if self.st2.combine_glyphs and not glyphwise and not wordwise:
             p = p.pen()
+        
         if self.st2.remove_overlap:
             p.removeOverlap(use_skia_pathops_draw=False)
+        
         if self.st2.outline:
             p = self.apply_outline(p, shapewise)
         
@@ -405,7 +414,7 @@ class T():
                 if i not in children_reused:
                     bpy.data.objects.remove(c, do_unlink=True)
     
-    def convert_live_to_baked(self, p, framewise, glyphwise, shapewise, parent):
+    def convert_live_to_baked(self, p, framewise, glyphwise, shapewise, wordwise, parent):
         from ST2.importer import cb
         output = []
 
@@ -499,6 +508,12 @@ class T():
             
             for idx, glyph in enumerate(p):
                 res, origin_pt = export(glyph, idx=idx)
+                output.append(res)
+                if origin_pt is not None:
+                    res.set_origin(*origin_pt, 0)
+        elif wordwise:
+            for idx, word in enumerate(p):
+                res, origin_pt = export(word, idx=idx)
                 output.append(res)
                 if origin_pt is not None:
                     res.set_origin(*origin_pt, 0)
