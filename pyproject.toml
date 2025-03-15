@@ -1,0 +1,9 @@
+[project]
+name = "st2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "b3denv>=0.0.19",
+]
