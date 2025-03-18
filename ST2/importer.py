@@ -77,8 +77,8 @@ def install_coldtype(context, global_vars, required_version):
     
     print(venv_python, venv_python.exists())
     
-    run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
-    #run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}"])
+    #run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
+    run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}"])
     
     run([venv_python, "-m", "pip", "freeze"])
     time.sleep(0.25)
