@@ -169,9 +169,9 @@ class T():
     def build_single_style(self):
         from ST2.importer import ct
 
-        return ct.StSt(self.text
+        return ct.StSt(str(self.text)
             , **self.base_style_kwargs()
-            , **self.st2.variations(self.font)
+            , variations=self.st2.variations(self.font)
             , multiline=True
             , leading=self.st2.leading
             , strip=False)

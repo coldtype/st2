@@ -4,7 +4,7 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.11.7a2"
+REQUIRED_COLDTYPE = "0.12.1"
 
 def do_import():
     global coldtype_status, C, ct, cb
@@ -78,6 +78,7 @@ def install_coldtype(context, global_vars, required_version):
     print(venv_python, venv_python.exists())
     
     #run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
+    #run([venv_python, "-m", "pip", "install", "uharfbuzz==0.46.0"])
     run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}", "--no-cache-dir"])
     
     run([venv_python, "-m", "pip", "freeze"])
