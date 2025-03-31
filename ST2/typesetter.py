@@ -99,9 +99,18 @@ class T():
         self.collection = collection
 
         self.font = self.st2.font()
-        self.text = self.st2.build_text()
-        
-        self.base_name = "ST2::File" if self.st2.text_mode != "UI" else "ST2:" + self.text[:20].replace("\n", "")
+        self.text = self.st2.build_text(scene)
+        self.base_name = self.build_base_name()
+    
+    def build_base_name(self):
+        if self.st2.text_mode == "UI":
+            return "ST2:" + self.text[:20].replace("\n", "")
+        elif self.st2.text_mode == "SEQUENCE":
+            return "ST2:Sequence"
+        elif self.st2.text_mode == "BLOCK":
+            return "ST2:TextBlock"
+        else:
+            return "ST2:File"
     
     def base_vectors(self):
         if not self.obj or not self.obj.st2.has_keyframes(self.obj):
@@ -185,7 +194,7 @@ class T():
                             found = True
                             _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
                 except AttributeError as e:
-                    print(x.e, var_val, var_val%1)
+                    print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
                     _vars[k] = (var_val + (fvar_offset * x.e))%1.001
                     found = True
                 

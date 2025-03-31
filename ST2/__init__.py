@@ -132,6 +132,9 @@ class ST2MainPanel(bpy.types.Panel):
         if st2.text_indexed:
             self.layout.row().prop(st2, "text_index")
         
+        if st2.text_mode == "SEQUENCE":
+            self.layout.row().prop(st2, "text_sequence_channel")
+        
         if not ko.data:
             self.layout.row().operator("st2.delete_parented_text", text="Delete All")
 
