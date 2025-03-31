@@ -53,6 +53,10 @@ def update_type_frame_change(scene, depsgraph):
         if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
             t = typesetter.T(data, obj, scene)
             t.update_live_text_obj(t.two_dimensional())
+        
+        elif data.updatable and not data.baked and obj.hide_render == False and data.text_mode == "SEQUENCE":
+            t = typesetter.T(data, obj, scene)
+            t.update_live_text_obj(t.two_dimensional())
 
 
 def feaprop(prop, default=False):
@@ -81,6 +85,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
             ("UI", "UI", "As typed above", "SMALL_CAPS", 0),
             ("BLOCK", "Block", "From a text-block in Blender", "TEXT", 1),
             ("FILE", "Text file", "From an external text file", "FILE_TEXT", 2),
+            ("SEQUENCE", "Sequence", "From the Blender video sequencer", "SEQ_SEQUENCER", 3),
         ],
         default="UI",
         update=lambda p, c: update_type_and_copy("text_mode", p, c))
@@ -92,6 +97,8 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     text_indexed: bpy.props.BoolProperty(name="Text Indexed", default=False, update=lambda p, c: update_type_and_copy("text_indexed", p, c))
     
     text_index: bpy.props.IntProperty(name="Text Index", default=1, min=1, update=lambda p, c: update_type_and_copy("text_index", p, c))
+
+    text_sequence_channel: bpy.props.IntProperty(name="Text Sequence Channel", default=1, min=1, update=lambda p, c: update_type_and_copy("text_sequence_channel", p, c))
 
     script_mode: bpy.props.EnumProperty(name="Script Mode",
         description="Where to source the script",
@@ -443,7 +450,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                 features[k[4:]] = getattr(self, k)
         return features
     
-    def build_text(self):
+    def build_text(self, scene):
         text = ""
 
         if self.text_mode == "FILE":
@@ -473,6 +480,19 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                     text = "Invalid"
             else:
                 text = "Enter block name"
+            fulltext = text
+        elif self.text_mode == "SEQUENCE":
+            text = ""
+            has_clips = False
+            for clip in scene.sequence_editor.sequences:
+                if clip.channel == self.text_sequence_channel:
+                    has_clips = True
+                    if clip.frame_start <= scene.frame_current < clip.frame_final_end:
+                        text = clip.text
+            
+            if not has_clips:
+                text = "No clips"
+            
             fulltext = text
         else:
             if self.text == "":

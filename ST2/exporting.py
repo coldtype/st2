@@ -243,7 +243,8 @@ class ST2ExportPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         ko = search.active_key_object(context)
-        if ko and ko.data and not ko.st2.has_keyframes(ko):
+        static = ko and ko.data and not ko.st2.has_keyframes(ko)
+        if static:
             return True
     
     def draw(self, context):

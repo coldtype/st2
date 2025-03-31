@@ -123,14 +123,18 @@ class ST2MainPanel(bpy.types.Panel):
         if st2.text_mode == "FILE":
             row = self.layout.row()
             row.prop(st2, "text_file", text="File")
-            row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
+            #row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         elif st2.text_mode == "BLOCK":
             row = self.layout.row()
             row.prop(st2, "text_block", text="Block")
-            row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
+        
+        row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
         
         if st2.text_indexed:
             self.layout.row().prop(st2, "text_index")
+        
+        if st2.text_mode == "SEQUENCE":
+            self.layout.row().prop(st2, "text_sequence_channel")
         
         if not ko.data:
             self.layout.row().operator("st2.delete_parented_text", text="Delete All")

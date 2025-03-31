@@ -4,7 +4,7 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.10.21"
+REQUIRED_COLDTYPE = "0.12.2"
 
 def do_import():
     global coldtype_status, C, ct, cb
@@ -27,17 +27,8 @@ def do_import():
         modified_path = True
         sys.path.insert(0, str(st2_venv_lib))
 
-    # apparently if you require this twice, it'll work the second time (??)
-    try:
-        from ufo2ft.featureCompiler import FeatureCompiler
-    except ImportError:
-        print("-- failed FeatureCompiler --")
-        pass
-
     def vt(v):
-        return tuple(map(int, (v.split("."))))
-
-    #coldtype_status = 1
+        return tuple([int(x.split("a")[0]) for x in v.split(".")])
 
     try:
         import coldtype as C
@@ -66,18 +57,13 @@ def do_import():
 
 def install_coldtype(context, global_vars, required_version):
     from subprocess import run
-
-    args = [f"coldtype[blender]=={required_version}"]
     
     print("---"*20)
     print("> INSTALLING COLDTYPE")
-    print(args)
     print("---"*20)
-    time.sleep(1)
-    environ_copy = dict(os.environ)
-    environ_copy["PYTHONNOUSERSITE"] = "1"
-
-    #run([sys.executable, "-m", "pip", "install", *args], check=1, env=environ_copy)
+    
+    time.sleep(0.25)
+    
     venv_location = Path(__file__).parent / "st2_venv"
     if venv_location.exists():
         from shutil import rmtree
@@ -88,9 +74,15 @@ def install_coldtype(context, global_vars, required_version):
     venv_python = venv_location / "bin/python"
     if not venv_python.exists():
         venv_python = venv_location / "Scripts/python.exe"
+    
     print(venv_python, venv_python.exists())
-    run([venv_python, "-m", "pip", "install", "coldtype[blender]"])
-    time.sleep(1)
+    
+    #run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
+    #run([venv_python, "-m", "pip", "install", "uharfbuzz==0.46.0"])
+    run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}", "--no-cache-dir"])
+    
+    run([venv_python, "-m", "pip", "freeze"])
+    time.sleep(0.25)
 
     return
     print("---"*20)
