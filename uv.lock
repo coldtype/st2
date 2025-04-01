@@ -1,14 +1,14 @@
 version = 1
 revision = 1
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 
 [[package]]
 name = "b3denv"
-version = "0.0.19"
+version = "0.0.20"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/26/a3/0964f4454cc296ef81ebfc7819e0c54ca558dd08730b8218b37f51a2a717/b3denv-0.0.19.tar.gz", hash = "sha256:2c789d57e76d32b5d5eab0f65507e2edb55bbd3daad6126c18103a220109d4d1", size = 11493 }
+sdist = { url = "https://files.pythonhosted.org/packages/26/a0/6aee69b364896ceb037d7d2cd2e147ba91020de66cdd0860bcb6e88b96b6/b3denv-0.0.20.tar.gz", hash = "sha256:724bd2ac6677e05e43a5a1914d3d7cb2fb4deff338a4888ba15a9ab1c1f89450", size = 11484 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/83/6aa2d453f50cf8cd0c0ebca66cfb893bee4dc682c911a7de55081ad6c093/b3denv-0.0.19-py3-none-any.whl", hash = "sha256:58523cd169bf5e76cb39a0a3a1d799ce9147961d61e4b7d9697e55be94573d95", size = 10273 },
+    { url = "https://files.pythonhosted.org/packages/de/70/2362154fe1b39b04839ada6b7e109138ef3b8b02f260f2aabcd462cee977/b3denv-0.0.20-py3-none-any.whl", hash = "sha256:722de2c382419906be1362d5610d0896f6b0b587eea3d6b536f2a1207700ebd6", size = 10278 },
 ]
 
 [[package]]
@@ -20,4 +20,4 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "b3denv", specifier = ">=0.0.19" }]
+requires-dist = [{ name = "b3denv", specifier = ">=0.0.20" }]
