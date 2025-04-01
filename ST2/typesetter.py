@@ -128,7 +128,7 @@ class T():
         p = self.base_vectors()
 
         if self.st2.script_enabled:
-            p = self.apply_script(p)
+            p = self.apply_script(p).up()
         
         if wordwise:
             p = p.wordPens(consolidate=True)
