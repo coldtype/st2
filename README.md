@@ -21,3 +21,5 @@ Also Blender does not have support for variable fonts; this add-on adds support 
 - `uv run b3denv`
 - manually activate the addon
 - reload?
+
+- `mkdir -p ~/Library/Application\ Support/Blender/4.4/scripts/addons`
