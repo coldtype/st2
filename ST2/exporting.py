@@ -282,9 +282,9 @@ class ST2ExportPanel(bpy.types.Panel):
 
         row = layout.row(align=True)
         row.label(text="Rotate")
-        #row.prop(data, "export_rotate_x", text="X")
+        row.prop(data, "export_rotate_x", text="X")
         row.prop(data, "export_rotate_y", text="Y")
-        #row.prop(data, "export_rotate_z", text="Z")
+        row.prop(data, "export_rotate_z", text="Z")
 
         font = data.font()
     

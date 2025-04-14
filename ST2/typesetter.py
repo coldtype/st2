@@ -522,8 +522,10 @@ class T():
                 if origin_pt is not None:
                     res.set_origin(*origin_pt, 0)
                 
-                if self.st2.export_rotate_y:
-                    res.rotate(y=math.degrees(self.st2.export_rotate_y))
+                res.rotate(
+                    x=math.degrees(self.st2.export_rotate_x),
+                    y=math.degrees(self.st2.export_rotate_y),
+                    z=math.degrees(self.st2.export_rotate_z))
         elif wordwise:
             for idx, word in enumerate(p):
                 res, origin_pt = export(word, idx=idx)
@@ -533,8 +535,6 @@ class T():
         else:
             res, origin_pt = export()
             output.append(res)
-
-        #print(output)
         
         return output
 
