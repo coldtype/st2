@@ -193,7 +193,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
             ("NW", "Northwest", ""),
             
         ],
-        default="EXISTING")
+        default="GEOMETRIC")
     
     export_typographic_origin_x: bpy.props.BoolProperty(name="Export Typographic Origin X", default=True)
     export_typographic_origin_y: bpy.props.BoolProperty(name="Export Typographic Origin Y", default=True)

@@ -282,16 +282,18 @@ class ST2ExportPanel(bpy.types.Panel):
 
         row = layout.row(align=True)
         row.label(text="Rotate")
-        row.prop(data, "export_rotate_x", text="X")
+        #row.prop(data, "export_rotate_x", text="X")
         row.prop(data, "export_rotate_y", text="Y")
-        row.prop(data, "export_rotate_z", text="Z")
+        #row.prop(data, "export_rotate_z", text="Z")
 
         font = data.font()
     
-        layout.row().operator("st2.export_slug", text="Export Slug")
-        layout.row().operator("st2.export_words", text="Export Words")
-        layout.row().operator("st2.export_glyphs", text="Export Glyphs")
-        layout.row().operator("st2.export_shapes", text="Export Shapes")
+        row = layout.row()
+        row.label(text="Export")
+        row.operator("st2.export_slug", text="Slug")
+        row.operator("st2.export_words", text="Words")
+        row.operator("st2.export_glyphs", text="Glyphs")
+        row.operator("st2.export_shapes", text="Shapes")
 
         if font._colr:
             row.operator("st2.export_layers", text="Layers")
@@ -343,7 +345,7 @@ class ST2BakedPanel(bpy.types.Panel):
     def draw(self, context):
         ko = search.active_baked_object(context, prefer_parent=True)
 
-        self.layout.row().label(text=f"Baked: “{ko.st2.text}”")
+        self.layout.row().label(text=f"ST2 Baked: “{ko.st2.text}”")
         self.layout.row().operator("st2.bake_select_all", text="Select All")
         self.layout.row().operator("st2.delete_bake", text="Delete Bake")
 

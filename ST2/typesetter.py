@@ -501,9 +501,10 @@ class T():
             txtObj.obj.st2.updatable = True
             txtObj.obj.visible_camera = self.obj.visible_camera
 
-            if glyph and idx is not None:
-                if self.st2.export_rotate_y:
-                    txtObj.rotate(y=math.degrees(self.st2.export_rotate_y))
+            if False:
+                if glyph and idx is not None:
+                    if self.st2.export_rotate_y:
+                        txtObj.rotate(y=math.degrees(self.st2.export_rotate_y))
 
             return txtObj, origin_pt
         
@@ -520,6 +521,9 @@ class T():
                 output.append(res)
                 if origin_pt is not None:
                     res.set_origin(*origin_pt, 0)
+                
+                if self.st2.export_rotate_y:
+                    res.rotate(y=math.degrees(self.st2.export_rotate_y))
         elif wordwise:
             for idx, word in enumerate(p):
                 res, origin_pt = export(word, idx=idx)
@@ -529,6 +533,8 @@ class T():
         else:
             res, origin_pt = export()
             output.append(res)
+
+        #print(output)
         
         return output
 
