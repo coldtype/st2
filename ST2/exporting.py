@@ -4,10 +4,22 @@ from ST2 import typesetter
 from ST2 import search
 
 
-def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, wordwise=False, layerwise=False, progress_fn=None):
+def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, wordwise=False, layerwise=False, progress_fn=None, object=None):
     from ST2.importer import cb
 
-    obj = context.active_object
+    if not object:
+        for o in context.selected_objects:
+            bake_frames(context, framewise, frames, glyphwise, shapewise, wordwise, layerwise, progress_fn, o)
+        return
+
+    if object:
+        obj = object
+    else:
+        print("HERE")
+        obj = context.active_object
+    
+    print("BAKING...", obj)
+    
     data = obj.st2
     data.frozen = True
 
@@ -204,31 +216,76 @@ def delete_at_frame(context, o:bpy.types.Object, frame:int):
     bpy.ops.object.delete()
 
 
+def delete_bake(ko, context):
+    baked_from = context.scene.objects[ko.st2.baked_from]
+
+    bpy.context.view_layer.objects.active = None
+    current = context.scene.frame_current
+
+    for o in context.scene.objects:
+        if o.parent and o.parent == ko:
+            delete_at_frame(context, o, o.st2.bake_frame)
+
+    delete_at_frame(context, ko, current)
+
+    baked_from.hide_set(False)
+    baked_from.hide_render = False
+
+    bpy.context.view_layer.objects.active = None
+    bpy.context.view_layer.objects.active = baked_from
+    bpy.ops.object.select_all(action='DESELECT')
+    baked_from.select_set(True)
+
+    return baked_from
+
+
+class ST2_OT_SelectEditables(bpy.types.Operator):
+    bl_label = "ST2 Select Editables"
+    bl_idname = "st2.select_editables"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        bpy.context.view_layer.objects.active = None
+        bpy.ops.object.select_all(action='DESELECT')
+
+        editables = search.find_st2_editables(context)
+        for o in editables:
+            o.select_set(True)
+        
+        bpy.context.view_layer.objects.active = list(editables)[0]
+        return {"FINISHED"}
+
+
+class ST2_OT_SelectBakes(bpy.types.Operator):
+    bl_label = "ST2 Select Bakes"
+    bl_idname = "st2.select_bakes"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        bpy.context.view_layer.objects.active = None
+        bpy.ops.object.select_all(action='DESELECT')
+
+        bakes = search.find_st2_bakes(context)
+        for o in bakes:
+            o.select_set(True)
+        
+        bpy.context.view_layer.objects.active = list(bakes)[0]
+        return {"FINISHED"}
+
+
 class ST2_OT_DeleteBake(bpy.types.Operator):
     bl_label = "ST2 Delete Bake"
     bl_idname = "st2.delete_bake"
     bl_options = {"REGISTER","UNDO"}
     
     def execute(self, context):
-        ko = search.active_baked_object(context, prefer_parent=True)
-        baked_from = context.scene.objects[ko.st2.baked_from]
-
-        bpy.context.view_layer.objects.active = None
-        current = context.scene.frame_current
-
-        for o in context.scene.objects:
-            if o.parent and o.parent == ko:
-                delete_at_frame(context, o, o.st2.bake_frame)
-
-        delete_at_frame(context, ko, current)
-
-        baked_from.hide_set(False)
-        baked_from.hide_render = False
-
-        bpy.context.view_layer.objects.active = None
-        bpy.context.view_layer.objects.active = baked_from
-        bpy.ops.object.select_all(action='DESELECT')
-        baked_from.select_set(True)
+        ks = search.active_baked_objects(context, prefer_parent=True)
+        originals = []
+        for ko in ks:
+            originals.append(delete_bake(ko, context))
+        
+        for o in originals:
+            o.select_set(True)
         
         return {"FINISHED"}
 
@@ -343,11 +400,16 @@ class ST2BakedPanel(bpy.types.Panel):
         return bool(search.active_baked_object(context))
     
     def draw(self, context):
-        ko = search.active_baked_object(context, prefer_parent=True)
-
-        self.layout.row().label(text=f"ST2 Baked: “{ko.st2.text}”")
-        self.layout.row().operator("st2.bake_select_all", text="Select All")
-        self.layout.row().operator("st2.delete_bake", text="Delete Bake")
+        ks = search.active_baked_objects(context, prefer_parent=True)
+        
+        if len(ks) > 1:
+            self.layout.row().label(text=f"ST2 Baked: {len(ks)} objects")
+            self.layout.row().operator("st2.bake_select_all", text="Select All")
+            self.layout.row().operator("st2.delete_bake", text="Delete Bakes")
+        else:
+            self.layout.row().label(text=f"ST2 Baked: “{list(ks)[0].st2.text}”")
+            self.layout.row().operator("st2.bake_select_all", text="Select All")
+            self.layout.row().operator("st2.delete_bake", text="Delete Bake")
 
 
 classes = [
@@ -360,6 +422,8 @@ classes = [
     ST2_OT_BakeFramesNoTiming,
     ST2_OT_BakeSelectAll,
     ST2_OT_DeleteBake,
+    ST2_OT_SelectBakes,
+    ST2_OT_SelectEditables,
 ]
 
 panels = [

@@ -259,6 +259,39 @@ class ST2FontPanel(bpy.types.Panel):
         row.prop(data, "align_lines_x", text="LX", expand=True)
 
 
+class ST2SelectionPanel(bpy.types.Panel):
+    bl_label = "Selection"
+    bl_idname = "ST2_PT_997_SELECTIONPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ST2"
+    #bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return importer.C is not None
+    
+    def draw(self, context):
+        editables = search.find_st2_editables(context)
+        bakes = search.find_st2_bakes(context)
+
+        if editables:
+            row = self.layout.row()
+            row.operator("st2.select_editables", text="Select All Editables")
+
+        if bakes:
+            row = self.layout.row()
+            row.operator("st2.select_bakes", text="Select All Baked Anchors")
+        
+        #if not bakes and not 
+        
+        # row.prop(context.scene.st2, "live_updating", text="Frame Updating")
+
+        # self.layout.row().label(text="New Objects")
+        # self.layout.row().prop(context.scene.st2, "interpolator_style", text="Interpolate")
+        # self.layout.row().prop(context.scene.st2, "export_style", text="Export")
+
+
 class ST2GlobalPanel(bpy.types.Panel):
     bl_label = "Render Settings"
     bl_idname = "ST2_PT_998_GLOBALPANEL"
@@ -311,6 +344,7 @@ panels = [
     ST2MainPanel,
     ST2ScriptPanel,
     ST2FontPanel,
+    ST2SelectionPanel,
     ST2GlobalPanel,
     ST2AboutPanel,
 ]
