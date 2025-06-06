@@ -21,6 +21,30 @@ class ST2_OT_LoadVarAxesDefaults(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_ShowGlyphNames(bpy.types.Operator):
+    """Show the glyph names of your text current text"""
+
+    bl_label = "ST2 Show Glyph Names"
+    bl_idname = "st2.show_glyph_names"
+    bl_options = {"REGISTER","UNDO"}
+
+    def execute(self, context):
+        from ST2 import typesetter
+        for o in search.find_st2_all_selected(context):
+            t = typesetter.T(o.st2, o, context.scene)
+            p = t.two_dimensional(glyphwise=True)
+            gns = []
+            p.mapv(lambda p: gns.append(p.data("glyphName")))
+            print(gns)
+
+            def draw(self, context):
+                self.layout.label(text=", ".join(gns))
+
+            bpy.context.window_manager.popup_menu(draw, title="Glyph names (for kerning)", icon="INFO")
+
+        return {"FINISHED"}
+
+
 class ST2Text3DSettingsPanel(bpy.types.Panel):
     bl_label = "3D Settings"
     bl_idname = "ST2_PT_30_TEXT3DPANEL"
@@ -201,9 +225,12 @@ class ST2FontFeaturesPanel(bpy.types.Panel):
         row.prop(data, "kerning_pairs", text="KP (dict)")
         row.prop(data, "kerning_pairs_enabled", text="")
 
+        row.operator("st2.show_glyph_names", icon="EMPTY_AXIS", text="Show glyph names")
+
 
 classes = [
     ST2_OT_LoadVarAxesDefaults,
+    ST2_OT_ShowGlyphNames,
 ]
 
 panels = [
