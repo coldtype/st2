@@ -255,8 +255,12 @@ class ST2FontPanel(bpy.types.Panel):
         row = self.layout.row()
         row.label(text="Case")
         row.prop(data, "case", text="LX", expand=True)
-        row.label(text="Line Align")
+        row.label(text="Align")
         row.prop(data, "align_lines_x", text="LX", expand=True)
+
+        if data.align_lines_x == "J":
+            row.prop(data, "justify_width", text="", expand=True)
+            row.prop(data, "justify_space_letters", text="", icon="SORTALPHA")
 
 
 class ST2SelectionPanel(bpy.types.Panel):

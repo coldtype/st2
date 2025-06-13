@@ -213,7 +213,23 @@ class T():
         
         amb = p.ambit(**txty)
 
-        p.xalign(rect=amb, x=self.st2.align_lines_x, tx=not self.st2.use_horizontal_font_metrics)
+        align_x = self.st2.align_lines_x
+        if self.st2.align_lines_x == "J":
+            align_x = "W"
+        
+        p.xalign(rect=amb, x=align_x, tx=not self.st2.use_horizontal_font_metrics)
+
+        by_word = not self.st2.justify_space_letters
+
+        if self.st2.align_lines_x == "J":
+            for line in p:
+                if by_word:
+                    line.wordPens()
+                la = line.ambit(tx=0, ty=0).setw(self.st2.justify_width)
+                line.trackToRect(la, pullToEdges=1)
+                if by_word:
+                    line.interpose(type(line)(type(line)().data(glyphName="space")))
+                    line.collapseonce(deblank=False)
 
         ax, ay, aw, ah = p.ambit(**txty)
 

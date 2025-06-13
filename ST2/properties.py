@@ -263,7 +263,12 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         ("W", "", "", "ALIGN_LEFT", 0),
         ("CX", "", "", "ALIGN_CENTER", 1),
         ("E", "", "", "ALIGN_RIGHT", 2),
+        ("J", "", "", "ALIGN_JUSTIFY", 3),
     ], default="CX", update=lambda p, c: update_type_and_copy("align_lines_x", p, c))
+
+    justify_width: bpy.props.FloatProperty(name="Width", default=10, min=0.1, max=1000, update=lambda p, c: update_type_and_copy("justify_width", p, c))
+
+    justify_space_letters: bpy.props.BoolProperty(name="Justify Space Letters", default=False, update=update_type)
 
     align_x: bpy.props.EnumProperty(name="Align X", items=[
         ("W", "", "", "ANCHOR_LEFT", 0),
