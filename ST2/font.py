@@ -122,8 +122,8 @@ class ST2FontVariationsPanel(bpy.types.Panel):
                 row.prop(data, "fit", text="")
                 row.prop(data, "fit_enable", text="Enable")
     
-        if ko.st2.has_keyframes(ko):
-            #layout.row().label(text="Variation Offsets")
+        if ko.st2.has_keyframes(ko) or True:
+            layout.row().label(text="Variation Offsets")
 
             for idx, (k, v) in enumerate(fvars.items()):
                 layout.row().prop(data, f"fvar_axis{idx+1}_offset", text=f"{k} offset")

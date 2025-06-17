@@ -286,14 +286,29 @@ class ST2SelectionPanel(bpy.types.Panel):
         if bakes:
             row = self.layout.row()
             row.operator("st2.select_bakes", text="Select All Baked Anchors")
-        
-        #if not bakes and not 
-        
-        # row.prop(context.scene.st2, "live_updating", text="Frame Updating")
 
-        # self.layout.row().label(text="New Objects")
-        # self.layout.row().prop(context.scene.st2, "interpolator_style", text="Interpolate")
-        # self.layout.row().prop(context.scene.st2, "export_style", text="Export")
+
+class ST2ArrangingPanel(bpy.types.Panel):
+    bl_label = "Arrangementd"
+    bl_idname = "ST2_PT_997_XY_ARRANGINGPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ST2"
+    #bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        selected_editables = search.find_st2_all_selected(context)
+        return importer.C is not None and len(selected_editables) > 1
+    
+    def draw(self, context):
+        row = self.layout.row()
+        row.prop(context.scene.st2, "arrange_space_width", text="Space")
+        row.prop(context.scene.st2, "arrange_line_width", text="Line")
+        row.prop(context.scene.st2, "arrange_leading", text="Leading")
+
+        row = self.layout.row()
+        row.operator("st2.arrange_slugs", text="Arrange slugs")
 
 
 class ST2GlobalPanel(bpy.types.Panel):
@@ -349,6 +364,7 @@ panels = [
     ST2ScriptPanel,
     ST2FontPanel,
     ST2SelectionPanel,
+    ST2ArrangingPanel,
     ST2GlobalPanel,
     ST2AboutPanel,
 ]

@@ -252,6 +252,39 @@ class ST2_OT_SetTypeWithSceneDefaults(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_ArrangeSlugs(bpy.types.Operator):
+    """Arrange slugs"""
+    
+    bl_label = "ST2 Arrange Slugs"
+    bl_idname = "st2.arrange_slugs"
+    bl_options = {"REGISTER","UNDO"}
+
+    def execute(self, context):
+        from coldtype import P
+        from ST2.importer import cb
+
+        ps = P()
+
+        selected_editables = search.find_st2_all_selected(context)
+        for e in selected_editables:
+            t = typesetter.T(e.st2, e, context.scene)
+            ps.append(t.two_dimensional())
+        
+        ps.spread(context.scene.st2.arrange_space_width, zero=True)
+        ps_broken = ps.linebreak(context.scene.st2.arrange_line_width)
+        ps_broken.stack(context.scene.st2.arrange_leading)
+
+        z = selected_editables[0].location.z
+        print(z)
+
+        for idx, e in enumerate(selected_editables):
+            pf = ps[idx].data("frame")
+            cb.BpyObj(e).locate(x=0, y=0, z=z)
+            cb.BpyObj(e).locate(x=pf.x, y=pf.y, z=z)
+
+        return {"FINISHED"}
+
+
 class ST2_OT_WatchSource(bpy.types.Operator):
     bl_label = "Start Watching Source"
     bl_idname = "st2.watch_source"
@@ -348,6 +381,7 @@ classes = [
     ST2_OT_DeleteParentedText,
     ST2_OT_InsertNewlineSymbol,
     ST2_OT_SetTypeWithSceneDefaults,
+    ST2_OT_ArrangeSlugs,
     ST2_OT_ImportDependencies,
     WM_OT_ST2ChooseFont,
 ]

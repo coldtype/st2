@@ -5,9 +5,6 @@
 - Control to export "layers" of a color font (unstyled?), with option to stagger them in a certain dimension, so a layered color font is automatically a 3d font
 
 
-+++ - justification of words? (ala the line-crunching example)
-
-
 - better physics controls
     - either in ST2 or a separate panel, for setting lots of physics properties at once
     +++ - or even randomizing things like bounciness over a selected set of objects

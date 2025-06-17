@@ -113,7 +113,7 @@ class T():
             return "ST2:File"
     
     def base_vectors(self):
-        if not self.obj or not self.obj.st2.has_keyframes(self.obj):
+        if not self.obj or (not self.obj.st2.has_keyframes(self.obj) and not self.obj.st2.has_variable_offsets(self.obj)):
             p = self.build_single_style()
         else:
             p = self.build_multi_style()
@@ -194,7 +194,7 @@ class T():
                             found = True
                             _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
                 except AttributeError as e:
-                    print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
+                    #print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
                     _vars[k] = (var_val + (fvar_offset * x.e))%1.001
                     found = True
                 

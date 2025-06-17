@@ -171,6 +171,14 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
             ("RENDERANIMATE", "Rendered animation", "Full playback support in rendered view"),
         ],
         default="NONRENDERANIMATE")
+    
+    # arranging
+
+    arrange_space_width: bpy.props.FloatProperty(name="Arrangement Space Width", description="How much space between slugs", default=1)
+
+    arrange_line_width: bpy.props.FloatProperty(name="Arrangement Line Width", description="How long should a line be before breaking", default=10)
+
+    arrange_leading: bpy.props.FloatProperty(name="Arrangement Leading", description="How much space betwen lines", default=1)
 
     # exporting
 
@@ -257,7 +265,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     
     leading: bpy.props.FloatProperty(name="Leading", default=0.5, min=-10, max=10, update=lambda p, c: update_type_and_copy("leading", p, c))
 
-    scale: bpy.props.FloatProperty(name="Scale", default=1, min=0.1, max=2, update=lambda p, c: update_type_and_copy("scale", p, c))
+    scale: bpy.props.FloatProperty(name="Scale", default=1, min=0.1, max=5, update=lambda p, c: update_type_and_copy("scale", p, c))
 
     align_lines_x: bpy.props.EnumProperty(name="Align Lines X", items=[
         ("W", "", "", "ALIGN_LEFT", 0),
@@ -390,6 +398,13 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
                     has_coldtype_keyframes = True
             return has_coldtype_keyframes
         return False
+    
+    def has_variable_offsets(self, obj):
+        has = False
+        for x in range(1, 20):
+            if getattr(self, f"fvar_axis{x}_offset") > 0:
+                has = True
+        return has
     
     def editable(self, obj):
         return obj.select_get() and obj.st2.updatable and not obj.st2.baked
