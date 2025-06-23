@@ -25,6 +25,7 @@ def do_import():
     if st2_venv_lib.exists() and "coldtype" not in sys.modules:
         print("attempting st2_venv...")
         modified_path = True
+        print(st2_venv_lib)
         sys.path.insert(0, str(st2_venv_lib))
 
     def vt(v):
@@ -50,6 +51,11 @@ def do_import():
         print("import:COLDTYPE", C.__version__, C.__file__)
     else:
         print("import:COLDTYPE:fail")
+    
+    try:
+        import AppKit, CoreText
+    except ImportError:
+        print("NO APPKIT/CORETEXT")
 
     if modified_path:
         sys.path.pop(0)
@@ -79,7 +85,10 @@ def install_coldtype(context, global_vars, required_version):
     
     #run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
     #run([venv_python, "-m", "pip", "install", "uharfbuzz==0.46.0"])
+    
     run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}", "--no-cache-dir"])
+
+    run([venv_python, "-m", "pip", "install", "pyobjc"])
     
     run([venv_python, "-m", "pip", "freeze"])
     time.sleep(0.25)
@@ -98,6 +107,31 @@ def install_coldtype(context, global_vars, required_version):
     importlib.reload(cb)
     importlib.reload(ct)
     print(">>>", C.__version__)
+
+
+def install_extras(context, global_vars):
+    from subprocess import run
+    
+    print("---"*20)
+    print("> INSTALLING EXTRAS")
+    print("---"*20)
+    
+    time.sleep(0.25)
+    
+    venv_location = Path(__file__).parent / "st2_venv"
+    venv_python = venv_location / "bin/python"
+
+    if not venv_python.exists():
+        venv_python = venv_location / "Scripts/python.exe"
+    
+    print(venv_python, venv_python.exists())
+
+    run([venv_python, "-m", "pip", "install", "pyobjc"])
+    
+    run([venv_python, "-m", "pip", "freeze"])
+    time.sleep(0.25)
+
+    return
 
 
 def editor_needs_coldtype(layout, status):
@@ -140,6 +174,18 @@ class ST2_OT_InstallST2(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_InstallExtras(bpy.types.Operator):
+    """In order for extended functionality to work properly, you’ll need to install these extras via python’s pip"""
+
+    bl_label = "ST2 Install Extras"
+    bl_idname = "st2.install_extras"
+    
+    def execute(self, context):
+        install_extras(context, globals())
+        bpy.ops.script.reload()
+        return {"FINISHED"}
+
+
 class ST2InstallPanel(bpy.types.Panel):
     bl_label = "ST2 Setup"
     bl_idname = "ST2_PT_0_INSTALLPANEL"
@@ -157,6 +203,7 @@ class ST2InstallPanel(bpy.types.Panel):
 
 classes = [
     ST2_OT_InstallST2,
+    ST2_OT_InstallExtras,
 ]
 
 panels = [
