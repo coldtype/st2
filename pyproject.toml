@@ -7,3 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "b3denv>=0.0.20",
 ]
+
+[tool.uv.sources]
+b3denv = { path = "../b3denv", editable = true }
