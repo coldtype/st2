@@ -353,8 +353,9 @@ class ST2AboutPanel(bpy.types.Panel):
         row.label(text=f"ST2 v{version[0]}.{version[1]}")
         # TODO buttons for help?
         
-        row.operator("st2.install_coldtype", icon="WORLD_DATA", text="Reinstall Coldtype")
-        row.operator("st2.install_extras", icon="WORLD_DATA", text="Install Extras")
+        row.operator("st2.install_coldtype", icon="URL", text="Reinstall")
+        row.operator("st2.install_extras", icon="SPHERE", text="Extras")
+        row.operator("st2.print_packages", icon="OUTLINER", text="Print")
 
 
 classes = [

@@ -1,4 +1,5 @@
 import importlib, bpy, time, os, sys
+from subprocess import run
 from pathlib import Path
 
 coldtype_status = -2
@@ -57,43 +58,53 @@ def do_import():
     except ImportError:
         print("NO APPKIT/CORETEXT")
 
+    #import uharfbuzz as asdf
+    #print(asdf)
+
     if modified_path:
         sys.path.pop(0)
 
 
-def install_coldtype(context, global_vars, required_version):
-    from subprocess import run
+def get_venv_python(delete=True):
+    try:
+        venv_location = Path(__file__).parent / "st2_venv"
+
+        if delete:
+            if venv_location.exists():
+                from shutil import rmtree
+                rmtree(venv_location)
+                print("deleted", venv_location)
+        
+            run([sys.executable, "-m", "venv", venv_location])
+
+        venv_python = venv_location / "bin/python"
+        if not venv_python.exists():
+            venv_python = venv_location / "Scripts/python.exe"
+        
+        return venv_location, venv_python
     
+    except Exception as e:
+        print("FAILURE TO VENV", e)
+
+
+def install_coldtype(context, global_vars, required_version):
     print("---"*20)
     print("> INSTALLING COLDTYPE")
     print("---"*20)
     
     time.sleep(0.25)
-    
-    venv_location = Path(__file__).parent / "st2_venv"
-    if venv_location.exists():
-        from shutil import rmtree
-        rmtree(venv_location)
-        print("deleted", venv_location)
-    run([sys.executable, "-m", "venv", venv_location])
-    print("made", venv_location)
-    venv_python = venv_location / "bin/python"
-    if not venv_python.exists():
-        venv_python = venv_location / "Scripts/python.exe"
-    
-    print(venv_python, venv_python.exists())
-    
-    #run([venv_python, "-m", "pip", "install", "/Users/robstenson/Coldtype/coldtype"])
-    #run([venv_python, "-m", "pip", "install", "uharfbuzz==0.46.0"])
+
+    _, venv_python = get_venv_python()
     
     run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}", "--no-cache-dir"])
 
-    run([venv_python, "-m", "pip", "install", "pyobjc"])
+    #run([venv_python, "-m", "pip", "install", "pyobjc"])
     
     run([venv_python, "-m", "pip", "freeze"])
     time.sleep(0.25)
 
     return
+
     print("---"*20)
     print("/installed coldtype")
 
@@ -126,7 +137,7 @@ def install_extras(context, global_vars):
     
     print(venv_python, venv_python.exists())
 
-    run([venv_python, "-m", "pip", "install", "pyobjc"])
+    run([venv_python, "-m", "pip", "install", "pyobjc", "ufo2ft"])
     
     run([venv_python, "-m", "pip", "freeze"])
     time.sleep(0.25)
@@ -186,6 +197,25 @@ class ST2_OT_InstallExtras(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ST2_OT_PrintPackges(bpy.types.Operator):
+    """Print currently-installed packages"""
+
+    bl_label = "ST2 Print Packages"
+    bl_idname = "st2.print_packages"
+    
+    def execute(self, context):
+        _, venv_python = get_venv_python(delete=False)
+        res = run([venv_python, "-m", "pip", "freeze"], capture_output=True, text=True)
+
+        print("\n--- ST2 PACKAGES ---\n")
+        for line in res.stdout.split("\n"):
+            if line and not line.startswith("pyobjc-framework"):
+                print(">", line)
+        print("\n--- ST2 PACKAGES END ---\n")
+
+        return {"FINISHED"}
+
+
 class ST2InstallPanel(bpy.types.Panel):
     bl_label = "ST2 Setup"
     bl_idname = "ST2_PT_0_INSTALLPANEL"
@@ -204,6 +234,7 @@ class ST2InstallPanel(bpy.types.Panel):
 classes = [
     ST2_OT_InstallST2,
     ST2_OT_InstallExtras,
+    ST2_OT_PrintPackges,
 ]
 
 panels = [
