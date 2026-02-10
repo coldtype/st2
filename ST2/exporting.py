@@ -4,12 +4,12 @@ from ST2 import typesetter
 from ST2 import search
 
 
-def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, wordwise=False, layerwise=False, progress_fn=None, object=None):
+def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise=False, wordwise=False, linewise=False, layerwise=False, progress_fn=None, object=None):
     from ST2.importer import cb
 
     if not object:
         for o in context.selected_objects:
-            bake_frames(context, framewise, frames, glyphwise, shapewise, wordwise, layerwise, progress_fn, o)
+            bake_frames(context, framewise, frames, glyphwise, shapewise, wordwise, linewise, layerwise, progress_fn, o)
         return
 
     if object:
@@ -70,9 +70,9 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
         print(frame, end=" ", flush=True)
 
         t = typesetter.T(data, obj, context.scene, coll)
-        p = t.two_dimensional(glyphwise, framewise, wordwise)
+        p = t.two_dimensional(glyphwise, framewise, wordwise, linewise)
         
-        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, wordwise, parent.obj if parent else None))
+        results.append(t.convert_live_to_baked(p, framewise, glyphwise, shapewise, wordwise, linewise, parent.obj if parent else None))
         
         #bpy.context.view_layer.update()
     
@@ -112,6 +112,20 @@ class ST2_OT_ExportSlug(bpy.types.Operator):
     def execute(self, context):
         bake_frames(context, framewise=False, glyphwise=False, frames=[context.scene.frame_current])
         return {"FINISHED"}
+
+
+
+class ST2_OT_ExportLines(bpy.types.Operator):
+    """Export lines as individual shapes"""
+
+    bl_label = "ST2 Export Lines"
+    bl_idname = "st2.export_lines"
+    bl_options = {"REGISTER","UNDO"}
+    
+    def execute(self, context):
+        bake_frames(context, framewise=False, glyphwise=False, linewise=True, frames=[context.scene.frame_current])
+        return {"FINISHED"}
+
 
 
 class ST2_OT_ExportWords(bpy.types.Operator):
@@ -348,6 +362,7 @@ class ST2ExportPanel(bpy.types.Panel):
         row = layout.row()
         row.label(text="Export")
         row.operator("st2.export_slug", text="Slug")
+        row.operator("st2.export_lines", text="Lines")
         row.operator("st2.export_words", text="Words")
         row.operator("st2.export_glyphs", text="Glyphs")
         row.operator("st2.export_shapes", text="Shapes")
@@ -414,6 +429,7 @@ class ST2BakedPanel(bpy.types.Panel):
 
 classes = [
     ST2_OT_ExportSlug,
+    ST2_OT_ExportLines,
     ST2_OT_ExportWords,
     ST2_OT_ExportGlyphs,
     ST2_OT_ExportShapes,

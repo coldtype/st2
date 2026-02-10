@@ -16,3 +16,7 @@
 
 - control to align multiple instances together as if they were words in a lock up or something (maybe with some kind of width control)
 
+
+
+
+- export glyphs but have each word anchored/parented to nested word collections (could also do this but parent to layer ids?)

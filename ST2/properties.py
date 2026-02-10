@@ -393,10 +393,16 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     def has_keyframes(self, obj):
         if obj.animation_data is not None and obj.animation_data.action is not None:
             has_coldtype_keyframes = False
-            for fcu in obj.animation_data.action.fcurves:
+            if hasattr(obj.animation_data.action, 'fcurves'):
+                fcurves = obj.animation_data.action.fcurves
+            else:
+                fcurves = obj.animation_data.action.channels
+            
+            for fcu in fcurves:
                 if fcu.data_path.startswith("st2."):
                     has_coldtype_keyframes = True
             return has_coldtype_keyframes
+        
         return False
     
     def has_variable_offsets(self, obj):

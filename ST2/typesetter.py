@@ -124,7 +124,7 @@ class T():
         #p.collapse()
         return p
     
-    def two_dimensional(self, glyphwise=False, shapewise=False, wordwise=False):
+    def two_dimensional(self, glyphwise=False, shapewise=False, wordwise=False, linewise=False):
         p = self.base_vectors()
 
         if self.st2.script_enabled:
@@ -133,11 +133,15 @@ class T():
         if wordwise:
             p = p.wordPens(consolidate=True)
             p.collapse()
-        else:
+        elif not linewise:
             p.collapse()
         
-        if self.st2.combine_glyphs and not glyphwise and not wordwise:
+        if self.st2.combine_glyphs and not glyphwise and not wordwise and not linewise:
             p = p.pen()
+        
+        if linewise:
+            for idx, line in enumerate(p):
+                p[idx] = line.pen()
         
         if self.st2.remove_overlap:
             p.removeOverlap(use_skia_pathops_draw=False)
@@ -188,11 +192,17 @@ class T():
                 var_val = getattr(self.st2, dp)
                 
                 try:
-                    for fcu in self.obj.animation_data.action.fcurves:
+                    if hasattr(self.obj.animation_data.action, 'fcurves'):
+                        fcurves = self.obj.animation_data.action.fcurves
+                    else:
+                        fcurves = self.obj.animation_data.action.channels
+
+                    for fcu in fcurves:
                         #print(fcu.data_path, dp)
                         if fcu.data_path.split(".")[-1] == dp:
                             found = True
                             _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
+                    
                 except AttributeError as e:
                     #print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
                     _vars[k] = (var_val + (fvar_offset * x.e))%1.001
@@ -439,7 +449,7 @@ class T():
                 if i not in children_reused:
                     bpy.data.objects.remove(c, do_unlink=True)
     
-    def convert_live_to_baked(self, p, framewise, glyphwise, shapewise, wordwise, parent):
+    def convert_live_to_baked(self, p, framewise, glyphwise, shapewise, wordwise, linewise, parent):
         from ST2.importer import cb
         output = []
 
@@ -542,9 +552,9 @@ class T():
                     x=math.degrees(self.st2.export_rotate_x),
                     y=math.degrees(self.st2.export_rotate_y),
                     z=math.degrees(self.st2.export_rotate_z))
-        elif wordwise:
-            for idx, word in enumerate(p):
-                res, origin_pt = export(word, idx=idx)
+        elif wordwise or linewise:
+            for idx, el in enumerate(p):
+                res, origin_pt = export(el, idx=idx)
                 output.append(res)
                 if origin_pt is not None:
                     res.set_origin(*origin_pt, 0)
