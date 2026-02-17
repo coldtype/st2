@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "b3denv>=0.0.20",
+    "coldtype[viewer,website]>=0.12.2",
 ]
 
 [tool.uv.sources]
