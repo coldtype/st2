@@ -25,7 +25,7 @@ index: jinja_html = """
 <p>Install via the Blender Addons preferences screen (not the extensions screen if you’re on Blender >= 4.2)</p>
 <ul>
     <li><a href="releases/ST2-v0-20.zip">ST2-v0-20.zip</a></li>
-    <li><small style="color:firebrick">⚠️ We are aware of a bug with animating variable font axes via keyframes in Blender >= 5.0 and are working on a fix ⚠️</small></li>
+    <li style="color:firebrick">If you’re using Blender 5.0 and are animating variable font axes, please give <a href="https://coldtype.xyz/st2/releases/ST2-v0-21b1.zip">this v0.21 beta build</a> a try, hopefully it fixes the issue with animating variable fonts in Blender >= 5.0</li>
 </ul>
 <!--<h3>macOS</h3>
 <ul>
