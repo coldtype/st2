@@ -192,13 +192,9 @@ class T():
                 var_val = getattr(self.st2, dp)
                 
                 try:
-                    if hasattr(self.obj.animation_data.action, 'fcurves'):
-                        fcurves = self.obj.animation_data.action.fcurves
-                    else:
-                        fcurves = self.obj.animation_data.action.channels
+                    fcurves = util.get_fcurves(self.obj)
 
                     for fcu in fcurves:
-                        #print(fcu.data_path, dp)
                         if fcu.data_path.split(".")[-1] == dp:
                             found = True
                             _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
