@@ -14,9 +14,10 @@ class ST2_OT_InterpolateStrings(bpy.types.Operator):
         from ST2.importer import cb
 
         data = context.scene.st2
-        editables = search.find_st2_editables(context)
-        a = editables[0]
-        b = editables[1]
+        selection = search.find_st2_all_selected(context)
+        #editables = search.find_st2_editables(context)
+        a = selection[0]
+        b = selection[1]
         collection = a.users_collection[0]
 
         font = a.st2.font()
@@ -97,15 +98,17 @@ class ST2InterpolationPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        editables = search.find_st2_editables(context)
-        if len(editables) == 2:
-            if editables[0].st2.text == editables[1].st2.text:
+        selection = search.find_st2_all_selected(context)
+        #editables = search.find_st2_editables(context)
+        if len(selection) == 2:
+            if selection[0].st2.text == selection[1].st2.text:
                 return True
     
     def draw(self, context):
-        editables = search.find_st2_editables(context)
+        selection = search.find_st2_all_selected(context)
+        #editables = search.find_st2_editables(context)
 
-        if len(editables) == 2:
+        if len(selection) == 2:
             row = self.layout.row()
             row.prop(context.scene.st2, "interpolator_count", text="")
             row.prop(context.scene.st2, "interpolator_easing", text="")
@@ -113,6 +116,9 @@ class ST2InterpolationPanel(bpy.types.Panel):
 
             row = self.layout.row()
             row.operator("st2.interpolate_strings", text="Interpolate")
+            
+            row = self.layout.row()
+            row.label(text=f"Interpolating: {selection[0].name} & {selection[1].name}")
 
 
 classes = [
