@@ -98,5 +98,42 @@ def get_fcurves(obj, matching:re.Pattern=None):
     return fcurves_out
 
 
+
+def explode(sself, overlappers=True):
+    from coldtype import P
+    from coldtype.pens.misc import RecordingPen, ExplodingPen
+    from copy import deepcopy
+
+    for el in sself._els:
+        el.explode(overlappers=overlappers)
+
+    if sself.val_present():
+        rp = RecordingPen()
+        ep = ExplodingPen(rp)
+        sself.replay(ep)
+
+        pieces = P()
+
+        for p in ep._pens:
+            el = type(sself)()
+            el._val.value = p
+            el._attrs = deepcopy(sself._attrs)
+            pieces.append(el)
+        
+        if not overlappers and len(pieces) == 2:
+            intersection = pieces[0].copy().intersection(pieces[1].copy())
+            print(">", len(intersection._val.value))
+            if len(intersection._val.value) > 0:
+                return sself.up()
+        
+        for piece in pieces:
+            sself.append(piece)
+        
+        sself._val = RecordingPen()
+    
+    return sself
+
+
+
 classes = []
 panels = []

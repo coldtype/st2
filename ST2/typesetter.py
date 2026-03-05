@@ -324,7 +324,7 @@ class T():
 
     def apply_outline(self, p, shapewise):
         if shapewise:
-            p.mapv(lambda _p: _p.explode())
+            p.mapv(lambda _p: util.explode(_p, overlappers=0))
             p.collapse()
 
         ow = self.st2.outline_weight/100
@@ -533,7 +533,7 @@ class T():
         if glyphwise:
             if shapewise:
                 if not self.st2.outline:
-                    p.mapv(lambda _p: _p.explode())
+                    p.mapv(lambda _p: util.explode(_p, overlappers=0))
                     p.collapse()
             #if layerwise:
             #    p.mapv(lambda _p: _p.explode())
