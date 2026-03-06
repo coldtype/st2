@@ -76,27 +76,69 @@ def ensure_channelbag(data_block):
         pass
 
 
-def get_fcurves(obj, matching:re.Pattern=None):
-    if not obj.animation_data or not obj.animation_data.action: return None
+# def get_fcurves(obj, matching:re.Pattern=None):
+#     if not obj.animation_data or not obj.animation_data.action: return None
+
+#     fcurves_out = []
+
+#     if hasattr(obj.animation_data.action, 'fcurves'):
+#         fcurves = obj.animation_data.action.fcurves
+#     else:
+#         channelbag = ensure_channelbag(obj)
+#         if channelbag is None: return None
+#         fcurves = channelbag.fcurves
+
+#     for fcurve in fcurves:
+#         if matching is None:
+#             fcurves_out.append(fcurve)
+#         else:
+#             if re.match(matching, fcurve.data_path):
+#                 fcurves_out.append(fcurve)
+
+#     return fcurves_out
+
+def get_fcurves(obj, matching: re.Pattern = None):
+    if not obj.animation_data:
+        return None
 
     fcurves_out = []
 
-    if hasattr(obj.animation_data.action, 'fcurves'):
-        fcurves = obj.animation_data.action.fcurves
-    else:
-        channelbag = ensure_channelbag(obj)
-        if channelbag is None: return None
-        fcurves = channelbag.fcurves
-
-    for fcurve in fcurves:
-        if matching is None:
-            fcurves_out.append(fcurve)
+    # --- Keyframed FCurves (action) ---
+    if obj.animation_data.action:
+        if hasattr(obj.animation_data.action, 'fcurves'):
+            fcurves = obj.animation_data.action.fcurves
         else:
-            if re.match(matching, fcurve.data_path):
+            channelbag = ensure_channelbag(obj)
+            if channelbag is not None:
+                fcurves = channelbag.fcurves
+            else:
+                fcurves = []
+
+        for fcurve in fcurves:
+            if matching is None or re.match(matching, fcurve.data_path):
                 fcurves_out.append(fcurve)
 
-    return fcurves_out
+    # --- Driver FCurves ---
+    for fcurve in obj.animation_data.drivers:
+        if matching is None or re.match(matching, fcurve.data_path):
+            fcurves_out.append(fcurve)
 
+    return fcurves_out if fcurves_out else None
+
+
+def get_driver_value(obj, data_path, array_index=0):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    obj_eval = obj.evaluated_get(depsgraph)
+    
+    try:
+        val = obj_eval.path_resolve(data_path)
+        # path_resolve returns the full array for vector props, index it if needed
+        if hasattr(val, '__getitem__'):
+            return val[array_index]
+        return val
+    except Exception as e:
+        print(f"Could not resolve {data_path}: {e}")
+        return None
 
 
 def explode(sself, overlappers=True):
@@ -122,7 +164,6 @@ def explode(sself, overlappers=True):
         
         if not overlappers and len(pieces) == 2:
             intersection = pieces[0].copy().intersection(pieces[1].copy())
-            print(">", len(intersection._val.value))
             if len(intersection._val.value) > 0:
                 return sself.up()
         

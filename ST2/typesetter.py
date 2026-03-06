@@ -187,6 +187,7 @@ class T():
             _vars = {}
             for idx, (k, _) in enumerate(self.st2.visible_variation_axes(self.font).items()):
                 dp = f"fvar_axis{idx+1}"
+
                 fvar_offset = getattr(self.st2, f"{dp}_offset")
                 found = False
                 var_val = getattr(self.st2, dp)
@@ -194,13 +195,18 @@ class T():
                 try:
                     fcurves = util.get_fcurves(self.obj)
 
+                    frame = (self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start)
+
                     for fcu in fcurves:
                         if fcu.data_path.split(".")[-1] == dp:
                             found = True
-                            _vars[k] = fcu.evaluate((self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start))
+                            if fcu.driver:
+                                _vars[k] = util.get_driver_value(self.obj, fcu.data_path, 0)
+                            else:
+                                _vars[k] = fcu.evaluate(frame)
                     
                 except AttributeError as e:
-                    #print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
+                    print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
                     _vars[k] = (var_val + (fvar_offset * x.e))%1.001
                     found = True
                 
