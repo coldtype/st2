@@ -40,6 +40,7 @@ def hobeauxBorder(r, text, font, fs=2):
         .pen()
         .unframe())
 
+
 def modify(st2:dict, kwargs:dict):
     try:
         txt = styles[int(st2.text)]

@@ -126,6 +126,17 @@ def get_fcurves(obj, matching: re.Pattern = None):
     return fcurves_out if fcurves_out else None
 
 
+def get_gn_object_location(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    obj_eval = obj.evaluated_get(depsgraph)
+    
+    mesh = obj_eval.to_mesh()
+    # Get the world position of the first vertex (or average, depending on your setup)
+    pos = obj_eval.matrix_world @ mesh.vertices[0].co
+    obj_eval.to_mesh_clear()
+    return pos
+
+
 def get_driver_value(obj, data_path, array_index=0):
     depsgraph = bpy.context.evaluated_depsgraph_get()
     obj_eval = obj.evaluated_get(depsgraph)

@@ -415,6 +415,15 @@ wheels = [
 ]
 
 [[package]]
+name = "fake-bpy-module-latest"
+version = "20260306"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/df/3e6759a2807efc78c9fac1e0dad41721c6945c8b75095f45e6e82b9ac97e/fake_bpy_module_latest-20260306.tar.gz", hash = "sha256:bb2de60cde177fb60a31ebd9183f299529d2f008e2f935345c80aa90db138b2c", size = 874142 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8c/1c/29892d9b37af25c075683fcb8159d894a6317d559f3731903be7a477db2d/fake_bpy_module_latest-20260306-py3-none-any.whl", hash = "sha256:b49a6be8f972988ae7349154c7a01574212fa1a5cc654461755fbaaa77980f1d", size = 1010842 },
+]
+
+[[package]]
 name = "favicons"
 version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1272,12 +1281,14 @@ source = { virtual = "." }
 dependencies = [
     { name = "b3denv" },
     { name = "coldtype", extra = ["viewer", "website"] },
+    { name = "fake-bpy-module-latest" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "b3denv", editable = "../b3denv" },
     { name = "coldtype", extras = ["viewer", "website"], specifier = ">=0.12.2" },
+    { name = "fake-bpy-module-latest", specifier = ">=20260306" },
 ]
 
 [[package]]

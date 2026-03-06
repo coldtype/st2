@@ -1,11 +1,17 @@
 import bpy, tempfile, math, inspect, time
 from mathutils import Vector
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Callable
 
 from ST2 import util
 
 
 MESH_CACHE_COLLECTION = "ST2.MeshCache"
+
+@dataclass
+class ModifyFunctions():
+    fe:Callable
 
 
 def read_mesh_glyphs_into_cache(font, p, mesh_table):
@@ -183,6 +189,11 @@ class T():
     def build_multi_style(self):
         from ST2.importer import ct
 
+        #helper = bpy.data.objects["Cube"]
+        #helper_location = util.get_gn_object_location(helper)
+
+        helper = None
+
         def styler(x):
             _vars = {}
             for idx, (k, _) in enumerate(self.st2.visible_variation_axes(self.font).items()):
@@ -193,14 +204,15 @@ class T():
                 var_val = getattr(self.st2, dp)
                 
                 try:
-                    fcurves = util.get_fcurves(self.obj)
-
                     frame = (self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start)
+                    fcurves = util.get_fcurves(self.obj)
 
                     for fcu in fcurves:
                         if fcu.data_path.split(".")[-1] == dp:
                             found = True
-                            if fcu.driver:
+                            if helper:
+                                _vars[k] = helper_location.z
+                            elif fcu.driver:
                                 _vars[k] = util.get_driver_value(self.obj, fcu.data_path, 0)
                             else:
                                 _vars[k] = fcu.evaluate(frame)
@@ -264,7 +276,7 @@ class T():
         res = None
         if self.st2.script_mode == "FILE" and self.st2.script_file:
             try:
-                res = run_path(self.st2.script_file)
+                res = run_path(self.st2.script_file, init_globals=dict(bpy=bpy))
             except Exception as e:
                 print("Could not run script", e)
         elif self.st2.script_mode == "BLOCK":
@@ -288,6 +300,14 @@ class T():
             if "modify" in res:
                 fn = res["modify"]
                 arg_count = len(inspect.signature(fn).parameters)
+
+                def fe(i):
+                    duration = bpy.context.scene.frame_end - bpy.context.scene.frame_start
+                    fc = bpy.context.scene.frame_current
+                    fa = (fc+i)%duration
+                    return fa/duration
+                
+                funcs = ModifyFunctions(fe)
                 
                 args = [self.st2]
                 if arg_count > 1:
@@ -301,8 +321,8 @@ class T():
                 if arg_count > 2:
                     args.append(p)
                 
-                #if arg_count > 3:
-                #    args.append(txtObj)
+                if arg_count > 3:
+                    args.append(funcs)
                 
                 return fn(*args)
                 #if output is not None:
