@@ -50,11 +50,19 @@ def update_type_frame_change(scene, depsgraph):
 
     for obj in scene.objects:
         data = obj.st2
-        if data.updatable and not data.baked and obj.hide_render == False and data.has_keyframes(obj):
-            t = typesetter.T(data, obj, scene)
-            t.update_live_text_obj(t.two_dimensional())
+        do_update = data.updatable and not data.baked and obj.hide_render == False
+        if data.has_keyframes(obj):
+            do_update = True
+        elif data.has_calculations(obj):
+            do_update = True
+        elif data.script_enabled:
+            do_update = True
+        elif data.text_mode == "SEQUENCE":
+            do_update = True
+        else:
+            do_update = False
         
-        elif data.updatable and not data.baked and obj.hide_render == False and data.text_mode == "SEQUENCE":
+        if do_update:
             t = typesetter.T(data, obj, scene)
             t.update_live_text_obj(t.two_dimensional())
 
@@ -118,6 +126,20 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     script_watch: bpy.props.BoolProperty(name="Script Watch", default=False)
 
     script_kwargs: bpy.props.StringProperty(name="Script Args", default="", update=lambda p, c: update_type_and_copy("script_kwargs", p, c))
+
+    #calc1_target: bpy.props.StringProperty(name="Calc1 Target", default="", update=lambda p, c: update_type_and_copy("calc1_target", p, c))
+
+    calc1_target: bpy.props.EnumProperty(name="Calc1 Target", items=[
+        ("fvar_axis1", "fvar_axis1", "fvar_axis1", "MOD_INSTANCE", 0),
+        ("fvar_axis2", "fvar_axis2", "fvar_axis2", "MOD_INSTANCE", 1),
+        ("fvar_axis3", "fvar_axis3", "fvar_axis3", "MOD_INSTANCE", 2),
+    ], default="fvar_axis1", update=lambda p, c: update_type_and_copy("calc1_target", p, c))
+
+    #calc1_object: bpy.props.StringProperty(name="Calc1 Object", default="", update=lambda p, c: update_type_and_copy("calc1_object", p, c))
+
+    calc1_object: bpy.props.PointerProperty(name="Calc1 Object", type=bpy.types.Object)
+
+    calc1_source: bpy.props.StringProperty(name="Calc1 Source", default="", update=lambda p, c: update_type_and_copy("calc1_source", p, c))
     
     font_path: bpy.props.StringProperty(name="Font", default="", update=lambda p, c: update_type_and_copy("font_path", p, c))
 
@@ -393,6 +415,9 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
 
     def has_keyframes(self, obj):
         return bool(util.get_fcurves(obj, re.compile(r"^st2\..*")))
+    
+    def has_calculations(self, obj):
+        return self.calc1_object is not None
     
     def has_variable_offsets(self, obj):
         has = False

@@ -15,7 +15,6 @@ def bake_frames(context, framewise=True, frames=None, glyphwise=False, shapewise
     if object:
         obj = object
     else:
-        print("HERE")
         obj = context.active_object
     
     print("BAKING...", obj)

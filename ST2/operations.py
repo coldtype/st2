@@ -160,9 +160,10 @@ class ST2_OT_RefreshSettings(bpy.types.Operator):
             for k in [kp:=e.st2.font_path, str(kp)]:
                 if k in FontCache:
                     del FontCache[k]
-            
+
             t = typesetter.T(e.st2, e, context.scene)
             t.update_live_text_obj(t.two_dimensional())
+
         return {"FINISHED"}
 
 
@@ -323,6 +324,7 @@ class ST2SourceWatcher(bpy.types.Operator):
     _sources = {}
 
     def modal(self, context, event):
+
         st2 = context.scene.st2
 
         def cancel(force=False):
@@ -338,6 +340,7 @@ class ST2SourceWatcher(bpy.types.Operator):
             return cancel(force=True)
 
         if event.type == 'TIMER':
+
             for obj in search.find_st2_editables(context):
                 data = obj.st2
                 if data.script_file and data.script_enabled:

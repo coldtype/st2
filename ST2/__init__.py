@@ -170,11 +170,33 @@ class ST2ScriptPanel(bpy.types.Panel):
 
         row.operator("st2.refresh_settings", text="", icon="FILE_REFRESH")
 
-        if False:
+        if True:
             if context.scene.st2.script_watch:
                 row.operator("st2.cancel_watch_source", text="", icon="CANCEL")
             else:
                 row.operator("st2.watch_source", text="", icon="MONKEY")
+
+
+class ST2CalculationPanel(bpy.types.Panel):
+    bl_label = "Calculations"
+    bl_idname = "ST2_PT_3_CALCPANEL"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ST2"
+
+    @classmethod
+    def poll(cls, context):
+        ko = search.active_key_object(context)
+        return ko and not ko.st2.baked
+    
+    def draw(self, context):
+        ko = search.active_key_object(context)
+        data = ko.st2
+        
+        row = self.layout.row()
+        row.prop(data, "calc1_target", text="", expand=False)
+        row.prop(data, "calc1_object", text="", expand=True)
+        row.prop(data, "calc1_source", text="", expand=True)
 
 
 class ST2FontPanel(bpy.types.Panel):
@@ -366,6 +388,7 @@ panels = [
     ST2DefaultPanel,
     ST2MainPanel,
     ST2ScriptPanel,
+    ST2CalculationPanel,
     ST2FontPanel,
     ST2SelectionPanel,
     ST2ArrangingPanel,

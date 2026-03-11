@@ -119,7 +119,12 @@ class T():
             return "ST2:File"
     
     def base_vectors(self):
-        if not self.obj or (not self.obj.st2.has_keyframes(self.obj) and not self.obj.st2.has_variable_offsets(self.obj)):
+        if self.obj:
+            animating = self.obj.st2.has_keyframes(self.obj) or self.obj.st2.has_variable_offsets(self.obj) or self.obj.st2.has_calculations(self.obj)
+        else:
+            animating = False
+
+        if not self.obj or not animating:
             p = self.build_single_style()
         else:
             p = self.build_multi_style()
@@ -189,14 +194,25 @@ class T():
     def build_multi_style(self):
         from ST2.importer import ct
 
-        #helper = bpy.data.objects["Cube"]
-        #helper_location = util.get_gn_object_location(helper)
+        locations = {}
+        calculations = {}
 
-        helper = None
+        for idx in ["1"]:
+            tgt = getattr(self.st2, f"calc{idx}_target")
+            obj = getattr(self.st2, f"calc{idx}_object")
+            src = getattr(self.st2, f"calc{idx}_source")
+            if tgt and obj and src:
+                if idx not in locations:
+                    loc = util.get_gn_object_location(obj)
+                else:
+                    loc = locations[idx]
+                calculations[tgt] = getattr(loc, src)
 
         def styler(x):
             _vars = {}
-            for idx, (k, _) in enumerate(self.st2.visible_variation_axes(self.font).items()):
+            axes = self.st2.visible_variation_axes(self.font).items()
+            
+            for idx, (k, _) in enumerate(axes):
                 dp = f"fvar_axis{idx+1}"
 
                 fvar_offset = getattr(self.st2, f"{dp}_offset")
@@ -205,22 +221,24 @@ class T():
                 
                 try:
                     frame = (self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start)
-                    fcurves = util.get_fcurves(self.obj)
-
-                    for fcu in fcurves:
-                        if fcu.data_path.split(".")[-1] == dp:
-                            found = True
-                            if helper:
-                                _vars[k] = helper_location.z
-                            elif fcu.driver:
-                                _vars[k] = util.get_driver_value(self.obj, fcu.data_path, 0)
-                            else:
-                                _vars[k] = fcu.evaluate(frame)
                     
+                    fcurves = util.get_fcurves(self.obj)
+                    if fcurves:
+                        for fcu in fcurves:
+                            if fcu.data_path.split(".")[-1] == dp:
+                                found = True
+                                if fcu.driver:
+                                    _vars[k] = util.get_driver_value(self.obj, fcu.data_path, 0)
+                                else:
+                                    _vars[k] = fcu.evaluate(frame)
                 except AttributeError as e:
                     print("FAILED TO SET FVAR OFFSET", x.e, var_val, var_val%1)
                     _vars[k] = (var_val + (fvar_offset * x.e))%1.001
                     found = True
+                
+                if dp in calculations:
+                    found = True
+                    _vars[k] = calculations[dp]
                 
                 if not found:
                     _vars[k] = var_val
