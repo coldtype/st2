@@ -524,7 +524,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
         elif self.text_mode == "SEQUENCE":
             text = ""
             has_clips = False
-            for clip in scene.sequence_editor.sequences:
+            for clip in scene.sequence_editor.strips:
                 if clip.channel == self.text_sequence_channel:
                     has_clips = True
                     if clip.frame_start <= scene.frame_current < clip.frame_final_end:
