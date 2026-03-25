@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "b3denv"
-version = "0.0.22"
+version = "0.0.24"
 source = { editable = "../b3denv" }
 
 [[package]]
