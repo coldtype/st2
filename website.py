@@ -24,7 +24,7 @@ index: jinja_html = """
 <!--<h3>Platform-agnostic</h3>-->
 <p>Download the zip and do not unzip it; then install the zip via the Blender Addons preferences screen dropdown "Install from Disk" option (not from the Extensions screen)</p>
 <ul>
-    <li><a href="releases/ST2-v0-20.zip">ST2-v0-24.zip</a></li>
+    <li><a href="releases/ST2-v0-24.zip">ST2-v0-24.zip</a></li>
 </ul>
 <!--<h3>macOS</h3>
 <ul>

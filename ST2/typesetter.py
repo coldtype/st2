@@ -220,7 +220,8 @@ class T():
                 var_val = getattr(self.st2, dp)
                 
                 try:
-                    frame = (self.scene.frame_current - x.i*fvar_offset)%(self.scene.frame_end+1 - self.scene.frame_start)
+                    period = self.scene.frame_end + 1 - self.scene.frame_start
+                    frame = self.scene.frame_start + (self.scene.frame_current - x.i*fvar_offset - self.scene.frame_start) % period
                     
                     fcurves = util.get_fcurves(self.obj)
                     if fcurves:
