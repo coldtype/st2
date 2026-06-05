@@ -5,10 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "b3denv>=0.0.20",
+    "b3denv>=0.0.22",
     "coldtype[viewer,website]>=0.12.2",
     "fake-bpy-module-latest>=20260306",
 ]
 
-[tool.uv.sources]
-b3denv = { path = "../b3denv", editable = true }
+#[tool.uv.sources]
+#b3denv = { path = "../b3denv", editable = true }
