@@ -5,7 +5,7 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.13.8"
+REQUIRED_COLDTYPE = "0.13.7"
 
 def do_import():
     global coldtype_status, C, ct, cb
@@ -138,7 +138,7 @@ def install_extras(context, global_vars):
     print(venv_python, venv_python.exists())
 
     packages = ["ufo2ft"]
-    
+
     if sys.platform == "darwin":
         packages[:0] = ["pyobjc-core", "pyobjc-framework-Cocoa", "pyobjc-framework-CoreText"]
 
