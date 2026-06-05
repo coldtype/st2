@@ -278,6 +278,7 @@ class ST2PropertiesGroup(bpy.types.PropertyGroup):
     combine_glyphs: bpy.props.BoolProperty(name="Combine Glyphs", default=1, update=update_type)
 
     block: bpy.props.BoolProperty(name="Set on Blocks", default=0, update=update_type)
+    block_diff: bpy.props.BoolProperty(name="Block Remove Glyph", default=1, update=update_type)
     block_inset_x: bpy.props.FloatProperty(name="Block Inset X", default=0, update=update_type)
     block_inset_y: bpy.props.FloatProperty(name="Block Inset Y", default=-0.05, update=update_type)
     block_horizontal_metrics: bpy.props.BoolProperty(name="Blocks Use Horizontal Font Metrics", default=True, update=update_type)

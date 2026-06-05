@@ -183,6 +183,7 @@ class ST2CalculationPanel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ST2"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -265,14 +266,6 @@ class ST2FontPanel(bpy.types.Panel):
         row.prop(data, "scale")
         row.prop(data, "tracking")
         row.prop(data, "leading")
-
-        # row = self.layout.row()
-        # row.label(text="Blocks")
-        # row.prop(data, "block", text="", icon="MESH_CUBE")
-        # row.prop(data, "block_inset_x", text="X")
-        # row.prop(data, "block_inset_y", text="Y")
-        # row.prop(data, "block_horizontal_metrics", text="", icon="EVENT_X")
-        # row.prop(data, "block_vertical_metrics", text="", icon="EVENT_Y")
         
         row = self.layout.row()
         row.label(text="Case")
@@ -283,6 +276,15 @@ class ST2FontPanel(bpy.types.Panel):
         if data.align_lines_x == "J":
             row.prop(data, "justify_width", text="", expand=True)
             row.prop(data, "justify_space_letters", text="", icon="SORTALPHA")
+        
+        row = self.layout.row()
+        row.label(text="Blocks ⚠️")
+        row.prop(data, "block", text="", icon="MESH_CUBE")
+        row.prop(data, "block_diff", text="", icon="EVENT_A"),
+        row.prop(data, "block_inset_x", text="X")
+        row.prop(data, "block_inset_y", text="Y")
+        row.prop(data, "block_horizontal_metrics", text="", icon="EVENT_X")
+        row.prop(data, "block_vertical_metrics", text="", icon="EVENT_Y")
 
 
 class ST2SelectionPanel(bpy.types.Panel):

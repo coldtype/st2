@@ -5,7 +5,7 @@ from pathlib import Path
 coldtype_status = -2
 C, ct, cb = None, None, None
 
-REQUIRED_COLDTYPE = "0.12.2"
+REQUIRED_COLDTYPE = "0.13.8"
 
 def do_import():
     global coldtype_status, C, ct, cb
@@ -96,7 +96,7 @@ def install_coldtype(context, global_vars, required_version):
 
     _, venv_python = get_venv_python()
     
-    run([venv_python, "-m", "pip", "install", f"coldtype=={required_version}", "--no-cache-dir"])
+    run([venv_python, "-m", "pip", "install", f"coldtype-core=={required_version}", "--no-cache-dir"])
 
     #run([venv_python, "-m", "pip", "install", "pyobjc"])
     
@@ -137,7 +137,14 @@ def install_extras(context, global_vars):
     
     print(venv_python, venv_python.exists())
 
-    run([venv_python, "-m", "pip", "install", "pyobjc", "ufo2ft"])
+    packages = ["ufo2ft"]
+    
+    if sys.platform == "darwin":
+        packages[:0] = ["pyobjc-core", "pyobjc-framework-Cocoa", "pyobjc-framework-CoreText"]
+
+    run([venv_python, "-m", "pip", "install", *packages])
+
+    #run([venv_python, "-m", "pip", "install", "pyobjc-core", "pyobjc-framework-Cocoa", "pyobjc-framework-CoreText", "ufo2ft"])
     
     run([venv_python, "-m", "pip", "freeze"])
     time.sleep(0.25)

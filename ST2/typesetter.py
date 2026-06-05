@@ -160,8 +160,8 @@ class T():
         if self.st2.outline:
             p = self.apply_outline(p, shapewise)
         
-        #if self.st2.block:
-        #    p = self.add_blocks(p)
+        if self.st2.block:
+           p = self.add_blocks(p)
         
         return p
     
@@ -359,12 +359,12 @@ class T():
                     .inset(self.st2.block_inset_x, self.st2.block_inset_y))
                 #.skew(0.5, 0)
                 #.translate(0.2, 0)
-                .difference(_p.copy()))
+                .cond(self.st2.block_diff, lambda p: p.difference(_p.copy())))
 
         if self.st2.combine_glyphs:
             p = block(p)
-        
-        p.mapv(block)
+        else:
+            p.mapv(block)
         return p
 
     def apply_outline(self, p, shapewise):
